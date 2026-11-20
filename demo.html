@@ -338,7 +338,7 @@ const me=()=>S.session&&S.session.role==='student'?D.students.find(s=>s.id===S.s
 const isAdmin=()=>S.session&&S.session.role==='admin';
 const stu=id=>D.students.find(s=>s.id===id)||{name:'—',ava:'🙂'};
 const ava=s=>s.photo?`<span class="ava"><img src="${s.photo}" alt=""></span>`:`<span class="ava">${esc(s.ava||'🙂')}</span>`;
-function status(sid,surah){const r=D.recs.filter(r=>r.sid===sid&&r.surah===surah).sort((a,b)=>b.t-a.t)[0];return r?r.status:null}
+function status(sid,surah){const L=D.recs.filter(r=>r.sid===sid&&r.surah===surah).map(r=>({t:r.t,st:r.status}));(D.subs||[]).forEach(x=>{const a=(D.assign||[]).find(a=>a.id===x.aid);if(a&&a.surah===surah&&x.sid===sid)L.push({t:x.ratedAt||x.t,st:!x.rating?'new':x.rating==='weak'?'rep':'ok'})});const r=L.sort((a,b)=>b.t-a.t)[0];return r?r.st:null}
 function totalScore(sid){return D.scores.filter(x=>x.sid===sid).reduce((a,b)=>a+b.score,0)}
 function closeLayer(){if(typeof cleanupRec==='function')cleanupRec();$('#layer').innerHTML=''}
 function modal(html,wide){$('#layer').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeLayer()"><div class="modal ${wide?'wide':''}" role="dialog">${html}</div></div>`}
@@ -444,7 +444,7 @@ function openNotif(id){const n=D.notifs.find(x=>x.id===id);n.read=true;save();S.
 /* ---------- Views ---------- */
 function vHome(){
   if(isAdmin()){
-    const pend=D.recs.filter(r=>r.status==='new').length;
+    const pend=D.subs.filter(x=>!x.rating&&asg(x.aid)).length;
     const today=D.scores.filter(x=>Date.now()-x.t<864e5).length;
     return `<div class="hero"><span class="big">🧑‍🏫</span><div><h1>صباح الخير أستاذي</h1><p style="margin:4px 0 0;opacity:.92">لديك ${pend} تسجيل قرآن بانتظار الاستماع</p></div></div>
     <div class="stats">
@@ -502,13 +502,9 @@ function endGame(){const s=me();if(s){D.scores.push({id:uid(),sid:s.id,gid:G.g.i
 /* Quran */
 function vQuran(){
   if(isAdmin()){
-    const tab=S.ui.qt||'in';
-    const tabs=`<div class="tabs" style="max-width:560px">${[['in','🎙️ التسجيلات الواردة'],['sheet','📋 كشف المتابعة'],['who','🔎 من سمّع ومن لم يسمّع']].map(t=>`<button class="${tab===t[0]?'on':''}" onclick="S.ui.qt='${t[0]}';render()">${t[1]}</button>`).join('')}</div>`;
-    if(tab==='in'){const rs=[...D.recs].sort((a,b)=>(a.status==='new'?-1:1)-(b.status==='new'?-1:1)||b.t-a.t).slice(0,40);
-      return tabs+`<div class="sec-list">${rs.map(r=>{const s=stu(r.sid);return `<div class="card row" style="justify-content:space-between">
-        <div class="row">${ava(s)}<div><b>${esc(s.name)}</b> سمّع سورة <b>${esc(r.surah)}</b><br><small class="muted">${fmt(r.t)}</small></div></div>
-        ${r.audio?`<audio controls src="${r.audio}" style="max-width:100%"></audio>`:'<small class="muted">🔈 (تسجيل تجريبي بدون صوت)</small>'}
-        <div class="row">${r.status==='new'?`<button class="btn sm green" onclick="judge('${r.id}','ok')">✅ أحسنت، مقبول</button><button class="btn sm coral" onclick="judge('${r.id}','rep')">🔁 يعيد التسميع</button>`:r.status==='ok'?'<span class="pill ok">مقبول ✓</span>':'<span class="pill bad">طُلب إعادته</span>'}</div></div>`}).join('')}</div>`}
+    const tab=S.ui.qt||'asg';
+    const tabs=`<div class="tabs" style="max-width:560px">${[['asg','🚪 الواجبات والتسجيلات'],['sheet','📋 كشف المتابعة'],['who','🔎 من سمّع ومن لم يسمّع']].map(t=>`<button class="${tab===t[0]?'on':''}" onclick="S.ui.qt='${t[0]}';S.ui.pa=null;render()">${t[1]}</button>`).join('')}</div>`;
+    if(tab==='asg')return tabs+portalAdmin();
     if(tab==='sheet')return tabs+`<div class="card tbl-wrap"><table><thead><tr><th>الطالب</th>${SURAHS.map(x=>`<th class="c">${x}</th>`).join('')}<th class="c">المجموع</th></tr></thead><tbody>
       ${D.students.map(s=>`<tr><td><b>${esc(s.name)}</b></td>${SURAHS.map(x=>{const st=status(s.id,x);return `<td class="c ck">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'<span class="muted">—</span>'}</td>`}).join('')}<td class="c"><b>${SURAHS.filter(x=>status(s.id,x)==='ok').length}</b></td></tr>`).join('')}</tbody></table></div>
       <p class="muted" style="margin:0">✅ مقبول · ⏳ بانتظار استماعك · 🔁 طُلب إعادته · — لم يسمّع بعد</p>`;
@@ -517,23 +513,8 @@ function vQuran(){
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"><div class="card"><h3 style="color:var(--ok)">سمّعوا (${did.length})</h3><div class="sec-list" style="margin-top:10px">${did.map(s=>`<div class="row">${ava(s)}${esc(s.name)}</div>`).join('')||'<p class="muted">لا أحد بعد</p>'}</div></div>
       <div class="card"><h3 style="color:var(--bad)">لم يسمّعوا (${not.length})</h3><div class="sec-list" style="margin-top:10px">${not.map(s=>`<div class="row">${ava(s)}${esc(s.name)} ${status(s.id,su)==='new'?'<span class="pill warn">بانتظارك</span>':''}</div>`).join('')||'<p class="muted">الجميع سمّع 🎉</p>'}</div></div></div>`;
   }
-  const s=me();
-  return `<div class="card"><p style="margin:0">اختر السورة التي حفظتها، ثم سجّل صوتك وأرسله للمعلم 🎙️</p></div>
-  <div class="surahs">${SURAHS.map(x=>{const st=status(s.id,x);return `<button class="surah ${st==='ok'?'done':st==='new'?'pend':st==='rep'?'rep':''}" onclick="recordFor('${x}')"><span style="font-size:30px">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'📖'}</span><b>${x}</b><small class="muted">${st==='ok'?'أحسنت!':st==='new'?'عند المعلم':st==='rep'?'أعد التسميع':'لم تسمّعها'}</small></button>`}).join('')}</div>`;
+  return portalStudent();
 }
-function recordFor(su){const st=status(me().id,su);if(st==='ok'||st==='new'){toast(st==='ok'?'سمّعت هذه السورة وقُبلت 🌟':'تسجيلك عند المعلم، انتظر قليلاً ⏳');return}
-  modal(`<div class="modal-h"><h3>🎙️ تسميع سورة ${esc(su)}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
-  <p class="muted" style="margin:0">اضغط الزر وسجّل تلاوتك بصوتك، ثم أرسلها.</p>
-  <label class="btn green" style="text-align:center;font-size:20px;padding:18px">🎤 سجّل صوتك<input type="file" accept="audio/*" capture hidden onchange="S.ui.af=this.files[0];document.getElementById('afn').textContent='✅ تم: '+this.files[0].name"></label>
-  <small id="afn" class="muted"></small>
-  <div class="row"><button class="btn" onclick="sendRec('${su}',true)">📤 إرسال للمعلم</button><button class="btn ghost" onclick="sendRec('${su}',false)">إرسال تجريبي بدون صوت</button></div>
-  <div class="hint">في النسخة النهائية: زر تسجيل مباشر داخل الموقع مع إيقاف وإعادة الاستماع قبل الإرسال.</div>`)}
-function sendRec(su,withAudio){const s=me();const f=S.ui.af;
-  const fin=audio=>{D.recs.push({id:uid(),sid:s.id,surah:su,t:Date.now(),status:'new',audio});notify(`🎙️ تسجيل جديد: ${s.name} سمّع سورة ${su}`,'quran');save();S.ui.af=null;closeLayer();render();toast('أُرسل التسجيل للمعلم 🎉')};
-  if(!withAudio)return fin('');if(!f){toast('سجّل صوتك أولاً');return}
-  if(f.size>1.5e6){toast('التسجيل كبير للتجربة. سيُرسل بدون صوت');return fin('')}
-  const fr=new FileReader();fr.onload=()=>fin(fr.result);fr.readAsDataURL(f)}
-function judge(id,st){const r=D.recs.find(x=>x.id===id);r.status=st;save();render();toast(st==='ok'?'تم القبول ✅':'طُلب من الطالب الإعادة 🔁')}
 
 /* Sheets */
 function vSheets(){
@@ -767,7 +748,7 @@ function stopPlayers(){document.querySelectorAll('#layer audio').forEach(a=>{try
 
 /* ---------- المسجّل ---------- */
 const REC={st:'idle',mr:null,stream:null,chunks:[],t0:0,acc:0,raf:0,an:null,src:null,blob:null,mime:'',dur:0,err:'',aid:null,cd:null,tick:null,confirm:false,discard:false};
-function pickMime(){if(!window.MediaRecorder)return null;for(const m of ['audio/ogg;codecs=opus','audio/webm;codecs=opus','audio/mp4;codecs=opus','audio/mp4','audio/webm']){try{if(MediaRecorder.isTypeSupported(m))return m}catch(e){}}return ''}
+function pickMime(){if(!window.MediaRecorder)return null;for(const m of ['audio/ogg;codecs=opus','audio/webm;codecs=opus','audio/mp4;codecs=opus']){try{if(MediaRecorder.isTypeSupported(m))return m}catch(e){}}return null}
 const fmtName=m=>/opus/i.test(m||'')?'Opus':((m||'').split(';')[0].split('/')[1]||'صوت').toUpperCase();
 function elapsed(){return (REC.acc+(REC.st==='rec'?performance.now()-REC.t0:0))/1000}
 function stopStream(){cancelAnimationFrame(REC.raf);clearInterval(REC.tick);if(REC.stream){REC.stream.getTracks().forEach(t=>t.stop());REC.stream=null}if(REC.src){try{REC.src.disconnect()}catch(e){}REC.src=null}REC.an=null}
@@ -786,7 +767,7 @@ async function startRec(){
 function beginRec(){
   if(REC.st!=='count'||!REC.stream)return;
   const mime=pickMime();const opts={audioBitsPerSecond:32000};if(mime)opts.mimeType=mime;
-  let mr;try{mr=new MediaRecorder(REC.stream,opts)}catch(e){try{mr=new MediaRecorder(REC.stream)}catch(e2){REC.err='unsupported';stopStream();REC.st='idle';return drawRec()}}
+  let mr;if(!mime){REC.err='unsupported';stopStream();REC.st='idle';return drawRec()}try{mr=new MediaRecorder(REC.stream,opts)}catch(e){REC.err='unsupported';stopStream();REC.st='idle';return drawRec()}
   REC.mr=mr;const chunks=[];REC.mime=mr.mimeType||mime||'audio/webm';const mtype=REC.mime;
   mr.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
   mr.onstop=()=>{if(mr._discard||REC.mr!==mr)return;stopStream();const b=new Blob(chunks,{type:mtype});if(!b.size){REC.err='empty';REC.st='idle';REC.mr=null;return drawRec()}REC.blob=b;REC.st='done';REC.mr=null;drawRec()};
@@ -801,7 +782,6 @@ function stopRec(){if(!REC.mr||(REC.st!=='rec'&&REC.st!=='paused'))return;if(REC
 function cancelRec(){cleanupRec();sfx('del');drawRec()}
 function meter(){cancelAnimationFrame(REC.raf);const c=document.getElementById('meter');if(!c||!REC.an||REC.st!=='rec')return;const g=c.getContext('2d'),W=c.width=c.clientWidth*2,H=c.height=c.clientHeight*2;const data=new Uint8Array(REC.an.frequencyBinCount);const col=getComputedStyle(document.documentElement).getPropertyValue('--grass').trim()||'#2FB872';
   const loop=()=>{if(REC.st!=='rec'||!REC.an||!c.isConnected)return;REC.an.getByteFrequencyData(data);g.clearRect(0,0,W,H);const n=32,bw=W/n;g.fillStyle=col;for(let i=0;i<n;i++){const v=data[Math.floor(i*data.length/n/1.5)]/255;const h=Math.max(6,v*H*.95);g.beginPath();if(g.roundRect)g.roundRect(i*bw+3,(H-h)/2,bw-6,h,6);else g.rect(i*bw+3,(H-h)/2,bw-6,h);g.fill()}REC.raf=requestAnimationFrame(loop)};loop()}
-function useFile(f){if(!f)return;if(!/^audio\//.test(f.type||'audio/')){toast('اختر ملفاً صوتياً');return}if(f.size>15e6){toast('الملف كبير جداً (الحد 15MB)');return}REC.blob=f;REC.mime=f.type||'audio/*';REC.dur=0;REC.err='';REC.st='done';sfx('stop');drawRec()}
 
 /* ---------- البيانات ---------- */
 const RATING={ex:{t:'ممتاز',e:'🏆',c:'r-ex',s:'ex',msg:'أبدعت يا بطل! تسميع ممتاز'},good:{t:'جيد',e:'👍',c:'r-good',s:'good',msg:'أحسنت! استمر وستصل للممتاز'},weak:{t:'غير متقن',e:'💪',c:'r-weak',s:'weak',msg:'راجع المقطع وسجّل مرة أخرى'}};
@@ -809,7 +789,8 @@ const asg=id=>D.assign.find(a=>a.id===id);
 const subOf=(aid,sid)=>D.subs.find(x=>x.aid===aid&&x.sid===sid);
 function migrate(d){
   d.assign=d.assign||[];d.subs=d.subs||[];d.threads=d.threads||[];
-  if(!d.menus.some(m=>m.type==='portal')){const i=d.menus.findIndex(m=>m.type==='quran');d.menus.splice(i<0?1:i+1,0,{id:'portal',type:'portal',title:'بوابة التسميع',icon:'🚪',color:'var(--teal)',on:true})}
+  d.menus=d.menus.filter(m=>m.type!=='portal');d.notifs.forEach(n=>{if(n.go==='portal')n.go='quran'});
+  if(!d._v3){d._v3=1;d.recs=d.recs.filter(r=>r.status!=='new');d.notifs=d.notifs.filter(n=>!/^🎙️ تسجيل جديد/.test(n.text))}
   if(!d.menus.some(m=>m.type==='suggest'))d.menus.push({id:'suggest',type:'suggest',title:'الاقتراحات والرسائل',icon:'💌',color:'var(--pink)',on:true});
   if(!d._v2&&d.students.length){d._v2=1;const now=Date.now(),day=864e5,ds=n=>new Date(now+n*day).toISOString().slice(0,10),S_=d.students;
     const a1={id:uid(),title:'واجب الأسبوع: سورة الفيل',surah:'الفيل',range:'الآيات 1 إلى 5',note:'رتّل بصوت واضح وهدوء',due:ds(3),open:true,t:now-2*day};
@@ -821,14 +802,14 @@ function migrate(d){
     S_.slice(0,7).forEach((s,i)=>d.subs.push({id:uid(),aid:a3.id,sid:s.id,t:now-8*day,dur:6,mime:'audio/wav',size:96000,demo:true,rating:['ex','good','ex','weak','good','ex','good'][i],seen:true}));
     d.threads.push({id:uid(),sid:S_[0].id,from:'parent',subject:'ورقة عمل إضافية',t:now-day,readT:true,readS:true,msgs:[{by:'s',text:'السلام عليكم أستاذ، هل يمكن إضافة ورقة عمل لحرف الجيم؟ ابني يحتاج تدريباً أكثر.',t:now-day},{by:'t',text:'وعليكم السلام، أبشر. أضفتها في قائمة أوراق العمل 🌟',t:now-20*36e5}]});
     if(S_[1])d.threads.push({id:uid(),sid:S_[1].id,from:'student',subject:'اقتراح لعبة',t:now-3*36e5,readT:false,readS:true,msgs:[{by:'s',text:'أستاذ نبي لعبة عن الحيوانات 🦁',t:now-3*36e5}]});
-    d.notifs.unshift({id:uid(),t:now-36e5,read:false,text:'🚪 3 تسليمات جديدة في بوابة التسميع بانتظار تقييمك',go:'portal'});
+    d.notifs.unshift({id:uid(),t:now-36e5,read:false,text:'🎙️ 3 تسليمات قرآن جديدة بانتظار تقييمك',go:'quran'});
   }
   return d;
 }
 function badgeFor(m){
-  if(isAdmin()){if(m.type==='quran')return D.recs.filter(r=>r.status==='new').length;if(m.type==='portal')return D.subs.filter(x=>!x.rating&&asg(x.aid)).length;if(m.type==='suggest')return D.threads.filter(t=>!t.readT).length;return 0}
+  if(isAdmin()){if(m.type==='quran')return D.subs.filter(x=>!x.rating&&asg(x.aid)).length;if(m.type==='suggest')return D.threads.filter(t=>!t.readT).length;return 0}
   const s=me();if(!s)return 0;
-  if(m.type==='portal')return D.assign.filter(a=>a.open&&!subOf(a.id,s.id)).length+D.subs.filter(x=>x.sid===s.id&&x.rating&&!x.seen).length;
+  if(m.type==='quran')return D.assign.filter(a=>a.open&&!subOf(a.id,s.id)).length+D.subs.filter(x=>x.sid===s.id&&x.rating&&!x.seen).length;
   if(m.type==='suggest')return D.threads.filter(t=>t.sid===s.id&&!t.readS).length;return 0}
 
 /* ---------- واجهة البوابة ---------- */
@@ -837,7 +818,7 @@ function asgMeta(a){const late=a.due&&a.due<new Date().toISOString().slice(0,10)
 function portalAdmin(){
   if(S.ui.pa&&asg(S.ui.pa))return portalDetail(asg(S.ui.pa));
   const N=D.students.length;
-  return `<div class="door-gate pop"><span class="gate">🚪</span><div style="flex:1;min-width:200px"><h1>بوابة التسميع</h1><p style="margin:4px 0 0;opacity:.95">افتح باباً لواجب جديد، واستمع لتسجيلات الطلاب وقيّمها.</p></div><button class="btn sun" data-sfx onclick="sfx('open');editAsg()">＋ واجب جديد</button></div>
+  return `<div class="door-gate pop"><span class="gate">🚪</span><div style="flex:1;min-width:200px"><h1>تسميع القرآن</h1><p style="margin:4px 0 0;opacity:.95">افتح باباً لواجب جديد، واستمع لتسجيلات الطلاب وقيّمها.</p></div><button class="btn sun" data-sfx onclick="sfx('open');editAsg()">＋ واجب جديد</button></div>
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(270px,1fr))">${[...D.assign].sort((a,b)=>b.t-a.t).map(a=>{const subs=D.subs.filter(x=>x.aid===a.id&&D.students.some(s=>s.id===x.sid));const pend=subs.filter(x=>!x.rating).length;
     return `<div class="card asg pop"><h4>${esc(a.title)}</h4>${asgMeta(a)}${a.note?`<p class="muted" style="margin:0">${esc(a.note)}</p>`:''}
     <div class="progress"><i style="width:${N?subs.length/N*100:0}%"></i></div><small class="muted">سلّم ${subs.length} من ${N} طالب${pend?` · <b style="color:var(--warn)">${pend} بانتظار تقييمك</b>`:''}</small>
@@ -874,7 +855,7 @@ function portalStudent(){
   const s=me();const list=D.assign.filter(a=>a.open||subOf(a.id,s.id)).sort((a,b)=>(b.open-a.open)||b.t-a.t);
   const fresh=D.subs.filter(x=>x.sid===s.id&&x.rating&&!x.seen&&asg(x.aid));
   if(fresh.length)afterRender.push(()=>{const best=fresh.some(x=>x.rating==='ex')?'ex':fresh.some(x=>x.rating==='good')?'good':'weak';setTimeout(()=>{sfx(RATING[best].s);if(best==='ex')confetti(80)},250);fresh.forEach(x=>x.seen=true);save()});
-  return `<div class="door-gate pop"><span class="gate">🚪</span><div style="flex:1;min-width:200px"><h1>بوابة التسميع</h1><p style="margin:4px 0 0;opacity:.95">اختر الواجب، سجّل تلاوتك، وأرسلها للمعلم 🎙️</p></div></div>
+  return `<div class="door-gate pop"><span class="gate">🚪</span><div style="flex:1;min-width:200px"><h1>تسميع القرآن</h1><p style="margin:4px 0 0;opacity:.95">اختر الواجب، سجّل تلاوتك، وأرسلها للمعلم 🎙️</p></div></div>
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(270px,1fr))">${list.map(a=>{const x=subOf(a.id,s.id);const isNew=x&&x.rating&&!x.seen;
     return `<div class="card asg pop"><h4>${esc(a.title)}</h4>${asgMeta(a)}${a.note?`<p class="muted" style="margin:0">💡 ${esc(a.note)}</p>`:''}
     ${x?(x.rating?`<div><span class="stamp ${RATING[x.rating].c} ${isNew?'new':''}">${RATING[x.rating].e} ${RATING[x.rating].t}</span></div><small class="muted">${RATING[x.rating].msg}</small>`:'<span class="pill warn">⏳ أُرسل، بانتظار تقييم المعلم</span>'):'<span class="pill bad">لم تسجّل بعد</span>'}
@@ -890,10 +871,9 @@ async function drawRec(n){
       :`<div class="ctl"><button class="btn ghost" onclick="REC.confirm=true;drawRec()">🗑️ حذف التسجيل</button>${a.open?'<small class="muted" style="align-self:center">احذفه لتسجّل من جديد</small>':''}</div>`}</div>`;
     bindPlayer('myp',await srcFor(x),x.dur);return}
   if(REC.st==='idle'){
-    const errs={denied:'لم يُسمح باستخدام الميكروفون. اسمح له من إعدادات المتصفح، أو سجّل بتطبيق الجوال وارفع الملف.',nomic:'لم نجد ميكروفوناً في هذا الجهاز.',unsupported:'هذا المتصفح لا يدعم التسجيل المباشر. استخدم زر الرفع بالأسفل.',empty:'التسجيل فارغ، حاول مرة أخرى.',failed:'حدث خطأ أثناء التسجيل، حاول مرة أخرى.'};
+    const errs={denied:'لم يُسمح باستخدام الميكروفون. اسمح للموقع باستخدامه من إعدادات المتصفح ثم حاول مرة أخرى.',nomic:'لم نجد ميكروفوناً في هذا الجهاز.',unsupported:'هذا المتصفح لا يدعم التسجيل بصيغة Opus. حدّث المتصفح أو استخدم Google Chrome.',empty:'التسجيل فارغ، حاول مرة أخرى.',failed:'حدث خطأ أثناء التسجيل، حاول مرة أخرى.'};
     box.innerHTML=a.open?`<button class="mic pop" data-sfx onclick="startRec()" aria-label="ابدأ التسجيل">🎤</button><b style="font-size:20px">اضغط وابدأ التسميع</b><small class="muted">العدّ التنازلي 3، 2، 1 ثم يبدأ التسجيل</small>
-      ${REC.err?`<div class="err">${errs[REC.err]||''}</div>`:''}
-      <details ${REC.err?'open':''} style="width:100%"><summary class="muted" style="cursor:pointer">أو ارفع تسجيلاً من جهازك</summary><label class="btn ghost" style="margin-top:8px;display:inline-block">📁 اختيار ملف صوتي<input type="file" accept="audio/*" capture hidden onchange="useFile(this.files[0])"></label></details>`
+      ${REC.err?`<div class="err">${errs[REC.err]||''}</div>`:''}`
       :'<p class="muted">الباب مغلق لهذا الواجب.</p>';return}
   if(REC.st==='asking'){box.innerHTML='<div class="count" style="font-size:70px">🎤</div><b>اسمح باستخدام الميكروفون...</b>';return}
   if(REC.st==='count'){box.innerHTML=`<div class="count" aria-live="assertive">${n}</div><b>استعد...</b>`;return}
@@ -916,7 +896,7 @@ async function sendSub(){
   try{await IDB.put(id,REC.blob)}catch(e){if(REC.blob.size>1.5e6){REC.st='done';drawRec();toast('تعذّر حفظ التسجيل، جرّب تسجيلاً أقصر');return}try{inline=await blobToDataURL(REC.blob)}catch(e2){REC.st='done';drawRec();toast('تعذّر حفظ التسجيل');return}}
   const old=subOf(a.id,s.id);if(old){await IDB.del(old.id);D.subs=D.subs.filter(x=>x!==old)}
   D.subs.push({id,aid:a.id,sid:s.id,t:Date.now(),dur:REC.dur,mime:REC.mime,size:REC.blob.size,inline,rating:null,seen:true});
-  notify(`🚪 ${s.name} أرسل تسميع «${a.title}»`,'portal');save();
+  notify(`🎙️ تسجيل جديد: ${s.name} سمّع «${a.title}»`,'quran');save();
   REC.blob=null;REC.st='idle';objURLs.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});objURLs=[];
   sfx('send');setTimeout(()=>{sfx('ex');confetti(70)},350);toast('📤 وصل تسجيلك للمعلم!');render();drawRec()}
 async function mySubDel(id){await IDB.del(id);D.subs=D.subs.filter(x=>x.id!==id);save();REC.confirm=false;sfx('del');toast('🗑️ حُذف تسجيلك');render();drawRec()}
