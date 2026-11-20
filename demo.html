@@ -57,7 +57,10 @@ label.f{display:grid;gap:6px;font-weight:700}
 @keyframes bob{50%{transform:translateY(-8px) rotate(-4deg)}}
 .brand-hero h1{font-size:clamp(34px,6vw,54px);color:var(--sky);letter-spacing:0}
 .brand-hero h1 span{color:var(--orange)}
-.doors{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.doors{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));max-width:640px;width:100%;margin-inline:auto}
+.school{margin:4px 0 0;font-weight:800;font-size:17px;background:var(--surface);border-radius:999px;padding:4px 16px;box-shadow:var(--shadow)}
+.credit{text-align:center;color:var(--muted);font-size:14px;margin:0}
+.credit b{color:var(--ink)}
 .door{border:0;text-align:center;border-radius:26px;padding:26px 18px;color:#fff;box-shadow:0 8px 0 rgba(0,0,0,.16);display:grid;gap:8px;justify-items:center;transition:transform .15s}
 .door:hover{transform:translateY(-4px)}
 .door .ic{font-size:54px;line-height:1}
@@ -306,7 +309,6 @@ function loginView(){
   let body='';
   if(!m){body=`<div class="doors">
     <button class="door st" onclick="S.ui.door='st';render()"><span class="ic">🎒</span><b>دخول الطالب</b><small>باسم المستخدم أو بالباركود</small></button>
-    <button class="door pa" onclick="S.ui.door='pa';render()"><span class="ic">👨‍👩‍👦</span><b>ولي الأمر</b><small>متابعة تقدم ابنك</small></button>
     <button class="door ad" onclick="S.ui.door='ad';render()"><span class="ic">🧑‍🏫</span><b>دخول المعلم</b><small>للمدير فقط</small></button></div>`}
   else if(m==='st'){const t=S.ui.stTab||'pw';body=`<div class="card login-form">
     <h2>🎒 أهلاً يا بطل!</h2>
@@ -314,7 +316,7 @@ function loginView(){
     ${t==='pw'?`<form id="lf" style="display:grid;gap:12px"><label class="f">اسم المستخدم<input class="input" id="lu" dir="ltr" autocomplete="username" required></label>
       <label class="f">الرقم السري<input class="input" id="lp" type="password" inputmode="numeric" dir="ltr" autocomplete="current-password" required></label>
       <div class="err" id="le"></div><button class="btn green">ادخل 🚀</button></form>
-      <div class="hint">للتجربة: <b dir="ltr">mohammed</b> والرقم السري <b dir="ltr">1234</b></div>`
+      <div class="hint">للتجربة: <b dir="ltr">mohammed</b> والرقم السري <b dir="ltr">1234</b><br>👨‍👩‍👦 ولي الأمر يدخل بحساب ابنه نفسه، ويجد «تقرير ولي الأمر» في القائمة.</div>`
     :`<p class="muted" style="margin:0">صوّر بطاقة الباركود الخاصة بك بكاميرا الجهاز.</p>
       <label class="btn green" style="text-align:center">📷 تصوير البطاقة<input type="file" accept="image/*" capture="environment" hidden onchange="scanQR(this.files[0])"></label>
       <div class="err" id="le"></div>
@@ -327,24 +329,18 @@ function loginView(){
     <div class="err" id="le">${lk?'تم إيقاف الدخول مؤقتاً بعد 5 محاولات خاطئة. حاول بعد '+Math.ceil((D.admin.lockUntil-Date.now())/60000)+' دقيقة.':''}</div><button class="btn grape" ${lk?'disabled':''}>دخول</button></form>
     <div class="hint">للتجربة: <b dir="ltr">teacher@fasl.demo</b> / <b dir="ltr">Abtal@2026</b><br>في النسخة الفعلية تضع بريدك وكلمة مرورك من «الأمان والخصوصية»، ويصلك رمز تحقق على البريد.</div>
     <button class="btn ghost" onclick="S.ui.door=null;render()">← رجوع</button></div>`}
-  else if(m==='pa'){body=`<div class="card login-form">
-    <h2>👨‍👩‍👦 متابعة ولي الأمر</h2><p class="muted" style="margin:0">أدخل رمز ولي الأمر الموجود في بطاقة ابنك.</p>
-    <form id="pf" style="display:grid;gap:12px"><label class="f">رمز ولي الأمر<input class="input" id="pc" dir="ltr" placeholder="P-XXXXXX" required></label><div class="err" id="le"></div><button class="btn" style="background:var(--orange)">عرض التقدم</button></form>
-    <div class="hint">للتجربة: <b dir="ltr">${esc(D.students[0].parent)}</b> (ولي أمر محمد)</div>
-    <button class="btn ghost" onclick="S.ui.door=null;render()">← رجوع</button></div>`}
   $('#app').innerHTML=`<div class="demo-band">نسخة تجريبية للعرض. البيانات محفوظة في هذا المتصفح فقط</div><main class="login"><div class="login-box">
-    <div class="brand-hero"><div class="mascot">🦸‍♂️</div><h1>فصل <span>الأبطال</span></h1><p class="muted" style="margin:0;font-size:18px">منصة الصف الأول الابتدائي: نتعلم ونلعب ونتميز</p></div>${body}</div></main>`;
-  const lf=$('#lf'),af=$('#af'),pf=$('#pf');
+    <div class="brand-hero"><div class="mascot">🦸‍♂️</div><h1>فصل <span>الأبطال</span></h1><p class="muted" style="margin:0;font-size:18px">منصة الصف الأول الابتدائي: نتعلم ونلعب ونتميز</p><p class="school">🏫 مدرسة طارق بن زياد بالدمام</p></div>${body}<p class="credit">جميع الحقوق محفوظة © ${new Date().getFullYear()} · إعداد وتصميم <b>أ. مصطفى الهتلان</b></p></div></main>`;
+  const lf=$('#lf'),af=$('#af');
   if(lf)lf.onsubmit=e=>{e.preventDefault();const u=$('#lu').value.trim().toLowerCase(),p=$('#lp').value.trim();const s=D.students.find(s=>s.username===u&&s.pin===p);if(!s){$('#le').textContent='اسم المستخدم أو الرقم السري غير صحيح';return}login('student',s.id)};
   if(af)af.onsubmit=async e=>{e.preventDefault();const em=$('#ae').value.trim().toLowerCase(),h=await sha(D.admin.salt+$('#ap').value);
     if(em===D.admin.email&&h===D.admin.hash){D.admin.fails=0;save();login('admin','admin')}
     else{D.admin.fails++;if(D.admin.fails>=5){D.admin.lockUntil=Date.now()+5*60000;D.admin.fails=0}save();$('#le').textContent=D.admin.lockUntil>Date.now()?'تم إيقاف الدخول 5 دقائق لحماية الحساب.':`البيانات غير صحيحة (المحاولات المتبقية: ${5-D.admin.fails})`;if(D.admin.lockUntil>Date.now())render()}};
-  if(pf)pf.onsubmit=e=>{e.preventDefault();const c=$('#pc').value.trim().toUpperCase();const s=D.students.find(s=>s.parent===c);if(!s){$('#le').textContent='الرمز غير صحيح. تأكد منه من بطاقة ابنك.';return}login('parent',s.id)};
 }
 function scanQR(file){if(!file)return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');const k=Math.min(1,1200/Math.max(im.width,im.height));c.width=im.width*k;c.height=im.height*k;const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);
   const r=window.jsQR?jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height):null;qrLogin(r&&r.data)};im.src=fr.result};fr.readAsDataURL(file)}
 function qrLogin(data){const t=(data||'').replace(/^FASL1:/,'');const s=data&&D.students.find(s=>s.qr===t);if(!s){const e=$('#le');if(e)e.textContent='لم نتعرف على البطاقة. حاول مرة أخرى بإضاءة أفضل.';else toast('بطاقة غير صالحة');return}closeLayer();login('student',s.id)}
-function login(role,id){S.session={role,id,at:Date.now(),last:Date.now()};saveSess();S.view='home';S.ui={};render();toast(role==='admin'?'مرحباً بك أستاذي 👋':role==='parent'?'أهلاً بولي الأمر':'أهلاً يا بطل '+stu(id).name+' 🌟')}
+function login(role,id){S.session={role,id,at:Date.now(),last:Date.now()};saveSess();S.view='home';S.ui={};render();toast(role==='admin'?'مرحباً بك أستاذي 👋':'أهلاً يا بطل '+stu(id).name+' 🌟')}
 function logout(){S.session=null;saveSess();S.ui={};render()}
 
 /* ---------- Shell ---------- */
@@ -353,15 +349,16 @@ function shell(){
   const s=me();const unread=D.notifs.filter(n=>!n.read).length;const pend=D.recs.filter(r=>r.status==='new').length;
   const link=m=>`<button class="nav-link ${S.view===m.id?'on':''}" style="--c:${m.color}" onclick="go('${m.id}')"><span class="nav-ic">${esc(m.icon)}</span><span>${esc(m.title)}${m.on===false?' <small class="muted">(مخفية)</small>':''}</span>${m.type==='quran'&&isAdmin()&&pend?`<span class="badge">${pend}</span>`:''}</button>`;
   const adminLinks=[{id:'students',title:'الطلاب والبطاقات',icon:'👥',color:'var(--sky)'},{id:'results',title:'النتائج والكشوف',icon:'📊',color:'var(--grass)'},{id:'menus',title:'تخصيص القوائم',icon:'🎨',color:'var(--pink)'},{id:'security',title:'الأمان والخصوصية',icon:'🛡️',color:'var(--grape)'}];
-  const cur=[...D.menus,...adminLinks].find(m=>m.id===S.view)||D.menus[0];
+  const REP={id:'report',title:'تقرير ولي الأمر',icon:'👨‍👩‍👦',color:'var(--orange)'};
+  const cur=[...D.menus,...adminLinks,REP].find(m=>m.id===S.view)||D.menus[0];
   const who=isAdmin()?`<span class="ava">🧑‍🏫</span><div><b>المعلم</b><br><small class="muted" dir="ltr">${esc(D.admin.email)}</small></div>`:`${ava(s)}<div><b>${esc(s.name)}</b><br><small class="muted">⭐ ${totalScore(s.id)} نقطة</small></div>`;
   $('#app').innerHTML=`<div class="scrim ${S.ui.side?'open':''}" onclick="S.ui.side=0;render()"></div>
   <aside class="side ${S.ui.side?'open':''}">
-    <div class="side-brand"><span class="logo">🦸</span><div><b>فصل الأبطال</b><small>الصف الأول الابتدائي</small></div></div>
+    <div class="side-brand"><span class="logo">🦸</span><div><b>فصل الأبطال</b><small>مدرسة طارق بن زياد بالدمام</small></div></div>
     <div class="side-user">${who}</div>
     <nav class="side-nav"><div class="nav-cat">القائمة الرئيسية</div>${visibleMenus().map(link).join('')}
-    ${isAdmin()?`<div class="nav-cat">إدارة المعلم</div>${adminLinks.map(link).join('')}`:''}</nav>
-    <div class="side-foot"><button class="btn ghost" style="width:100%" onclick="logout()">🚪 تسجيل الخروج</button></div>
+    ${isAdmin()?`<div class="nav-cat">إدارة المعلم</div>${adminLinks.map(link).join('')}`:`<div class="nav-cat">لولي الأمر</div>${link(REP)}`}</nav>
+    <div class="side-foot"><button class="btn ghost" style="width:100%" onclick="logout()">🚪 تسجيل الخروج</button><p class="credit" style="margin-top:10px">© إعداد <b>أ. مصطفى الهتلان</b></p></div>
   </aside>
   <div class="main"><div class="demo-band" style="border-radius:0 0 14px 14px">نسخة تجريبية للعرض قبل التنفيذ</div>
     <header class="top"><button class="icon-btn" id="menuBtn" onclick="S.ui.side=1;render()" aria-label="القائمة">☰</button>
@@ -370,8 +367,8 @@ function shell(){
     </header>
     <section class="content" id="view"></section></div>`;
   const m=D.menus.find(x=>x.id===S.view);
-  const V={home:vHome,games:vGames,quran:vQuran,sheets:vSheets,letters:vLetters,enrich:vEnrich,heroes:vHeroes,custom:vCustom,students:vStudents,results:vResults,menus:vMenus,security:vSecurity};
-  const fn=m?V[m.type]:(isAdmin()?V[S.view]:null);
+  const V={home:vHome,games:vGames,quran:vQuran,sheets:vSheets,letters:vLetters,enrich:vEnrich,heroes:vHeroes,custom:vCustom,students:vStudents,results:vResults,menus:vMenus,security:vSecurity,report:vReport};
+  const fn=m?V[m.type]:S.view==='report'?(me()?vReport:null):(isAdmin()?V[S.view]:null);
   $('#view').innerHTML=(fn||vHome)(m);
   if(S.ui.notif)drawNotif();
   afterRender.forEach(f=>f());afterRender=[];
@@ -399,7 +396,7 @@ function vHome(){
   const s=me();const done=SURAHS.filter(x=>status(s.id,x)==='ok').length;
   return `<div class="hero" style="background:linear-gradient(135deg,var(--grass),var(--teal))"><span class="big">${esc(s.ava)}</span><div><h1>أهلاً يا بطل ${esc(s.name)}!</h1><p style="margin:4px 0 0;opacity:.95">جمعت ⭐ ${totalScore(s.id)} نقطة وسمّعت ${done} سورة</p></div></div>
   <div class="card"><b>رحلتي في جزء عمّ</b><div class="progress" style="margin-top:8px"><i style="width:${done/SURAHS.length*100}%"></i></div><small class="muted">${done} من ${SURAHS.length} سورة</small></div>
-  <div class="grid">${tiles()}</div>`;
+  <div class="grid">${tiles()}<button class="tile" onclick="go('report')"><span class="nav-ic" style="background:var(--orange)">👨‍👩‍👦</span>تقرير ولي الأمر</button></div>`;
 }
 function tiles(){return visibleMenus().filter(m=>m.type!=='home').map(m=>`<button class="tile" onclick="go('${m.id}')"><span class="nav-ic" style="background:${m.color}">${esc(m.icon)}</span>${esc(m.title)}</button>`).join('')}
 const adminBar=(label,fn)=>isAdmin()?`<button class="btn green sm" onclick="${fn}">＋ ${label}</button>`:'';
@@ -529,8 +526,8 @@ function addCustom(mid){form('إضافة عنصر',[{k:'title',label:'العنو
 function vStudents(){
   const tab=S.ui.st||'list';
   const tabs=`<div class="tabs" style="max-width:640px">${[['list','📋 قائمة الطلاب'],['add','➕ إضافة طلاب'],['cards','🪪 بطاقات الدخول']].map(t=>`<button class="${tab===t[0]?'on':''}" onclick="S.ui.st='${t[0]}';render()">${t[1]}</button>`).join('')}</div>`;
-  if(tab==='list')return tabs+`<div class="card tbl-wrap"><table><thead><tr><th>الطالب</th><th>اسم المستخدم</th><th>الرقم السري</th><th>رمز ولي الأمر</th><th class="c">متميز</th><th class="c">النقاط</th><th>إجراءات</th></tr></thead><tbody>
-    ${D.students.map(s=>`<tr><td><div class="row">${ava(s)}<b>${esc(s.name)}</b></div></td><td dir="ltr">${esc(s.username)}</td><td dir="ltr">${S.ui.show===s.id?esc(s.pin):'••••'} <button class="btn sm ghost" onclick="S.ui.show=S.ui.show==='${s.id}'?null:'${s.id}';render()" aria-label="إظهار">👁️</button></td><td dir="ltr">${esc(s.parent)}</td>
+  if(tab==='list')return tabs+`<div class="card tbl-wrap"><table><thead><tr><th>الطالب</th><th>اسم المستخدم</th><th>الرقم السري</th><th class="c">متميز</th><th class="c">النقاط</th><th>إجراءات</th></tr></thead><tbody>
+    ${D.students.map(s=>`<tr><td><div class="row">${ava(s)}<b>${esc(s.name)}</b></div></td><td dir="ltr">${esc(s.username)}</td><td dir="ltr">${S.ui.show===s.id?esc(s.pin):'••••'} <button class="btn sm ghost" onclick="S.ui.show=S.ui.show==='${s.id}'?null:'${s.id}';render()" aria-label="إظهار">👁️</button></td>
     <td class="c"><button class="btn sm ${s.star?'sun':'ghost'}" onclick="stu('${s.id}').star=!stu('${s.id}').star;save();render()">${s.star?'⭐ نعم':'لا'}</button></td><td class="c">${totalScore(s.id)}</td>
     <td><div class="row"><button class="btn sm" onclick="showCard('${s.id}')">🪪 البطاقة</button><button class="btn sm ghost" onclick="resetPin('${s.id}')">🔄 رقم جديد</button><button class="btn sm ghost" onclick="confirmBox('حذف الطالب وكل بياناته؟',()=>delStudent('${s.id}'))">🗑️</button></div></td></tr>`).join('')}</tbody></table></div>`;
   if(tab==='add'){const m=S.ui.am||'one';return tabs+`<div class="card" style="display:grid;gap:14px;max-width:680px">
@@ -538,11 +535,11 @@ function vStudents(){
     ${m==='one'?`<label class="f">اسم الطالب<input class="input" id="n1" placeholder="مثال: نواف"></label><label class="f">اسم المستخدم (اختياري، يُولَّد تلقائياً)<input class="input" id="u1" dir="ltr" placeholder="nawaf"></label><button class="btn green" onclick="addOne()">إضافة وتوليد الباركود</button>`
     :m==='list'?`<label class="f">الصق أسماء الطلاب (اسم في كل سطر)<textarea class="input" id="nl" rows="7" placeholder="نواف\nتركي\nمشعل"></textarea></label><button class="btn green" onclick="addList()">إضافة الجميع</button>`
     :`<p class="muted" style="margin:0">ارفع ملف CSV فيه عمود للاسم، ويمكن إضافة عمود ثانٍ لاسم المستخدم. (احفظ ملف Excel بصيغة CSV)</p><input class="input" type="file" id="cf" accept=".csv,text/csv"><button class="btn green" onclick="addCSV()">استيراد</button>`}
-    <div class="hint">كل طالب جديد يحصل تلقائياً على: اسم مستخدم، رقم سري من 4 أرقام، باركود دخول خاص، ورمز لولي الأمر.</div></div>`}
+    <div class="hint">كل طالب جديد يحصل تلقائياً على: اسم مستخدم، رقم سري من 4 أرقام، وباركود دخول خاص. وولي الأمر يتابع من حساب ابنه.</div></div>`}
   afterRender.push(()=>D.students.forEach(s=>drawQR('qr_'+s.id,s)));
   return tabs+`<div class="hint">في النسخة الفعلية: زر «طباعة البطاقات» يطبعها على ورق A4 لقصها وتوزيعها.</div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${D.students.map(cardHTML).join('')}</div>`;
 }
-function cardHTML(s){return `<div class="qr-card"><b style="font-family:var(--f-display);font-size:20px">${esc(s.ava)} ${esc(s.name)}</b><div class="qr" id="qr_${s.id}"></div><div>المستخدم: <code>${esc(s.username)}</code></div><div>الرقم السري: <code>${esc(s.pin)}</code></div><small>ولي الأمر: <code>${esc(s.parent)}</code></small></div>`}
+function cardHTML(s){return `<div class="qr-card"><b style="font-family:var(--f-display);font-size:20px">${esc(s.ava)} ${esc(s.name)}</b><div class="qr" id="qr_${s.id}"></div><div>المستخدم: <code>${esc(s.username)}</code></div><div>الرقم السري: <code>${esc(s.pin)}</code></div></div>`}
 function drawQR(id,s){const el=document.getElementById(id);if(!el||!window.QRCode)return;el.innerHTML='';new QRCode(el,{text:'FASL1:'+s.qr,width:260,height:260,correctLevel:QRCode.CorrectLevel.M})}
 function showCard(id){const s=stu(id);modal(`<div class="modal-h"><h3>بطاقة دخول الطالب</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>${cardHTML(s).replace('id="qr_','id="mqr_')}
   <div class="row"><button class="btn green" onclick="closeLayer();S.session=null;qrLogin('FASL1:${s.qr}')">📷 تجربة الدخول بالباركود</button><button class="btn ghost" onclick="newQR('${s.id}')">🔄 باركود جديد (يلغي القديم)</button></div>`);drawQR('mqr_'+s.id,s)}
@@ -594,7 +591,7 @@ function vSecurity(){
     ['🚫','قفل بعد 5 محاولات خاطئة','يتوقف الدخول 5 دقائق لمنع التخمين.','مفعّل في التجربة'],
     ['⏱️','خروج تلقائي','بعد 20 دقيقة دون استخدام.','مفعّل في التجربة'],
     ['🪪','باركود عشوائي لكل طالب','رمز طويل لا يُخمَّن، ويمكن إلغاؤه وتوليد بديل فوراً عند ضياع البطاقة.','مفعّل في التجربة'],
-    ['👁️','عزل البيانات','الطالب يرى بياناته فقط، وولي الأمر يرى ابنه فقط وبدون تعديل.','مفعّل في التجربة'],
+    ['👁️','عزل البيانات','الطالب يرى بياناته فقط، وولي الأمر يتابع من حساب ابنه نفسه دون أي حساب إضافي.','مفعّل في التجربة'],
     ['🙈','لا تسجيل ذاتي','إضافة الطلاب للمعلم فقط، ولا توجد صفحة تسجيل عامة.','مفعّل في التجربة'],
     ['🌐','قاعدة بيانات آمنة على الخادم','في النسخة الفعلية: خادم مع اتصال HTTPS وصلاحيات على مستوى كل صف (Row-Level Security).','عند التنفيذ'],
     ['📧','تحقق بخطوتين للمعلم','رمز يصل لبريدك عند كل دخول من جهاز جديد.','عند التنفيذ'],
@@ -612,22 +609,21 @@ async function changeCreds(){const e=$('#ne').value.trim().toLowerCase(),p=$('#n
   D.admin.email=e;save();render();toast('تم تحديث بيانات الدخول 🔐')}
 
 /* Parent */
-function parentView(){
-  const s=stu(S.session.id);const done=SURAHS.filter(x=>status(s.id,x)==='ok');const left=SURAHS.filter(x=>status(s.id,x)!=='ok');
+function vReport(){
+  const s=me();const done=SURAHS.filter(x=>status(s.id,x)==='ok');const left=SURAHS.filter(x=>status(s.id,x)!=='ok');
   const sc=D.scores.filter(x=>x.sid===s.id).sort((a,b)=>b.t-a.t);const hero=D.heroes.filter(h=>h.sid===s.id);
-  $('#app').innerHTML=`<div class="demo-band">نسخة تجريبية: صفحة ولي الأمر (عرض فقط)</div><main style="max-width:960px;margin:0 auto;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px">
-  <div class="hero" style="background:linear-gradient(135deg,var(--orange),var(--coral))"><span class="big">${esc(s.ava)}</span><div style="flex:1"><h1>تقرير البطل ${esc(s.name)}</h1><p style="margin:4px 0 0">الصف الأول الابتدائي · ⭐ ${totalScore(s.id)} نقطة</p></div><button class="btn ghost" onclick="logout()">خروج</button></div>
+  return `<div class="hint">👨‍👩‍👦 هذه الصفحة لولي الأمر: يتابع منها تقدم ابنه في السور والألعاب.</div>
+  <div class="hero" style="background:linear-gradient(135deg,var(--orange),var(--coral))"><span class="big">${esc(s.ava)}</span><div style="flex:1"><h1>تقرير البطل ${esc(s.name)}</h1><p style="margin:4px 0 0">الصف الأول الابتدائي · ⭐ ${totalScore(s.id)} نقطة</p></div></div>
   <div class="stats">${[['📖',done.length+' / '+SURAHS.length,'سور سمّعها','var(--grass)'],['⏳',left.length,'سور متبقية','var(--coral)'],['🎮',sc.length,'محاولة لعب','var(--grape)'],['🌟',hero.length,'تكريم في لوحة الأبطال','var(--sun)']].map(x=>`<div class="card stat"><span class="nav-ic" style="background:${x[3]}">${x[0]}</span><div><div class="n">${x[1]}</div><small class="muted">${x[2]}</small></div></div>`).join('')}</div>
   <div class="card"><h3>تقدّمه في السور</h3><div class="progress" style="margin:10px 0"><i style="width:${done.length/SURAHS.length*100}%"></i></div>
   <div class="surahs">${SURAHS.map(x=>{const st=status(s.id,x);return `<div class="surah ${st==='ok'?'done':st==='new'?'pend':st==='rep'?'rep':''}"><span style="font-size:24px">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'⬜'}</span><b>${x}</b><small class="muted">${st==='ok'?'سمّعها':st==='new'?'عند المعلم':st==='rep'?'يحتاج إعادة':'لم يسمّعها'}</small></div>`}).join('')}</div></div>
   ${left.length?`<div class="card"><h3 style="color:var(--bad)">سور لم يسمّعها بعد</h3><p style="margin:6px 0 0">${left.map(esc).join('، ')}</p></div>`:''}
-  <div class="card tbl-wrap"><h3 style="margin-bottom:8px">آخر نتائج الألعاب</h3><table><thead><tr><th>اللعبة</th><th class="c">النتيجة</th><th>الوقت</th></tr></thead><tbody>${sc.slice(0,10).map(x=>`<tr><td>${esc((D.games.find(g=>g.id===x.gid)||{}).title||'—')}</td><td class="c">${x.score}/${x.max}</td><td>${fmt(x.t)}</td></tr>`).join('')||'<tr><td colspan="3" class="muted">لا توجد نتائج بعد</td></tr>'}</tbody></table></div></main>`;
+  <div class="card tbl-wrap"><h3 style="margin-bottom:8px">آخر نتائج الألعاب</h3><table><thead><tr><th>اللعبة</th><th class="c">النتيجة</th><th>الوقت</th></tr></thead><tbody>${sc.slice(0,10).map(x=>`<tr><td>${esc((D.games.find(g=>g.id===x.gid)||{}).title||'—')}</td><td class="c">${x.score}/${x.max}</td><td>${fmt(x.t)}</td></tr>`).join('')||'<tr><td colspan="3" class="muted">لا توجد نتائج بعد</td></tr>'}</tbody></table></div>`;
 }
 
 /* ---------- Render & boot ---------- */
 function render(){document.querySelectorAll('.notif-panel').forEach(p=>p.remove());
   if(!S.session)return loginView();
-  if(S.session.role==='parent'){if(!D.students.some(s=>s.id===S.session.id))return logout();return parentView()}
   if(S.session.role==='student'&&!me())return logout();
   shell()}
 ['click','keydown','touchstart'].forEach(e=>addEventListener(e,()=>{if(S.session){S.session.last=Date.now();saveSess()}},{passive:true}));
