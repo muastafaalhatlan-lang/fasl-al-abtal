@@ -1,0 +1,636 @@
+<title>منصة فصل الأبطال</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Tajawal:wght@400;500;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<style>
+/* Layout: لوحة بشريط جانبي يمين (RTL) كما في الموقع المرجعي، بطاقات ملونة كبيرة تناسب الطفل */
+:root{
+  --bg:#EAF5FF; --bg-dot:#D3E9FF; --surface:#FFFFFF; --surface-2:#F4F9FF; --ink:#1B2A4A; --muted:#5A6B8E; --line:#DCE7F5;
+  --sky:#2F8FF7; --sun:#FFC23D; --grass:#2FB872; --coral:#FF6B5E; --grape:#8A63F0; --orange:#FF9433; --pink:#F45FA0; --teal:#14B8C4;
+  --ok:#22A866; --warn:#E89B0C; --bad:#E5484D;
+  --f-display:"Baloo Bhaijaan 2","Tajawal",system-ui,sans-serif;
+  --f-body:"Tajawal",system-ui,"Segoe UI",Tahoma,sans-serif;
+  --side-w:272px; --r:18px; --shadow:0 6px 0 rgba(27,42,74,.08),0 10px 24px rgba(27,42,74,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1A30; --bg-dot:#15253F; --surface:#16263F; --surface-2:#1C2F4D; --ink:#EEF4FF; --muted:#9FB0CF; --line:#253A5C;
+  --sky:#5AA9FF; --sun:#FFCE5C; --grass:#46CE88; --coral:#FF8378; --grape:#A487FF; --orange:#FFA95A; --pink:#FF7DB4; --teal:#3FD0DA;
+  --shadow:0 6px 0 rgba(0,0,0,.25),0 10px 24px rgba(0,0,0,.2); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1A30; --bg-dot:#15253F; --surface:#16263F; --surface-2:#1C2F4D; --ink:#EEF4FF; --muted:#9FB0CF; --line:#253A5C;
+  --sky:#5AA9FF; --sun:#FFCE5C; --grass:#46CE88; --coral:#FF8378; --grape:#A487FF; --orange:#FFA95A; --pink:#FF7DB4; --teal:#3FD0DA;
+  --shadow:0 6px 0 rgba(0,0,0,.25),0 10px 24px rgba(0,0,0,.2); color-scheme:dark}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);background-image:radial-gradient(var(--bg-dot) 2px,transparent 2px);background-size:26px 26px;color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;direction:rtl}
+h1,h2,h3{font-family:var(--f-display);line-height:1.25;margin:0;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.muted{color:var(--muted)}
+.btn{border:0;border-radius:14px;padding:10px 18px;font-weight:800;background:var(--sky);color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.15);transition:transform .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.15)}
+.btn.ghost{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+.btn.green{background:var(--grass)}.btn.coral{background:var(--coral)}.btn.sun{background:var(--sun);color:#3a2a00}.btn.grape{background:var(--grape)}
+.btn.sm{padding:6px 12px;font-size:14px;border-radius:11px}
+.input{width:100%;border:2px solid var(--line);background:var(--surface-2);border-radius:14px;padding:11px 14px}
+.input:focus{border-color:var(--sky);outline:none}
+label.f{display:grid;gap:6px;font-weight:700}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;min-width:0}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:2px 10px;font-size:13px;font-weight:800}
+.pill.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.pill.info{background:color-mix(in srgb,var(--sky) 16%,transparent);color:var(--sky)}
+.demo-band{background:var(--sun);color:#3a2a00;text-align:center;font-weight:800;font-size:14px;padding-block:6px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- Login ---------- */
+.login{min-height:100vh;display:grid;place-items:center;padding-block:32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.login-box{width:100%;max-width:920px;display:grid;gap:24px}
+.brand-hero{text-align:center;display:grid;gap:6px;justify-items:center}
+.mascot{font-size:72px;line-height:1;animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-4deg)}}
+.brand-hero h1{font-size:clamp(34px,6vw,54px);color:var(--sky);letter-spacing:0}
+.brand-hero h1 span{color:var(--orange)}
+.doors{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.door{border:0;text-align:center;border-radius:26px;padding:26px 18px;color:#fff;box-shadow:0 8px 0 rgba(0,0,0,.16);display:grid;gap:8px;justify-items:center;transition:transform .15s}
+.door:hover{transform:translateY(-4px)}
+.door .ic{font-size:54px;line-height:1}
+.door b{font-family:var(--f-display);font-size:26px}
+.door small{opacity:.92;font-size:15px}
+.door.st{background:linear-gradient(160deg,var(--grass),var(--teal))}
+.door.ad{background:linear-gradient(160deg,var(--grape),var(--sky))}
+.door.pa{background:linear-gradient(160deg,var(--orange),var(--coral))}
+.login-form{max-width:440px;width:100%;margin-inline:auto;display:grid;gap:14px}
+.tabs{display:flex;gap:6px;background:var(--surface-2);padding:5px;border-radius:14px;flex-wrap:wrap}
+.tabs button{flex:1;border:0;background:transparent;border-radius:10px;padding:8px 12px;font-weight:800;color:var(--muted);white-space:nowrap}
+.tabs button.on{background:var(--surface);color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.hint{background:color-mix(in srgb,var(--sun) 22%,var(--surface));border-radius:14px;padding:10px 14px;font-size:14px}
+.err{color:var(--bad);font-weight:700;min-height:1.4em}
+
+/* ---------- Shell ---------- */
+.side{position:fixed;top:0;bottom:0;right:0;width:var(--side-w);background:var(--surface);box-shadow:-4px 0 20px rgba(27,42,74,.06);display:flex;flex-direction:column;z-index:50;padding-top:env(safe-area-inset-top,0px);padding-right:env(safe-area-inset-right,0px);transition:transform .25s}
+.side-brand{display:flex;gap:10px;align-items:center;padding:18px 18px 14px}
+.side-brand .logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(140deg,var(--sun),var(--orange));display:grid;place-items:center;font-size:26px;flex-shrink:0}
+.side-brand b{font-family:var(--f-display);font-size:20px;display:block;line-height:1.1}
+.side-brand small{color:var(--muted);font-size:12px}
+.side-user{margin:0 14px 8px;background:var(--surface-2);border-radius:16px;padding:10px 12px;display:flex;gap:10px;align-items:center}
+.ava{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:color-mix(in srgb,var(--sun) 40%,var(--surface));flex-shrink:0;overflow:hidden}
+.ava img{width:100%;height:100%;object-fit:cover}
+.side-nav{overflow-y:auto;padding:4px 12px 16px;flex:1}
+.nav-cat{font-size:12px;font-weight:800;color:var(--muted);padding:14px 8px 6px;letter-spacing:.02em}
+.nav-link{width:100%;border:0;background:transparent;display:flex;align-items:center;gap:12px;padding:8px 8px;border-radius:14px;font-weight:800;text-align:start;color:var(--ink)}
+.nav-link:hover{background:var(--surface-2)}
+.nav-link.on{background:color-mix(in srgb,var(--c) 16%,var(--surface));color:var(--ink)}
+.nav-ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--c);flex-shrink:0;box-shadow:0 3px 0 rgba(0,0,0,.12)}
+.nav-link .badge{margin-inline-start:auto;background:var(--coral);color:#fff;border-radius:999px;font-size:12px;padding:0 7px}
+.side-foot{padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));border-top:2px dashed var(--line)}
+.main{margin-right:var(--side-w);min-height:100vh;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:16px;padding-bottom:40px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:12px;padding-block:14px;background:var(--bg)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.top h2{font-size:26px;display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.icon-btn{border:0;width:46px;height:46px;border-radius:14px;background:var(--surface);box-shadow:var(--shadow);font-size:22px;position:relative;flex-shrink:0}
+.icon-btn .dot{position:absolute;top:-4px;left:-4px;background:var(--coral);color:#fff;border-radius:999px;font-size:12px;min-width:20px;height:20px;display:grid;place-items:center;font-weight:800}
+#menuBtn{display:none}
+.scrim{display:none}
+@media (max-width:900px){
+  .side{transform:translateX(105%)} .side.open{transform:none}
+  .main{margin-right:0;padding-right:max(16px,env(safe-area-inset-right,0px))}
+  #menuBtn{display:block}
+  .scrim.open{display:block;position:fixed;inset:0;background:rgba(10,20,40,.4);z-index:40}
+}
+.content{display:grid;gap:18px}
+.hero{border-radius:26px;padding:24px;color:#fff;background:linear-gradient(135deg,var(--sky),var(--grape));display:flex;gap:18px;align-items:center;flex-wrap:wrap;box-shadow:var(--shadow)}
+.hero h1{font-size:clamp(24px,4vw,34px)}
+.hero .big{font-size:64px;line-height:1}
+.stats{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.stat{display:flex;gap:12px;align-items:center}
+.stat .n{font-family:var(--f-display);font-size:30px;font-variant-numeric:tabular-nums;line-height:1}
+.tile{border:0;text-align:center;border-radius:22px;padding:20px 12px;background:var(--surface);box-shadow:var(--shadow);display:grid;gap:10px;justify-items:center;font-weight:800;font-size:17px;transition:transform .15s}
+.tile:hover{transform:translateY(-3px) rotate(-1deg)}
+.tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
+.sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.sec-head h3{font-size:22px}
+.item{display:grid;gap:10px;align-content:start}
+.item .emoji{font-size:44px;line-height:1}
+.item h4{margin:0;font-size:18px;font-family:var(--f-display)}
+.tbl-wrap{overflow-x:auto;border-radius:14px}
+table{border-collapse:collapse;width:100%;font-size:15px;min-width:560px}
+th,td{padding:10px 10px;text-align:start;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:13px;color:var(--muted);font-weight:800;background:var(--surface-2)}
+td.c,th.c{text-align:center}
+.ck{font-size:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:2px solid var(--line);background:var(--surface);border-radius:12px;min-width:42px;padding:4px 10px;font-weight:800;font-family:var(--f-display);font-size:18px}
+.chip.on{background:var(--sky);border-color:var(--sky);color:#fff}
+.surahs{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.surah{border:0;border-radius:18px;padding:14px 10px;background:var(--surface);box-shadow:var(--shadow);display:grid;gap:6px;justify-items:center;font-weight:800}
+.surah b{font-family:var(--f-display);font-size:21px}
+.surah.done{background:color-mix(in srgb,var(--grass) 16%,var(--surface))}
+.surah.pend{background:color-mix(in srgb,var(--sun) 22%,var(--surface))}
+.surah.rep{background:color-mix(in srgb,var(--coral) 15%,var(--surface))}
+.podium{display:flex;gap:12px;align-items:flex-end;justify-content:center;padding-top:10px}
+.pod{border-radius:18px 18px 6px 6px;width:min(120px,30%);text-align:center;padding:10px 6px;color:#fff;display:grid;gap:4px;justify-items:center}
+.pod .ava{background:rgba(255,255,255,.35)}
+.pod.p1{background:var(--sun);color:#3a2a00;min-height:180px}.pod.p2{background:var(--sky);min-height:145px}.pod.p3{background:var(--orange);min-height:120px}
+.heroes{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}
+.hcard{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);overflow:hidden;text-align:center;position:relative}
+.hcard .ph{aspect-ratio:1;max-width:100%;display:grid;place-items:center;font-size:80px;background:linear-gradient(160deg,color-mix(in srgb,var(--sun) 50%,var(--surface)),color-mix(in srgb,var(--orange) 40%,var(--surface)))}
+.hcard .ph img{width:100%;height:100%;object-fit:cover}
+.hcard .bd{padding:12px;display:grid;gap:4px}
+.hcard .crown{position:absolute;top:8px;right:8px;font-size:26px}
+.qr-card{background:#fff;color:#1B2A4A;border-radius:18px;padding:14px;display:grid;gap:8px;justify-items:center;text-align:center;border:3px dashed #C9D9EE}
+.qr-card .qr{width:130px;height:130px}
+.qr-card .qr img,.qr-card .qr canvas{width:130px!important;height:130px!important}
+.qr-card code{font-family:ui-monospace,monospace;font-size:14px;direction:ltr;background:#EEF5FF;padding:2px 8px;border-radius:8px}
+.lock{text-align:center;padding:30px}
+.lock .emoji{font-size:64px}
+.story{display:grid;gap:14px;justify-items:center;text-align:center}
+.story .scene{font-size:96px;line-height:1.1;min-height:120px}
+.story p{font-size:24px;font-family:var(--f-display);max-width:32ch;margin:0}
+.dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--sky)}
+.notif-panel{position:fixed;top:calc(74px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));width:min(360px,calc(100vw - 32px));max-height:70vh;overflow:auto;z-index:60;padding:12px;display:grid;gap:8px}
+.notif{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:14px;background:var(--surface-2);border:0;text-align:start;width:100%}
+.notif.unread{background:color-mix(in srgb,var(--sky) 14%,var(--surface))}
+.modal-bg{position:fixed;inset:0;background:rgba(10,20,40,.5);z-index:90;display:grid;place-items:center;padding:16px}
+.modal{background:var(--surface);border-radius:24px;width:min(560px,100%);max-height:90vh;overflow:auto;padding:22px;display:grid;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal.wide{width:min(900px,100%)}
+.modal-h{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:14px;font-weight:800;z-index:100;max-width:calc(100vw - 32px)}
+.game-q{font-family:var(--f-display);font-size:30px;text-align:center}
+.game-opts{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.game-opt{border:0;border-radius:20px;padding:16px;background:var(--surface-2);box-shadow:0 5px 0 var(--line);font-size:42px;display:grid;justify-items:center;gap:4px}
+.game-opt span{font-size:20px;font-weight:800;font-family:var(--f-display)}
+.game-opt.good{background:color-mix(in srgb,var(--grass) 30%,var(--surface))}
+.game-opt.wrong{background:color-mix(in srgb,var(--coral) 30%,var(--surface))}
+.progress{height:12px;border-radius:999px;background:var(--surface-2);overflow:hidden}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--grass),var(--sky));border-radius:999px}
+.sec-list{display:grid;gap:10px}
+.sec-li{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:14px;background:var(--surface-2)}
+.sec-li .k{font-size:24px}
+.menu-row{display:flex;gap:10px;align-items:center;padding:10px;border-radius:14px;background:var(--surface-2);flex-wrap:wrap}
+.menu-row .nm{flex:1;min-width:140px;font-weight:800}
+.emoji-pick{display:flex;flex-wrap:wrap;gap:6px}
+.emoji-pick button{border:2px solid var(--line);background:var(--surface);border-radius:10px;font-size:22px;width:44px;height:44px}
+.emoji-pick button.on{border-color:var(--sky);background:color-mix(in srgb,var(--sky) 15%,var(--surface))}
+.color-pick{display:flex;gap:8px;flex-wrap:wrap}
+.color-pick button{width:34px;height:34px;border-radius:50%;border:3px solid var(--surface);box-shadow:0 0 0 2px var(--line)}
+.color-pick button.on{box-shadow:0 0 0 3px var(--ink)}
+.plat{font-size:12px;font-weight:800;border-radius:8px;padding:2px 8px;color:#fff}
+.plat.yt{background:#E5484D}.plat.tt{background:#1B2A4A}.plat.ot{background:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div id="app"></div>
+<div id="layer"></div>
+
+<script>
+/* ======================================================
+   منصة فصل الأبطال — نسخة تجريبية (تُحفظ البيانات في هذا المتصفح فقط)
+   ====================================================== */
+const KEY='fasl_abtal_demo_v1';
+const SURAHS=['الفاتحة','الناس','الفلق','الإخلاص','المسد','النصر','الكافرون','الكوثر','الماعون','قريش','الفيل','الهمزة','العصر','التكاثر','القارعة'];
+const LETTERS='ا ب ت ث ج ح خ د ذ ر ز س ش ص ض ط ظ ع غ ف ق ك ل م ن هـ و ي'.split(' ');
+const ICONS=['🏠','🎮','📖','📝','✏️','📚','🌟','🏆','👥','⚙️','🛡️','🎨','🧮','🔤','🎵','🧪','🌍','🕌','🦁','🚀','🧩','🎁','📅','💬','🎬','🍎'];
+const COLORS=['var(--sky)','var(--grass)','var(--sun)','var(--coral)','var(--grape)','var(--orange)','var(--pink)','var(--teal)'];
+const AVAS=['🦁','🐯','🐼','🦊','🐨','🐸','🐵','🐻','🐰','🐧','🦉','🐬'];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,10);
+const rnd=n=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n};
+const token=(len=20)=>{const ch='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';let t='';for(let i=0;i<len;i++)t+=ch[rnd(ch.length)];return t};
+const pin=()=>String(1000+rnd(9000));
+const fmt=t=>new Date(t).toLocaleString('ar-SA',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+async function sha(s){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){let h=5381;for(const c of s)h=(h*33^c.charCodeAt(0))>>>0;return 'x'+h}}
+
+let D=null, S={session:null,view:'home',ui:{}};
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){toast('⚠️ مساحة التخزين ممتلئة: احذف بعض الصور أو التسجيلات')}}
+function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return null}
+function saveSess(){try{sessionStorage.setItem(KEY+'_s',JSON.stringify(S.session))}catch(e){}}
+function loadSess(){try{return JSON.parse(sessionStorage.getItem(KEY+'_s'))}catch(e){return null}}
+
+async function seed(){
+  const names=['محمد','عبدالله','فيصل','سلطان','يوسف','خالد','عمر','ريان','سلمان','بدر'];
+  const users=['mohammed','abdullah','faisal','sultan','yousef','khaled','omar','rayan','salman','badr'];
+  const students=names.map((n,i)=>({id:uid(),name:n,username:users[i],pin:i===0?'1234':pin(),qr:token(),parent:'P-'+token(6).toUpperCase(),ava:AVAS[i%AVAS.length],star:i<3,created:Date.now()}));
+  const salt=token(16);
+  const d={
+    admin:{email:'teacher@fasl.demo',salt,hash:await sha(salt+'Abtal@2026'),fails:0,lockUntil:0},
+    students,
+    menus:[
+      {id:'home',type:'home',title:'الرئيسية',icon:'🏠',color:'var(--sky)',on:true,fixed:true},
+      {id:'games',type:'games',title:'الألعاب التعليمية',icon:'🎮',color:'var(--grape)',on:true},
+      {id:'quran',type:'quran',title:'تسميع القرآن',icon:'📖',color:'var(--grass)',on:true},
+      {id:'sheets',type:'sheets',title:'أوراق العمل',icon:'📝',color:'var(--orange)',on:true},
+      {id:'letters',type:'letters',title:'طريقة كتابة الحروف',icon:'✏️',color:'var(--coral)',on:true},
+      {id:'enrich',type:'enrich',title:'إثرائي',icon:'📚',color:'var(--teal)',on:true},
+      {id:'heroes',type:'heroes',title:'لوحة الأبطال',icon:'🌟',color:'var(--sun)',on:true}
+    ],
+    games:[
+      {id:'g1',title:'صيد الحروف',icon:'🔤',desc:'اختر الصورة التي تبدأ بالحرف',kind:'letters',color:'var(--grape)'},
+      {id:'g2',title:'عدّ واختر',icon:'🧮',desc:'عُدّ الأشكال واختر الرقم الصحيح',kind:'count',color:'var(--orange)'},
+      {id:'g3',title:'تحليل الكلمات',icon:'🧩',desc:'لعبة من تصميم المعلم عبر Claude (رابط خارجي)',kind:'link',url:'game.html',color:'var(--teal)'}
+    ],
+    scores:[], recs:[], notifs:[],
+    sheets:[
+      {id:uid(),title:'ورقة حرف الباء',kind:'paper',url:'https://example.com/ba.pdf',note:'للطباعة والحل بالقلم'},
+      {id:uid(),title:'تحدي الجمع حتى 10',kind:'online',url:'https://wordwall.net',note:'تُحل على الجهاز'},
+      {id:uid(),title:'ورقة الألوان والأشكال',kind:'paper',url:'https://example.com/shapes.pdf',note:'للطباعة'}
+    ],
+    videos:[
+      {id:uid(),letter:'ا',title:'كتابة حرف الألف',url:'https://www.youtube.com/'},
+      {id:uid(),letter:'ب',title:'حرف الباء بالأشكال الأربعة',url:'https://www.youtube.com/'},
+      {id:uid(),letter:'ت',title:'حرف التاء خطوة بخطوة',url:'https://www.tiktok.com/'},
+      {id:uid(),letter:'ج',title:'نكتب الجيم معاً',url:'https://www.youtube.com/'}
+    ],
+    stories:[
+      {id:uid(),title:'الأرنب الصادق',cover:'🐰',pages:[['🐰🥕','كان أرنبٌ صغيرٌ يحبُّ الجزر.'],['🐰🧺🦊','وجدَ سلةً فيها جزرٌ للثعلب.'],['🐰🤝🦊','أعادَ السلةَ إلى الثعلب.'],['🦊💛🐰','فرحَ الثعلبُ وقالَ: شكراً يا صادق!']]},
+      {id:uid(),title:'نجمة تبحث عن صديق',cover:'⭐',pages:[['⭐🌙','في السماءِ نجمةٌ وحيدة.'],['⭐☁️','سألتِ الغيمةَ: هل تلعبين معي؟'],['⭐🌙✨','فجاءَ القمرُ وصارا صديقين.']]}
+    ],
+    heroes:[],
+    custom:{}
+  };
+  // نماذج بيانات
+  const now=Date.now();
+  students.forEach((s,i)=>{
+    const n=Math.max(0,6-i);
+    for(let k=0;k<n;k++) d.recs.push({id:uid(),sid:s.id,surah:SURAHS[k],t:now-(k+i)*36e5*20,status:'ok'});
+    if(i%3===1) d.recs.push({id:uid(),sid:s.id,surah:SURAHS[n],t:now-36e5*(i+1),status:'new'});
+    d.scores.push({id:uid(),sid:s.id,gid:'g1',score:5-(i%4),max:5,t:now-36e5*i});
+    if(i<6) d.scores.push({id:uid(),sid:s.id,gid:'g2',score:5-(i%3),max:5,t:now-36e5*(i+3)});
+  });
+  d.recs.filter(r=>r.status==='new').forEach(r=>d.notifs.push({id:uid(),t:r.t,read:false,text:`🎙️ تسجيل جديد: ${students.find(s=>s.id===r.sid).name} سمّع سورة ${r.surah}`,go:'quran'}));
+  d.heroes=[{id:uid(),sid:students[0].id,reason:'بطل الأسبوع في القراءة',photo:''},{id:uid(),sid:students[1].id,reason:'أكمل تسميع 5 سور',photo:''},{id:uid(),sid:students[2].id,reason:'أفضل خط في الفصل',photo:''}];
+  return d;
+}
+
+/* ---------- helpers ---------- */
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+const me=()=>S.session&&S.session.role==='student'?D.students.find(s=>s.id===S.session.id):null;
+const isAdmin=()=>S.session&&S.session.role==='admin';
+const stu=id=>D.students.find(s=>s.id===id)||{name:'—',ava:'🙂'};
+const ava=s=>s.photo?`<span class="ava"><img src="${s.photo}" alt=""></span>`:`<span class="ava">${esc(s.ava||'🙂')}</span>`;
+function status(sid,surah){const r=D.recs.filter(r=>r.sid===sid&&r.surah===surah).sort((a,b)=>b.t-a.t)[0];return r?r.status:null}
+function totalScore(sid){return D.scores.filter(x=>x.sid===sid).reduce((a,b)=>a+b.score,0)}
+function closeLayer(){$('#layer').innerHTML=''}
+function modal(html,wide){$('#layer').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeLayer()"><div class="modal ${wide?'wide':''}" role="dialog">${html}</div></div>`}
+function confirmBox(msg,fn){window._cf=fn;modal(`<h3>${esc(msg)}</h3><div class="row"><button class="btn coral" onclick="closeLayer();_cf()">نعم، احذف</button><button class="btn ghost" onclick="closeLayer()">إلغاء</button></div>`)}
+/* نموذج عام: fields=[{k,label,type,options,value,ph}] */
+function form(title,fields,onSubmit){
+  window._fs=onSubmit;
+  const f=fields.map(x=>{
+    const id='fm_'+x.k;
+    if(x.type==='select')return `<label class="f">${x.label}<select class="input" id="${id}">${x.options.map(o=>`<option value="${esc(o[0])}" ${o[0]==x.value?'selected':''}>${esc(o[1])}</option>`).join('')}</select></label>`;
+    if(x.type==='textarea')return `<label class="f">${x.label}<textarea class="input" id="${id}" rows="${x.rows||4}" placeholder="${esc(x.ph||'')}">${esc(x.value||'')}</textarea></label>`;
+    if(x.type==='file')return `<label class="f">${x.label}<input class="input" type="file" id="${id}" accept="${x.accept||''}"></label>`;
+    return `<label class="f">${x.label}<input class="input" id="${id}" type="${x.type||'text'}" value="${esc(x.value||'')}" placeholder="${esc(x.ph||'')}" ${x.type==='url'?'dir="ltr"':''}></label>`;
+  }).join('');
+  modal(`<div class="modal-h"><h3>${title}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
+  <form id="fm" style="display:grid;gap:12px">${f}<div class="err" id="fm_err"></div><button class="btn green" type="submit">حفظ</button></form>`);
+  $('#fm').onsubmit=async e=>{e.preventDefault();const v={};for(const x of fields){const el=$('#fm_'+x.k);v[x.k]=x.type==='file'?el.files[0]:el.value.trim()}
+    const r=await window._fs(v);if(typeof r==='string'){$('#fm_err').textContent=r;return}closeLayer();render()};
+}
+function safeUrl(u){try{const x=new URL(u,location.href);return ['http:','https:'].includes(x.protocol)?x.href:'#'}catch(e){return '#'}}
+function platform(u){return /youtu/.test(u)?['yt','يوتيوب']:/tiktok/.test(u)?['tt','تيك توك']:['ot','رابط']}
+function readImg(file,max=420){return new Promise((res,rej)=>{if(!file)return res('');const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.8))};im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(file)})}
+function notify(text,go){D.notifs.unshift({id:uid(),t:Date.now(),read:false,text,go})}
+
+/* ---------- Login ---------- */
+function loginView(){
+  const m=S.ui.door;
+  let body='';
+  if(!m){body=`<div class="doors">
+    <button class="door st" onclick="S.ui.door='st';render()"><span class="ic">🎒</span><b>دخول الطالب</b><small>باسم المستخدم أو بالباركود</small></button>
+    <button class="door pa" onclick="S.ui.door='pa';render()"><span class="ic">👨‍👩‍👦</span><b>ولي الأمر</b><small>متابعة تقدم ابنك</small></button>
+    <button class="door ad" onclick="S.ui.door='ad';render()"><span class="ic">🧑‍🏫</span><b>دخول المعلم</b><small>للمدير فقط</small></button></div>`}
+  else if(m==='st'){const t=S.ui.stTab||'pw';body=`<div class="card login-form">
+    <h2>🎒 أهلاً يا بطل!</h2>
+    <div class="tabs"><button class="${t==='pw'?'on':''}" onclick="S.ui.stTab='pw';render()">اسم المستخدم</button><button class="${t==='qr'?'on':''}" onclick="S.ui.stTab='qr';render()">الباركود 📷</button></div>
+    ${t==='pw'?`<form id="lf" style="display:grid;gap:12px"><label class="f">اسم المستخدم<input class="input" id="lu" dir="ltr" autocomplete="username" required></label>
+      <label class="f">الرقم السري<input class="input" id="lp" type="password" inputmode="numeric" dir="ltr" autocomplete="current-password" required></label>
+      <div class="err" id="le"></div><button class="btn green">ادخل 🚀</button></form>
+      <div class="hint">للتجربة: <b dir="ltr">mohammed</b> والرقم السري <b dir="ltr">1234</b></div>`
+    :`<p class="muted" style="margin:0">صوّر بطاقة الباركود الخاصة بك بكاميرا الجهاز.</p>
+      <label class="btn green" style="text-align:center">📷 تصوير البطاقة<input type="file" accept="image/*" capture="environment" hidden onchange="scanQR(this.files[0])"></label>
+      <div class="err" id="le"></div>
+      <div class="hint">للتجربة على الكمبيوتر: من لوحة المعلم ← الطلاب ← (بطاقة) يوجد زر «تجربة الدخول بالباركود». في النسخة النهائية تفتح الكاميرا مباشرة وتقرأ البطاقة.</div>`}
+    <button class="btn ghost" onclick="S.ui.door=null;render()">← رجوع</button></div>`}
+  else if(m==='ad'){const lk=D.admin.lockUntil>Date.now();body=`<div class="card login-form">
+    <h2>🧑‍🏫 دخول المعلم</h2>
+    <form id="af" style="display:grid;gap:12px"><label class="f">البريد الإلكتروني<input class="input" id="ae" type="email" dir="ltr" autocomplete="username" required></label>
+    <label class="f">كلمة المرور<input class="input" id="ap" type="password" dir="ltr" autocomplete="current-password" required></label>
+    <div class="err" id="le">${lk?'تم إيقاف الدخول مؤقتاً بعد 5 محاولات خاطئة. حاول بعد '+Math.ceil((D.admin.lockUntil-Date.now())/60000)+' دقيقة.':''}</div><button class="btn grape" ${lk?'disabled':''}>دخول</button></form>
+    <div class="hint">للتجربة: <b dir="ltr">teacher@fasl.demo</b> / <b dir="ltr">Abtal@2026</b><br>في النسخة الفعلية تضع بريدك وكلمة مرورك من «الأمان والخصوصية»، ويصلك رمز تحقق على البريد.</div>
+    <button class="btn ghost" onclick="S.ui.door=null;render()">← رجوع</button></div>`}
+  else if(m==='pa'){body=`<div class="card login-form">
+    <h2>👨‍👩‍👦 متابعة ولي الأمر</h2><p class="muted" style="margin:0">أدخل رمز ولي الأمر الموجود في بطاقة ابنك.</p>
+    <form id="pf" style="display:grid;gap:12px"><label class="f">رمز ولي الأمر<input class="input" id="pc" dir="ltr" placeholder="P-XXXXXX" required></label><div class="err" id="le"></div><button class="btn" style="background:var(--orange)">عرض التقدم</button></form>
+    <div class="hint">للتجربة: <b dir="ltr">${esc(D.students[0].parent)}</b> (ولي أمر محمد)</div>
+    <button class="btn ghost" onclick="S.ui.door=null;render()">← رجوع</button></div>`}
+  $('#app').innerHTML=`<div class="demo-band">نسخة تجريبية للعرض. البيانات محفوظة في هذا المتصفح فقط</div><main class="login"><div class="login-box">
+    <div class="brand-hero"><div class="mascot">🦸‍♂️</div><h1>فصل <span>الأبطال</span></h1><p class="muted" style="margin:0;font-size:18px">منصة الصف الأول الابتدائي: نتعلم ونلعب ونتميز</p></div>${body}</div></main>`;
+  const lf=$('#lf'),af=$('#af'),pf=$('#pf');
+  if(lf)lf.onsubmit=e=>{e.preventDefault();const u=$('#lu').value.trim().toLowerCase(),p=$('#lp').value.trim();const s=D.students.find(s=>s.username===u&&s.pin===p);if(!s){$('#le').textContent='اسم المستخدم أو الرقم السري غير صحيح';return}login('student',s.id)};
+  if(af)af.onsubmit=async e=>{e.preventDefault();const em=$('#ae').value.trim().toLowerCase(),h=await sha(D.admin.salt+$('#ap').value);
+    if(em===D.admin.email&&h===D.admin.hash){D.admin.fails=0;save();login('admin','admin')}
+    else{D.admin.fails++;if(D.admin.fails>=5){D.admin.lockUntil=Date.now()+5*60000;D.admin.fails=0}save();$('#le').textContent=D.admin.lockUntil>Date.now()?'تم إيقاف الدخول 5 دقائق لحماية الحساب.':`البيانات غير صحيحة (المحاولات المتبقية: ${5-D.admin.fails})`;if(D.admin.lockUntil>Date.now())render()}};
+  if(pf)pf.onsubmit=e=>{e.preventDefault();const c=$('#pc').value.trim().toUpperCase();const s=D.students.find(s=>s.parent===c);if(!s){$('#le').textContent='الرمز غير صحيح. تأكد منه من بطاقة ابنك.';return}login('parent',s.id)};
+}
+function scanQR(file){if(!file)return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');const k=Math.min(1,1200/Math.max(im.width,im.height));c.width=im.width*k;c.height=im.height*k;const x=c.getContext('2d');x.drawImage(im,0,0,c.width,c.height);
+  const r=window.jsQR?jsQR(x.getImageData(0,0,c.width,c.height).data,c.width,c.height):null;qrLogin(r&&r.data)};im.src=fr.result};fr.readAsDataURL(file)}
+function qrLogin(data){const t=(data||'').replace(/^FASL1:/,'');const s=data&&D.students.find(s=>s.qr===t);if(!s){const e=$('#le');if(e)e.textContent='لم نتعرف على البطاقة. حاول مرة أخرى بإضاءة أفضل.';else toast('بطاقة غير صالحة');return}closeLayer();login('student',s.id)}
+function login(role,id){S.session={role,id,at:Date.now(),last:Date.now()};saveSess();S.view='home';S.ui={};render();toast(role==='admin'?'مرحباً بك أستاذي 👋':role==='parent'?'أهلاً بولي الأمر':'أهلاً يا بطل '+stu(id).name+' 🌟')}
+function logout(){S.session=null;saveSess();S.ui={};render()}
+
+/* ---------- Shell ---------- */
+function visibleMenus(){return D.menus.filter(m=>m.on||isAdmin())}
+function shell(){
+  const s=me();const unread=D.notifs.filter(n=>!n.read).length;const pend=D.recs.filter(r=>r.status==='new').length;
+  const link=m=>`<button class="nav-link ${S.view===m.id?'on':''}" style="--c:${m.color}" onclick="go('${m.id}')"><span class="nav-ic">${esc(m.icon)}</span><span>${esc(m.title)}${m.on===false?' <small class="muted">(مخفية)</small>':''}</span>${m.type==='quran'&&isAdmin()&&pend?`<span class="badge">${pend}</span>`:''}</button>`;
+  const adminLinks=[{id:'students',title:'الطلاب والبطاقات',icon:'👥',color:'var(--sky)'},{id:'results',title:'النتائج والكشوف',icon:'📊',color:'var(--grass)'},{id:'menus',title:'تخصيص القوائم',icon:'🎨',color:'var(--pink)'},{id:'security',title:'الأمان والخصوصية',icon:'🛡️',color:'var(--grape)'}];
+  const cur=[...D.menus,...adminLinks].find(m=>m.id===S.view)||D.menus[0];
+  const who=isAdmin()?`<span class="ava">🧑‍🏫</span><div><b>المعلم</b><br><small class="muted" dir="ltr">${esc(D.admin.email)}</small></div>`:`${ava(s)}<div><b>${esc(s.name)}</b><br><small class="muted">⭐ ${totalScore(s.id)} نقطة</small></div>`;
+  $('#app').innerHTML=`<div class="scrim ${S.ui.side?'open':''}" onclick="S.ui.side=0;render()"></div>
+  <aside class="side ${S.ui.side?'open':''}">
+    <div class="side-brand"><span class="logo">🦸</span><div><b>فصل الأبطال</b><small>الصف الأول الابتدائي</small></div></div>
+    <div class="side-user">${who}</div>
+    <nav class="side-nav"><div class="nav-cat">القائمة الرئيسية</div>${visibleMenus().map(link).join('')}
+    ${isAdmin()?`<div class="nav-cat">إدارة المعلم</div>${adminLinks.map(link).join('')}`:''}</nav>
+    <div class="side-foot"><button class="btn ghost" style="width:100%" onclick="logout()">🚪 تسجيل الخروج</button></div>
+  </aside>
+  <div class="main"><div class="demo-band" style="border-radius:0 0 14px 14px">نسخة تجريبية للعرض قبل التنفيذ</div>
+    <header class="top"><button class="icon-btn" id="menuBtn" onclick="S.ui.side=1;render()" aria-label="القائمة">☰</button>
+      <h2><span>${esc(cur.icon)}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cur.title)}</span></h2>
+      ${isAdmin()?`<button class="icon-btn" onclick="toggleNotif()" aria-label="الإشعارات">🔔${unread?`<span class="dot">${unread}</span>`:''}</button>`:''}
+    </header>
+    <section class="content" id="view"></section></div>`;
+  const m=D.menus.find(x=>x.id===S.view);
+  const V={home:vHome,games:vGames,quran:vQuran,sheets:vSheets,letters:vLetters,enrich:vEnrich,heroes:vHeroes,custom:vCustom,students:vStudents,results:vResults,menus:vMenus,security:vSecurity};
+  const fn=m?V[m.type]:(isAdmin()?V[S.view]:null);
+  $('#view').innerHTML=(fn||vHome)(m);
+  if(S.ui.notif)drawNotif();
+  afterRender.forEach(f=>f());afterRender=[];
+}
+let afterRender=[];
+function go(id){S.view=id;S.ui={};render();scrollTo(0,0)}
+function toggleNotif(){S.ui.notif=!S.ui.notif;render()}
+function drawNotif(){const p=document.createElement('div');p.className='card notif-panel';p.innerHTML=`<div class="sec-head"><h3>🔔 الإشعارات</h3><button class="btn sm ghost" onclick="D.notifs.forEach(n=>n.read=true);save();render()">تعليم الكل كمقروء</button></div>`+
+  (D.notifs.length?D.notifs.slice(0,30).map(n=>`<button class="notif ${n.read?'':'unread'}" onclick="openNotif('${n.id}')"><div><div>${esc(n.text)}</div><small class="muted">${fmt(n.t)}</small></div></button>`).join(''):'<p class="muted">لا توجد إشعارات</p>');document.body.appendChild(p);p.dataset.n=1}
+function openNotif(id){const n=D.notifs.find(x=>x.id===id);n.read=true;save();S.view=n.go||'home';S.ui={};render()}
+
+/* ---------- Views ---------- */
+function vHome(){
+  if(isAdmin()){
+    const pend=D.recs.filter(r=>r.status==='new').length;
+    const today=D.scores.filter(x=>Date.now()-x.t<864e5).length;
+    return `<div class="hero"><span class="big">🧑‍🏫</span><div><h1>صباح الخير أستاذي</h1><p style="margin:4px 0 0;opacity:.92">لديك ${pend} تسجيل قرآن بانتظار الاستماع</p></div></div>
+    <div class="stats">
+      ${[['👥',D.students.length,'طالب في الفصل','var(--sky)'],['🎙️',pend,'تسجيل جديد','var(--grass)'],['🎮',today,'محاولة لعب اليوم','var(--grape)'],['🌟',D.heroes.length,'بطل في اللوحة','var(--sun)']].map(x=>`<div class="card stat"><span class="nav-ic" style="background:${x[3]}">${x[0]}</span><div><div class="n">${x[1]}</div><small class="muted">${x[2]}</small></div></div>`).join('')}
+    </div>
+    <div class="grid">${tiles()}</div>
+    <div class="card"><div class="sec-head"><h3>آخر الإشعارات</h3><button class="btn sm ghost" onclick="toggleNotif()">عرض الكل</button></div>
+    <div class="sec-list" style="margin-top:10px">${D.notifs.slice(0,4).map(n=>`<div class="sec-li"><span class="k">🔔</span><div>${esc(n.text)}<br><small class="muted">${fmt(n.t)}</small></div></div>`).join('')||'<p class="muted">لا شيء جديد</p>'}</div></div>`;
+  }
+  const s=me();const done=SURAHS.filter(x=>status(s.id,x)==='ok').length;
+  return `<div class="hero" style="background:linear-gradient(135deg,var(--grass),var(--teal))"><span class="big">${esc(s.ava)}</span><div><h1>أهلاً يا بطل ${esc(s.name)}!</h1><p style="margin:4px 0 0;opacity:.95">جمعت ⭐ ${totalScore(s.id)} نقطة وسمّعت ${done} سورة</p></div></div>
+  <div class="card"><b>رحلتي في جزء عمّ</b><div class="progress" style="margin-top:8px"><i style="width:${done/SURAHS.length*100}%"></i></div><small class="muted">${done} من ${SURAHS.length} سورة</small></div>
+  <div class="grid">${tiles()}</div>`;
+}
+function tiles(){return visibleMenus().filter(m=>m.type!=='home').map(m=>`<button class="tile" onclick="go('${m.id}')"><span class="nav-ic" style="background:${m.color}">${esc(m.icon)}</span>${esc(m.title)}</button>`).join('')}
+const adminBar=(label,fn)=>isAdmin()?`<button class="btn green sm" onclick="${fn}">＋ ${label}</button>`:'';
+const delBtn=(fn)=>isAdmin()?`<button class="btn sm ghost" onclick="${fn}" aria-label="حذف">🗑️</button>`:'';
+
+/* Games */
+function vGames(){
+  const tab=S.ui.gt||'play';
+  const list=D.games.map(g=>`<div class="card item"><span class="nav-ic" style="background:${g.color};width:64px;height:64px;font-size:34px;border-radius:20px">${esc(g.icon)}</span><h4>${esc(g.title)}</h4><p class="muted" style="margin:0">${esc(g.desc)}</p>
+    ${me()?`<small class="muted">أفضل نتيجة لي: ${Math.max(0,...D.scores.filter(x=>x.sid===me().id&&x.gid===g.id).map(x=>x.score))}</small>`:''}
+    <div class="row">${g.kind==='link'?`<a class="btn" href="${safeUrl(g.url)}" target="_blank" rel="noopener">العب ▶</a>`:`<button class="btn" onclick="playGame('${g.id}')">العب ▶</button>`}${delBtn(`confirmBox('حذف اللعبة؟',()=>{D.games=D.games.filter(x=>x.id!=='${g.id}');save();render()})`)}</div></div>`).join('');
+  return `<div class="tabs" style="max-width:420px"><button class="${tab==='play'?'on':''}" onclick="S.ui.gt='play';render()">🎮 الألعاب</button><button class="${tab==='lb'?'on':''}" onclick="S.ui.gt='lb';render()">🏆 المتصدرون</button></div>
+  ${tab==='play'?`<div class="sec-head"><p class="muted" style="margin:0">العب وتعلّم، كل إجابة صحيحة تعطيك نجمة ⭐</p>${adminBar('إضافة لعبة','addGame()')}</div><div class="grid">${list}</div>`:leaderboard()}`;
+}
+function leaderboard(){
+  const rows=D.students.map(s=>({s,p:totalScore(s.id),n:D.scores.filter(x=>x.sid===s.id).length})).sort((a,b)=>b.p-a.p);
+  const t=rows.slice(0,3);const pod=(r,c,medal)=>r?`<div class="pod ${c}">${ava(r.s)}<b style="font-family:var(--f-display)">${esc(r.s.name)}</b><span>${medal} ${r.p}</span></div>`:'';
+  return `<div class="card"><div class="podium">${pod(t[1],'p2','🥈')}${pod(t[0],'p1','🥇')}${pod(t[2],'p3','🥉')}</div></div>
+  <div class="card tbl-wrap"><table><thead><tr><th>الترتيب</th><th>البطل</th><th class="c">النقاط</th><th class="c">مرات اللعب</th></tr></thead><tbody>
+  ${rows.map((r,i)=>`<tr ${me()&&r.s.id===me().id?'style="background:color-mix(in srgb,var(--sun) 20%,transparent)"':''}><td>${i+1}</td><td><div class="row">${ava(r.s)}${esc(r.s.name)}</div></td><td class="c"><b>${r.p}</b></td><td class="c">${r.n}</td></tr>`).join('')}</tbody></table></div>`;
+}
+function addGame(){form('إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'icon',label:'أيقونة (رمز تعبيري)',value:'🎲'},{k:'desc',label:'وصف قصير'},{k:'url',label:'رابط اللعبة (ملف HTML من تصميمك)',type:'url',ph:'https://...'}],v=>{if(!v.title||!v.url)return 'الاسم والرابط مطلوبان';D.games.push({id:uid(),title:v.title,icon:v.icon||'🎲',desc:v.desc,kind:'link',url:v.url,color:COLORS[rnd(COLORS.length)]});save();toast('تمت إضافة اللعبة')})}
+/* mini games */
+const WORDS=[['ب','بطة','🦆'],['ت','تفاحة','🍎'],['س','سمكة','🐟'],['ق','قطة','🐱'],['ش','شمس','☀️'],['ف','فيل','🐘'],['ج','جمل','🐫'],['م','موز','🍌'],['ن','نحلة','🐝'],['ك','كرة','⚽'],['ز','زرافة','🦒'],['ح','حصان','🐴']];
+let G=null;
+function playGame(id){const g=D.games.find(x=>x.id===id);G={g,round:0,score:0,max:5};nextRound()}
+function nextRound(){
+  if(G.round>=G.max)return endGame();
+  let q,opts,ans;
+  if(G.g.kind==='letters'){const pool=[...WORDS].sort(()=>Math.random()-.5).slice(0,4);ans=rnd(4);q=`أي صورة تبدأ بحرف <b style="color:var(--grape);font-size:44px">${pool[ans][0]}</b> ؟`;opts=pool.map(w=>`${w[2]}<span>${w[1]}</span>`)}
+  else{const n=1+rnd(9),e=['🍎','⭐','🐟','🎈','🌸'][rnd(5)];q=`<div style="font-size:38px;line-height:1.4">${e.repeat(n)}</div>كم عددها؟`;const set=new Set([n]);while(set.size<4)set.add(1+rnd(10));opts=[...set].sort(()=>Math.random()-.5);ans=opts.indexOf(n);opts=opts.map(x=>`<span style="font-size:40px">${x}</span>`)}
+  G.ans=ans;G.lock=false;
+  modal(`<div class="modal-h"><h3>${esc(G.g.icon)} ${esc(G.g.title)}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
+  <div class="progress"><i style="width:${G.round/G.max*100}%"></i></div><div class="row" style="justify-content:space-between"><small class="muted">سؤال ${G.round+1} من ${G.max}</small><b>⭐ ${G.score}</b></div>
+  <div class="game-q">${q}</div><div class="game-opts">${opts.map((o,i)=>`<button class="game-opt" onclick="pick(${i},this)">${o}</button>`).join('')}</div>`);
+}
+function pick(i,el){if(G.lock)return;G.lock=true;const bs=document.querySelectorAll('.game-opt');bs[G.ans].classList.add('good');if(i===G.ans){G.score++}else el.classList.add('wrong');G.round++;setTimeout(nextRound,800)}
+function endGame(){const s=me();if(s){D.scores.push({id:uid(),sid:s.id,gid:G.g.id,score:G.score,max:G.max,t:Date.now()});notify(`🎮 ${s.name} أنهى لعبة «${G.g.title}» بنتيجة ${G.score}/${G.max}`,'results');save()}
+  modal(`<div class="story"><div class="scene">${G.score>=4?'🏆🎉':G.score>=2?'⭐👏':'💪🙂'}</div><h2>${G.score>=4?'رائع يا بطل!':G.score>=2?'أحسنت!':'حاول مرة أخرى'}</h2><p>نتيجتك ${G.score} من ${G.max}</p>${s?'':'<small class="muted">(وضع المعلم: لا تُحفظ النتيجة)</small>'}
+  <div class="row"><button class="btn green" onclick="playGame('${G.g.id}')">العب مرة أخرى</button><button class="btn ghost" onclick="closeLayer();render()">إغلاق</button></div></div>`)}
+
+/* Quran */
+function vQuran(){
+  if(isAdmin()){
+    const tab=S.ui.qt||'in';
+    const tabs=`<div class="tabs" style="max-width:560px">${[['in','🎙️ التسجيلات الواردة'],['sheet','📋 كشف المتابعة'],['who','🔎 من سمّع ومن لم يسمّع']].map(t=>`<button class="${tab===t[0]?'on':''}" onclick="S.ui.qt='${t[0]}';render()">${t[1]}</button>`).join('')}</div>`;
+    if(tab==='in'){const rs=[...D.recs].sort((a,b)=>(a.status==='new'?-1:1)-(b.status==='new'?-1:1)||b.t-a.t).slice(0,40);
+      return tabs+`<div class="sec-list">${rs.map(r=>{const s=stu(r.sid);return `<div class="card row" style="justify-content:space-between">
+        <div class="row">${ava(s)}<div><b>${esc(s.name)}</b> سمّع سورة <b>${esc(r.surah)}</b><br><small class="muted">${fmt(r.t)}</small></div></div>
+        ${r.audio?`<audio controls src="${r.audio}" style="max-width:100%"></audio>`:'<small class="muted">🔈 (تسجيل تجريبي بدون صوت)</small>'}
+        <div class="row">${r.status==='new'?`<button class="btn sm green" onclick="judge('${r.id}','ok')">✅ أحسنت، مقبول</button><button class="btn sm coral" onclick="judge('${r.id}','rep')">🔁 يعيد التسميع</button>`:r.status==='ok'?'<span class="pill ok">مقبول ✓</span>':'<span class="pill bad">طُلب إعادته</span>'}</div></div>`}).join('')}</div>`}
+    if(tab==='sheet')return tabs+`<div class="card tbl-wrap"><table><thead><tr><th>الطالب</th>${SURAHS.map(x=>`<th class="c">${x}</th>`).join('')}<th class="c">المجموع</th></tr></thead><tbody>
+      ${D.students.map(s=>`<tr><td><b>${esc(s.name)}</b></td>${SURAHS.map(x=>{const st=status(s.id,x);return `<td class="c ck">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'<span class="muted">—</span>'}</td>`}).join('')}<td class="c"><b>${SURAHS.filter(x=>status(s.id,x)==='ok').length}</b></td></tr>`).join('')}</tbody></table></div>
+      <p class="muted" style="margin:0">✅ مقبول · ⏳ بانتظار استماعك · 🔁 طُلب إعادته · — لم يسمّع بعد</p>`;
+    const su=S.ui.su||SURAHS[0];const did=D.students.filter(s=>status(s.id,su)==='ok'),not=D.students.filter(s=>status(s.id,su)!=='ok');
+    return tabs+`<label class="f" style="max-width:300px">اختر السورة<select class="input" onchange="S.ui.su=this.value;render()">${SURAHS.map(x=>`<option ${x===su?'selected':''}>${x}</option>`).join('')}</select></label>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"><div class="card"><h3 style="color:var(--ok)">سمّعوا (${did.length})</h3><div class="sec-list" style="margin-top:10px">${did.map(s=>`<div class="row">${ava(s)}${esc(s.name)}</div>`).join('')||'<p class="muted">لا أحد بعد</p>'}</div></div>
+      <div class="card"><h3 style="color:var(--bad)">لم يسمّعوا (${not.length})</h3><div class="sec-list" style="margin-top:10px">${not.map(s=>`<div class="row">${ava(s)}${esc(s.name)} ${status(s.id,su)==='new'?'<span class="pill warn">بانتظارك</span>':''}</div>`).join('')||'<p class="muted">الجميع سمّع 🎉</p>'}</div></div></div>`;
+  }
+  const s=me();
+  return `<div class="card"><p style="margin:0">اختر السورة التي حفظتها، ثم سجّل صوتك وأرسله للمعلم 🎙️</p></div>
+  <div class="surahs">${SURAHS.map(x=>{const st=status(s.id,x);return `<button class="surah ${st==='ok'?'done':st==='new'?'pend':st==='rep'?'rep':''}" onclick="recordFor('${x}')"><span style="font-size:30px">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'📖'}</span><b>${x}</b><small class="muted">${st==='ok'?'أحسنت!':st==='new'?'عند المعلم':st==='rep'?'أعد التسميع':'لم تسمّعها'}</small></button>`}).join('')}</div>`;
+}
+function recordFor(su){const st=status(me().id,su);if(st==='ok'||st==='new'){toast(st==='ok'?'سمّعت هذه السورة وقُبلت 🌟':'تسجيلك عند المعلم، انتظر قليلاً ⏳');return}
+  modal(`<div class="modal-h"><h3>🎙️ تسميع سورة ${esc(su)}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
+  <p class="muted" style="margin:0">اضغط الزر وسجّل تلاوتك بصوتك، ثم أرسلها.</p>
+  <label class="btn green" style="text-align:center;font-size:20px;padding:18px">🎤 سجّل صوتك<input type="file" accept="audio/*" capture hidden onchange="S.ui.af=this.files[0];document.getElementById('afn').textContent='✅ تم: '+this.files[0].name"></label>
+  <small id="afn" class="muted"></small>
+  <div class="row"><button class="btn" onclick="sendRec('${su}',true)">📤 إرسال للمعلم</button><button class="btn ghost" onclick="sendRec('${su}',false)">إرسال تجريبي بدون صوت</button></div>
+  <div class="hint">في النسخة النهائية: زر تسجيل مباشر داخل الموقع مع إيقاف وإعادة الاستماع قبل الإرسال.</div>`)}
+function sendRec(su,withAudio){const s=me();const f=S.ui.af;
+  const fin=audio=>{D.recs.push({id:uid(),sid:s.id,surah:su,t:Date.now(),status:'new',audio});notify(`🎙️ تسجيل جديد: ${s.name} سمّع سورة ${su}`,'quran');save();S.ui.af=null;closeLayer();render();toast('أُرسل التسجيل للمعلم 🎉')};
+  if(!withAudio)return fin('');if(!f){toast('سجّل صوتك أولاً');return}
+  if(f.size>1.5e6){toast('التسجيل كبير للتجربة. سيُرسل بدون صوت');return fin('')}
+  const fr=new FileReader();fr.onload=()=>fin(fr.result);fr.readAsDataURL(f)}
+function judge(id,st){const r=D.recs.find(x=>x.id===id);r.status=st;save();render();toast(st==='ok'?'تم القبول ✅':'طُلب من الطالب الإعادة 🔁')}
+
+/* Sheets */
+function vSheets(){
+  const f=S.ui.sf||'all';const list=D.sheets.filter(x=>f==='all'||x.kind===f);
+  return `<div class="sec-head"><div class="tabs">${[['all','الكل'],['paper','🖨️ ورقية'],['online','💻 إلكترونية']].map(t=>`<button class="${f===t[0]?'on':''}" onclick="S.ui.sf='${t[0]}';render()">${t[1]}</button>`).join('')}</div>${adminBar('إضافة ورقة عمل','addSheet()')}</div>
+  <div class="grid">${list.map(x=>`<div class="card item"><span class="emoji">${x.kind==='paper'?'🖨️':'💻'}</span><h4>${esc(x.title)}</h4><span class="pill ${x.kind==='paper'?'warn':'info'}">${x.kind==='paper'?'ورقية للطباعة':'إلكترونية تفاعلية'}</span><p class="muted" style="margin:0">${esc(x.note||'')}</p>
+  <div class="row"><a class="btn ${x.kind==='paper'?'sun':''}" href="${safeUrl(x.url)}" target="_blank" rel="noopener">${x.kind==='paper'?'تحميل وطباعة':'ابدأ الحل'}</a>${delBtn(`confirmBox('حذف الورقة؟',()=>{D.sheets=D.sheets.filter(s=>s.id!=='${x.id}');save();render()})`)}</div></div>`).join('')||'<p class="muted">لا توجد أوراق بعد</p>'}</div>`;
+}
+function addSheet(){form('إضافة ورقة عمل',[{k:'title',label:'عنوان الورقة'},{k:'kind',label:'النوع',type:'select',options:[['paper','ورقية (PDF للطباعة)'],['online','إلكترونية (تُحل على الجهاز)']]},{k:'url',label:'الرابط',type:'url',ph:'https://...'},{k:'note',label:'ملاحظة للطالب'}],v=>{if(!v.title||!v.url)return 'العنوان والرابط مطلوبان';D.sheets.unshift({id:uid(),...v});save();toast('تمت الإضافة')})}
+
+/* Letters */
+function vLetters(){
+  const L=S.ui.lt||'';const list=D.videos.filter(v=>!L||v.letter===L);
+  return `<div class="sec-head"><p class="muted" style="margin:0">اختر الحرف وشاهد طريقة كتابته ✏️</p>${adminBar('إضافة فيديو','addVideo()')}</div>
+  <div class="card"><div class="chips"><button class="chip ${!L?'on':''}" onclick="S.ui.lt='';render()">الكل</button>${LETTERS.map(l=>`<button class="chip ${L===l?'on':''}" onclick="S.ui.lt='${l}';render()">${l}</button>`).join('')}</div></div>
+  <div class="grid">${list.map(v=>{const p=platform(v.url);return `<div class="card item"><div class="row" style="justify-content:space-between"><span style="font-family:var(--f-display);font-size:56px;line-height:1;color:var(--coral)">${esc(v.letter)}</span><span class="plat ${p[0]}">${p[1]}</span></div><h4>${esc(v.title)}</h4>
+  <div class="row"><a class="btn coral" href="${safeUrl(v.url)}" target="_blank" rel="noopener">▶ شاهد الفيديو</a>${delBtn(`confirmBox('حذف الفيديو؟',()=>{D.videos=D.videos.filter(s=>s.id!=='${v.id}');save();render()})`)}</div></div>`}).join('')||'<p class="muted">لا يوجد فيديو لهذا الحرف بعد</p>'}</div>`;
+}
+function addVideo(){form('إضافة فيديو حرف',[{k:'letter',label:'الحرف',type:'select',options:LETTERS.map(l=>[l,l])},{k:'title',label:'عنوان الفيديو'},{k:'url',label:'رابط يوتيوب أو تيك توك',type:'url',ph:'https://youtube.com/...'}],v=>{if(!v.url||!/^https:\/\//.test(v.url))return 'أدخل رابطاً صحيحاً يبدأ بـ https://';D.videos.unshift({id:uid(),...v,title:v.title||'كتابة حرف '+v.letter});save();toast('تمت الإضافة')})}
+
+/* Enrichment */
+function vEnrich(){
+  const s=me();
+  if(s&&!s.star)return `<div class="card lock"><div class="emoji">🔒📚</div><h2>هذه القائمة للأبطال المتميزين</h2><p class="muted">استمر في اللعب والتسميع، وسيفتحها لك المعلم قريباً ⭐</p></div>`;
+  return `<div class="sec-head"><p class="muted" style="margin:0">قصص قصيرة مصوّرة للمتقدمين والمتميزين 📖</p>${adminBar('إضافة قصة','addStory()')}</div>
+  ${isAdmin()?`<div class="hint">يظهر هذا القسم فقط للطلاب المُعلَّمين بـ «متميز» من صفحة الطلاب (${D.students.filter(x=>x.star).length} طالب حالياً).</div>`:''}
+  <div class="grid">${D.stories.map(st=>`<div class="card item" style="text-align:center;justify-items:center"><div style="font-size:70px;line-height:1.1">${st.img?`<img src="${st.img}" alt="" style="border-radius:14px;max-height:140px">`:esc(st.cover)}</div><h4>${esc(st.title)}</h4><small class="muted">${st.pages.length} صفحات</small>
+  <div class="row"><button class="btn" style="background:var(--teal)" onclick="readStory('${st.id}',0)">اقرأ القصة</button>${delBtn(`confirmBox('حذف القصة؟',()=>{D.stories=D.stories.filter(s=>s.id!=='${st.id}');save();render()})`)}</div></div>`).join('')}</div>`;
+}
+function readStory(id,p){const st=D.stories.find(x=>x.id===id);const pg=st.pages[p];
+  modal(`<div class="modal-h"><h3>${esc(st.title)}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
+  <div class="story"><div class="scene">${esc(pg[0])}</div><p>${esc(pg[1])}</p><div class="dots">${st.pages.map((_,i)=>`<i class="${i===p?'on':''}"></i>`).join('')}</div>
+  <div class="row">${p>0?`<button class="btn ghost" onclick="readStory('${id}',${p-1})">→ السابق</button>`:''}${p<st.pages.length-1?`<button class="btn" onclick="readStory('${id}',${p+1})">التالي ←</button>`:`<button class="btn green" onclick="closeLayer()">انتهت القصة 🎉</button>`}</div></div>`)}
+function addStory(){form('إضافة قصة مصوّرة',[{k:'title',label:'عنوان القصة'},{k:'cover',label:'رمز الغلاف',value:'📕'},{k:'img',label:'صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'pages',label:'الصفحات: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:6,ph:'🐢🌳 | خرجت السلحفاة إلى الغابة\n🐢🐇 | قابلت الأرنب'}],async v=>{const pages=v.pages.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(x=>x[1]);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';D.stories.unshift({id:uid(),title:v.title,cover:v.cover||'📕',img:await readImg(v.img,500),pages});save();toast('أُضيفت القصة')})}
+
+/* Heroes */
+function vHeroes(){
+  return `<div class="sec-head"><p class="muted" style="margin:0">أبطال فصلنا المميزون 🏅</p>${adminBar('إضافة بطل','addHero()')}</div>
+  ${isAdmin()?'<div class="hint">🔒 الصور تظهر فقط للمسجّلين في الفصل (طلاب وأولياء أمور)، ولا تظهر لأي زائر خارجي.</div>':''}
+  <div class="heroes">${D.heroes.map((h,i)=>{const s=stu(h.sid);return `<div class="hcard">${i<3?'<span class="crown">👑</span>':''}<div class="ph">${h.photo?`<img src="${h.photo}" alt="${esc(s.name)}">`:esc(s.ava)}</div><div class="bd"><b style="font-family:var(--f-display);font-size:20px">${esc(s.name)}</b><small class="muted">${esc(h.reason)}</small>${delBtn(`confirmBox('إزالة من اللوحة؟',()=>{D.heroes=D.heroes.filter(x=>x.id!=='${h.id}');save();render()})`)}</div></div>`}).join('')||'<p class="muted">لم يُضف أبطال بعد</p>'}</div>`;
+}
+function addHero(){form('إضافة بطل للوحة',[{k:'sid',label:'الطالب',type:'select',options:D.students.map(s=>[s.id,s.name])},{k:'reason',label:'سبب التكريم',ph:'بطل الأسبوع في...'},{k:'photo',label:'صورة الطالب',type:'file',accept:'image/*'}],async v=>{D.heroes.unshift({id:uid(),sid:v.sid,reason:v.reason||'بطل الأسبوع',photo:await readImg(v.photo)});save();toast('أُضيف البطل 🌟')})}
+
+/* Custom menus */
+function vCustom(m){const items=D.custom[m.id]||[];
+  return `<div class="sec-head"><p class="muted" style="margin:0">${esc(m.desc||'قائمة مخصصة')}</p>${adminBar('إضافة عنصر',`addCustom('${m.id}')`)}</div>
+  <div class="grid">${items.map(x=>`<div class="card item"><span class="emoji">${esc(x.icon||'⭐')}</span><h4>${esc(x.title)}</h4><p class="muted" style="margin:0">${esc(x.note||'')}</p><div class="row">${x.url?`<a class="btn" href="${safeUrl(x.url)}" target="_blank" rel="noopener">فتح</a>`:''}${delBtn(`confirmBox('حذف العنصر؟',()=>{D.custom['${m.id}']=D.custom['${m.id}'].filter(s=>s.id!=='${x.id}');save();render()})`)}</div></div>`).join('')||`<div class="card lock"><div class="emoji">${esc(m.icon)}</div><p class="muted">القائمة فارغة${isAdmin()?'. أضف أول عنصر من الزر أعلاه':''}</p></div>`}</div>`}
+function addCustom(mid){form('إضافة عنصر',[{k:'title',label:'العنوان'},{k:'icon',label:'أيقونة',value:'⭐'},{k:'note',label:'وصف'},{k:'url',label:'رابط (اختياري)',type:'url'}],v=>{if(!v.title)return 'العنوان مطلوب';(D.custom[mid]=D.custom[mid]||[]).unshift({id:uid(),...v});save()})}
+
+/* Students (admin) */
+function vStudents(){
+  const tab=S.ui.st||'list';
+  const tabs=`<div class="tabs" style="max-width:640px">${[['list','📋 قائمة الطلاب'],['add','➕ إضافة طلاب'],['cards','🪪 بطاقات الدخول']].map(t=>`<button class="${tab===t[0]?'on':''}" onclick="S.ui.st='${t[0]}';render()">${t[1]}</button>`).join('')}</div>`;
+  if(tab==='list')return tabs+`<div class="card tbl-wrap"><table><thead><tr><th>الطالب</th><th>اسم المستخدم</th><th>الرقم السري</th><th>رمز ولي الأمر</th><th class="c">متميز</th><th class="c">النقاط</th><th>إجراءات</th></tr></thead><tbody>
+    ${D.students.map(s=>`<tr><td><div class="row">${ava(s)}<b>${esc(s.name)}</b></div></td><td dir="ltr">${esc(s.username)}</td><td dir="ltr">${S.ui.show===s.id?esc(s.pin):'••••'} <button class="btn sm ghost" onclick="S.ui.show=S.ui.show==='${s.id}'?null:'${s.id}';render()" aria-label="إظهار">👁️</button></td><td dir="ltr">${esc(s.parent)}</td>
+    <td class="c"><button class="btn sm ${s.star?'sun':'ghost'}" onclick="stu('${s.id}').star=!stu('${s.id}').star;save();render()">${s.star?'⭐ نعم':'لا'}</button></td><td class="c">${totalScore(s.id)}</td>
+    <td><div class="row"><button class="btn sm" onclick="showCard('${s.id}')">🪪 البطاقة</button><button class="btn sm ghost" onclick="resetPin('${s.id}')">🔄 رقم جديد</button><button class="btn sm ghost" onclick="confirmBox('حذف الطالب وكل بياناته؟',()=>delStudent('${s.id}'))">🗑️</button></div></td></tr>`).join('')}</tbody></table></div>`;
+  if(tab==='add'){const m=S.ui.am||'one';return tabs+`<div class="card" style="display:grid;gap:14px;max-width:680px">
+    <div class="tabs">${[['one','طالب واحد'],['list','قائمة أسماء'],['csv','ملف CSV / Excel']].map(t=>`<button class="${m===t[0]?'on':''}" onclick="S.ui.am='${t[0]}';render()">${t[1]}</button>`).join('')}</div>
+    ${m==='one'?`<label class="f">اسم الطالب<input class="input" id="n1" placeholder="مثال: نواف"></label><label class="f">اسم المستخدم (اختياري، يُولَّد تلقائياً)<input class="input" id="u1" dir="ltr" placeholder="nawaf"></label><button class="btn green" onclick="addOne()">إضافة وتوليد الباركود</button>`
+    :m==='list'?`<label class="f">الصق أسماء الطلاب (اسم في كل سطر)<textarea class="input" id="nl" rows="7" placeholder="نواف\nتركي\nمشعل"></textarea></label><button class="btn green" onclick="addList()">إضافة الجميع</button>`
+    :`<p class="muted" style="margin:0">ارفع ملف CSV فيه عمود للاسم، ويمكن إضافة عمود ثانٍ لاسم المستخدم. (احفظ ملف Excel بصيغة CSV)</p><input class="input" type="file" id="cf" accept=".csv,text/csv"><button class="btn green" onclick="addCSV()">استيراد</button>`}
+    <div class="hint">كل طالب جديد يحصل تلقائياً على: اسم مستخدم، رقم سري من 4 أرقام، باركود دخول خاص، ورمز لولي الأمر.</div></div>`}
+  afterRender.push(()=>D.students.forEach(s=>drawQR('qr_'+s.id,s)));
+  return tabs+`<div class="hint">في النسخة الفعلية: زر «طباعة البطاقات» يطبعها على ورق A4 لقصها وتوزيعها.</div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${D.students.map(cardHTML).join('')}</div>`;
+}
+function cardHTML(s){return `<div class="qr-card"><b style="font-family:var(--f-display);font-size:20px">${esc(s.ava)} ${esc(s.name)}</b><div class="qr" id="qr_${s.id}"></div><div>المستخدم: <code>${esc(s.username)}</code></div><div>الرقم السري: <code>${esc(s.pin)}</code></div><small>ولي الأمر: <code>${esc(s.parent)}</code></small></div>`}
+function drawQR(id,s){const el=document.getElementById(id);if(!el||!window.QRCode)return;el.innerHTML='';new QRCode(el,{text:'FASL1:'+s.qr,width:260,height:260,correctLevel:QRCode.CorrectLevel.M})}
+function showCard(id){const s=stu(id);modal(`<div class="modal-h"><h3>بطاقة دخول الطالب</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>${cardHTML(s).replace('id="qr_','id="mqr_')}
+  <div class="row"><button class="btn green" onclick="closeLayer();S.session=null;qrLogin('FASL1:${s.qr}')">📷 تجربة الدخول بالباركود</button><button class="btn ghost" onclick="newQR('${s.id}')">🔄 باركود جديد (يلغي القديم)</button></div>`);drawQR('mqr_'+s.id,s)}
+function newQR(id){stu(id).qr=token();save();toast('تم توليد باركود جديد، البطاقة القديمة لم تعد تعمل');showCard(id)}
+function resetPin(id){stu(id).pin=pin();save();S.ui.show=id;render();toast('تم توليد رقم سري جديد')}
+function delStudent(id){D.students=D.students.filter(s=>s.id!==id);D.recs=D.recs.filter(r=>r.sid!==id);D.scores=D.scores.filter(r=>r.sid!==id);D.heroes=D.heroes.filter(r=>r.sid!==id);save();render();toast('تم الحذف')}
+const TR={'ا':'a','أ':'a','إ':'e','آ':'a','ب':'b','ت':'t','ث':'th','ج':'j','ح':'h','خ':'kh','د':'d','ذ':'th','ر':'r','ز':'z','س':'s','ش':'sh','ص':'s','ض':'d','ط':'t','ظ':'z','ع':'a','غ':'gh','ف':'f','ق':'q','ك':'k','ل':'l','م':'m','ن':'n','ه':'h','ة':'a','و':'w','ي':'y','ى':'a','ء':'','ئ':'e','ؤ':'o'};
+function mkUser(name,want){let u=(want||[...name].map(c=>TR[c]??(/[a-z0-9]/i.test(c)?c:'')).join('')).toLowerCase().replace(/[^a-z0-9]/g,'')||'student';let b=u,i=2;while(D.students.some(s=>s.username===u))u=b+i++;return u}
+function newStudent(name,u){const s={id:uid(),name,username:mkUser(name,u),pin:pin(),qr:token(),parent:'P-'+token(6).toUpperCase(),ava:AVAS[rnd(AVAS.length)],star:false,created:Date.now()};D.students.push(s);return s}
+function addOne(){const n=$('#n1').value.trim();if(!n)return toast('اكتب اسم الطالب');newStudent(n,$('#u1').value.trim());save();S.ui.st='cards';render();toast('أُضيف الطالب ✅')}
+function addList(){const ns=$('#nl').value.split('\n').map(x=>x.trim()).filter(Boolean);if(!ns.length)return toast('الصق الأسماء أولاً');ns.forEach(n=>newStudent(n));save();S.ui.st='cards';render();toast(`أُضيف ${ns.length} طالب ✅`)}
+function addCSV(){const f=$('#cf').files[0];if(!f)return toast('اختر الملف');const fr=new FileReader();fr.onload=()=>{const rows=fr.result.replace(/^﻿/,'').split(/\r?\n/).map(l=>l.split(/[,;\t]/).map(x=>x.trim().replace(/^"|"$/g,''))).filter(r=>r[0]&&!/^(name|الاسم|اسم)$/i.test(r[0]));rows.forEach(r=>newStudent(r[0],r[1]));save();S.ui.st='cards';render();toast(`استُورد ${rows.length} طالب ✅`)};fr.readAsText(f,'utf-8')}
+
+/* Results (admin) */
+function vResults(){
+  const sc=[...D.scores].sort((a,b)=>b.t-a.t);
+  return `<div class="card"><h3>📊 نتائج الألعاب</h3><p class="muted" style="margin:4px 0 0">كل محاولة لعب يقوم بها الطالب تظهر هنا مباشرة.</p></div>
+  <div class="card tbl-wrap"><table><thead><tr><th>الطالب</th><th>اللعبة</th><th class="c">النتيجة</th><th>الوقت</th></tr></thead><tbody>
+  ${sc.map(x=>{const g=D.games.find(g=>g.id===x.gid)||{title:'—'};const p=x.score/x.max;return `<tr><td>${esc(stu(x.sid).name)}</td><td>${esc(g.title)}</td><td class="c"><span class="pill ${p>=.8?'ok':p>=.5?'warn':'bad'}">${x.score}/${x.max}</span></td><td>${fmt(x.t)}</td></tr>`}).join('')}</tbody></table></div>
+  <div class="card"><h3>🏆 المتصدرون</h3></div>${leaderboard()}`;
+}
+
+/* Menus manager */
+function vMenus(){
+  return `<div class="card"><h3>🎨 تخصيص القوائم</h3><p class="muted" style="margin:4px 0 0">غيّر الاسم والأيقونة واللون، أخفِ أي قائمة، رتّبها، أو أضف قائمة جديدة.</p></div>
+  <div class="sec-list">${D.menus.map((m,i)=>`<div class="menu-row"><span class="nav-ic" style="background:${m.color}">${esc(m.icon)}</span><span class="nm">${esc(m.title)} ${m.on?'':'<span class="pill bad">مخفية</span>'}</span>
+    <button class="btn sm ghost" onclick="moveMenu(${i},-1)" ${i<2?'disabled':''} aria-label="أعلى">⬆️</button><button class="btn sm ghost" onclick="moveMenu(${i},1)" ${i===0||i===D.menus.length-1?'disabled':''} aria-label="أسفل">⬇️</button>
+    <button class="btn sm" onclick="editMenu('${m.id}')">✏️ تعديل</button>${m.fixed?'':`<button class="btn sm ghost" onclick="D.menus[${i}].on=!D.menus[${i}].on;save();render()">${m.on?'🙈 إخفاء':'👁️ إظهار'}</button>`}
+    ${m.type==='custom'?`<button class="btn sm ghost" onclick="confirmBox('حذف القائمة ومحتواها؟',()=>{D.menus.splice(${i},1);save();render()})">🗑️</button>`:''}</div>`).join('')}</div>
+  <button class="btn green" onclick="editMenu()">＋ إضافة قائمة جديدة</button>`;
+}
+function moveMenu(i,d){const j=i+d;if(j<1||j>=D.menus.length)return;[D.menus[i],D.menus[j]]=[D.menus[j],D.menus[i]];save();render()}
+function editMenu(id){const m=id?D.menus.find(x=>x.id===id):{title:'',icon:'🧩',color:'var(--pink)',desc:''};S.ui.ei=m.icon;S.ui.ec=m.color;
+  const draw=()=>{$('#ep').innerHTML=ICONS.map(e=>`<button type="button" class="${S.ui.ei===e?'on':''}" onclick="S.ui.ei='${e}';_dr()">${e}</button>`).join('');$('#cp').innerHTML=COLORS.map(c=>`<button type="button" class="${S.ui.ec===c?'on':''}" style="background:${c}" onclick="S.ui.ec='${c}';_dr()" aria-label="لون"></button>`).join('');$('#pv').innerHTML=`<span class="nav-ic" style="background:${S.ui.ec}">${S.ui.ei}</span>`};window._dr=draw;
+  modal(`<div class="modal-h"><h3>${id?'تعديل القائمة':'قائمة جديدة'}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
+  <div class="row"><span id="pv"></span><label class="f" style="flex:1">اسم القائمة<input class="input" id="mt" value="${esc(m.title)}"></label></div>
+  ${!id||m.type==='custom'?`<label class="f">وصف قصير<input class="input" id="md" value="${esc(m.desc||'')}"></label>`:''}
+  <b>الأيقونة</b><div class="emoji-pick" id="ep"></div><label class="f">أو اكتب رمزاً تعبيرياً آخر<input class="input" id="mi" maxlength="4" oninput="if(this.value){S.ui.ei=this.value;_dr()}"></label>
+  <b>اللون</b><div class="color-pick" id="cp"></div>
+  <button class="btn green" onclick="saveMenu('${id||''}')">حفظ</button>`);draw()}
+function saveMenu(id){const t=$('#mt').value.trim();if(!t)return toast('اكتب اسم القائمة');
+  if(id){const m=D.menus.find(x=>x.id===id);Object.assign(m,{title:t,icon:S.ui.ei,color:S.ui.ec});if($('#md'))m.desc=$('#md').value.trim()}
+  else{const nid='c'+uid();D.menus.push({id:nid,type:'custom',title:t,icon:S.ui.ei,color:S.ui.ec,desc:$('#md').value.trim(),on:true});D.custom[nid]=[]}
+  save();closeLayer();render();toast('تم الحفظ ✅')}
+
+/* Security */
+function vSecurity(){
+  const L=[['🔐','كلمة مرور المعلم مشفّرة','تُحفظ بصيغة مُجزّأة (Hash) ولا تظهر في كود الصفحة أبداً.','مفعّل في التجربة'],
+    ['🚫','قفل بعد 5 محاولات خاطئة','يتوقف الدخول 5 دقائق لمنع التخمين.','مفعّل في التجربة'],
+    ['⏱️','خروج تلقائي','بعد 20 دقيقة دون استخدام.','مفعّل في التجربة'],
+    ['🪪','باركود عشوائي لكل طالب','رمز طويل لا يُخمَّن، ويمكن إلغاؤه وتوليد بديل فوراً عند ضياع البطاقة.','مفعّل في التجربة'],
+    ['👁️','عزل البيانات','الطالب يرى بياناته فقط، وولي الأمر يرى ابنه فقط وبدون تعديل.','مفعّل في التجربة'],
+    ['🙈','لا تسجيل ذاتي','إضافة الطلاب للمعلم فقط، ولا توجد صفحة تسجيل عامة.','مفعّل في التجربة'],
+    ['🌐','قاعدة بيانات آمنة على الخادم','في النسخة الفعلية: خادم مع اتصال HTTPS وصلاحيات على مستوى كل صف (Row-Level Security).','عند التنفيذ'],
+    ['📧','تحقق بخطوتين للمعلم','رمز يصل لبريدك عند كل دخول من جهاز جديد.','عند التنفيذ'],
+    ['🖼️','حماية الصور والتسجيلات','تخزين خاص بروابط مؤقتة، ولا تُفهرس في محركات البحث.','عند التنفيذ'],
+    ['💾','نسخ احتياطي يومي','مع سجل لكل عملية دخول وتعديل.','عند التنفيذ']];
+  return `<div class="sec-list">${L.map(x=>`<div class="sec-li"><span class="k">${x[0]}</span><div style="flex:1"><b>${x[1]}</b> <span class="pill ${x[3].includes('مفعّل')?'ok':'info'}">${x[3]}</span><br><span class="muted">${x[2]}</span></div></div>`).join('')}</div>
+  <div class="card" style="display:grid;gap:12px;max-width:520px"><h3>تغيير بيانات دخول المعلم</h3>
+  <label class="f">البريد الإلكتروني<input class="input" id="ne" type="email" dir="ltr" value="${esc(D.admin.email)}"></label>
+  <label class="f">كلمة المرور الجديدة (8 أحرف على الأقل، حرف ورقم ورمز)<input class="input" id="np" type="password" dir="ltr" autocomplete="new-password"></label>
+  <button class="btn grape" onclick="changeCreds()">حفظ</button></div>
+  <div class="card" style="display:grid;gap:10px"><h3>بيانات التجربة</h3><p class="muted" style="margin:0">لإعادة التجربة من البداية بالبيانات النموذجية.</p><div><button class="btn coral" onclick="confirmBox('مسح كل بيانات التجربة؟',async()=>{D=await seed();save();logout()})">إعادة الضبط</button></div></div>`;
+}
+async function changeCreds(){const e=$('#ne').value.trim().toLowerCase(),p=$('#np').value;if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e))return toast('البريد غير صحيح');
+  if(p){if(p.length<8||!/[0-9]/.test(p)||!/[A-Za-z؀-ۿ]/.test(p)||!/[^A-Za-z0-9؀-ۿ]/.test(p))return toast('كلمة المرور ضعيفة');D.admin.salt=token(16);D.admin.hash=await sha(D.admin.salt+p)}
+  D.admin.email=e;save();render();toast('تم تحديث بيانات الدخول 🔐')}
+
+/* Parent */
+function parentView(){
+  const s=stu(S.session.id);const done=SURAHS.filter(x=>status(s.id,x)==='ok');const left=SURAHS.filter(x=>status(s.id,x)!=='ok');
+  const sc=D.scores.filter(x=>x.sid===s.id).sort((a,b)=>b.t-a.t);const hero=D.heroes.filter(h=>h.sid===s.id);
+  $('#app').innerHTML=`<div class="demo-band">نسخة تجريبية: صفحة ولي الأمر (عرض فقط)</div><main style="max-width:960px;margin:0 auto;padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:18px">
+  <div class="hero" style="background:linear-gradient(135deg,var(--orange),var(--coral))"><span class="big">${esc(s.ava)}</span><div style="flex:1"><h1>تقرير البطل ${esc(s.name)}</h1><p style="margin:4px 0 0">الصف الأول الابتدائي · ⭐ ${totalScore(s.id)} نقطة</p></div><button class="btn ghost" onclick="logout()">خروج</button></div>
+  <div class="stats">${[['📖',done.length+' / '+SURAHS.length,'سور سمّعها','var(--grass)'],['⏳',left.length,'سور متبقية','var(--coral)'],['🎮',sc.length,'محاولة لعب','var(--grape)'],['🌟',hero.length,'تكريم في لوحة الأبطال','var(--sun)']].map(x=>`<div class="card stat"><span class="nav-ic" style="background:${x[3]}">${x[0]}</span><div><div class="n">${x[1]}</div><small class="muted">${x[2]}</small></div></div>`).join('')}</div>
+  <div class="card"><h3>تقدّمه في السور</h3><div class="progress" style="margin:10px 0"><i style="width:${done.length/SURAHS.length*100}%"></i></div>
+  <div class="surahs">${SURAHS.map(x=>{const st=status(s.id,x);return `<div class="surah ${st==='ok'?'done':st==='new'?'pend':st==='rep'?'rep':''}"><span style="font-size:24px">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'⬜'}</span><b>${x}</b><small class="muted">${st==='ok'?'سمّعها':st==='new'?'عند المعلم':st==='rep'?'يحتاج إعادة':'لم يسمّعها'}</small></div>`}).join('')}</div></div>
+  ${left.length?`<div class="card"><h3 style="color:var(--bad)">سور لم يسمّعها بعد</h3><p style="margin:6px 0 0">${left.map(esc).join('، ')}</p></div>`:''}
+  <div class="card tbl-wrap"><h3 style="margin-bottom:8px">آخر نتائج الألعاب</h3><table><thead><tr><th>اللعبة</th><th class="c">النتيجة</th><th>الوقت</th></tr></thead><tbody>${sc.slice(0,10).map(x=>`<tr><td>${esc((D.games.find(g=>g.id===x.gid)||{}).title||'—')}</td><td class="c">${x.score}/${x.max}</td><td>${fmt(x.t)}</td></tr>`).join('')||'<tr><td colspan="3" class="muted">لا توجد نتائج بعد</td></tr>'}</tbody></table></div></main>`;
+}
+
+/* ---------- Render & boot ---------- */
+function render(){document.querySelectorAll('.notif-panel').forEach(p=>p.remove());
+  if(!S.session)return loginView();
+  if(S.session.role==='parent'){if(!D.students.some(s=>s.id===S.session.id))return logout();return parentView()}
+  if(S.session.role==='student'&&!me())return logout();
+  shell()}
+['click','keydown','touchstart'].forEach(e=>addEventListener(e,()=>{if(S.session){S.session.last=Date.now();saveSess()}},{passive:true}));
+setInterval(()=>{if(S.session&&Date.now()-S.session.last>20*60000){logout();toast('تم تسجيل الخروج تلقائياً لحمايتك')}},30000);
+(async()=>{D=load()||await seed();save();const ss=loadSess();if(ss&&Date.now()-ss.last<20*60000)S.session=ss;render()})();
+</script>
