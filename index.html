@@ -129,6 +129,17 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .tile{border:0;text-align:center;border-radius:22px;padding:20px 12px;background:var(--surface);box-shadow:var(--shadow);display:grid;gap:10px;justify-items:center;font-weight:800;font-size:17px;transition:transform .15s}
 .tile:hover{transform:translateY(-3px) rotate(-1deg)}
 .grid.tiles{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+.kashf{padding:12px}
+.kt{min-width:0;width:100%;table-layout:fixed}
+.kt th,.kt td{white-space:normal;padding:8px 4px;font-size:14px;overflow-wrap:anywhere}
+.kt th:first-child,.kt td.kn{width:34%;text-align:start}
+.kl{display:none;gap:8px}
+.kr{padding:10px;border-radius:12px;background:var(--surface-2);display:grid;gap:6px}
+.kh{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.kh b{min-width:0;overflow-wrap:anywhere}
+.kc{display:flex;flex-wrap:wrap;gap:5px}
+.kchip{background:var(--surface);border-radius:999px;padding:2px 9px;font-size:13px;font-weight:700}
+@media (max-width:700px){.kt{display:none}.kl{display:grid}}
 .tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
 .sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .sec-head h3{font-size:22px}
@@ -554,9 +565,12 @@ function vQuran(){
     const tab=S.ui.qt||'asg';
     const tabs=`<div class="tabs" style="max-width:560px">${[['asg','🚪 الواجبات والتسجيلات'],['sheet','📋 كشف المتابعة'],['who','🔎 من سمّع ومن لم يسمّع']].map(t=>`<button class="${tab===t[0]?'on':''}" onclick="S.ui.qt='${t[0]}';S.ui.pa=null;render()">${t[1]}</button>`).join('')}</div>`;
     if(tab==='asg')return tabs+portalAdmin();
-    if(tab==='sheet')return tabs+`<div class="card tbl-wrap"><table><thead><tr><th>الطالب</th>${SL().map(x=>`<th class="c">${x}</th>`).join('')}<th class="c">المجموع</th></tr></thead><tbody>
-      ${D.students.map(s=>`<tr><td><b>${esc(s.name)}</b></td>${SL().map(x=>{const st=status(s.id,x);return `<td class="c ck">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'<span class="muted">—</span>'}</td>`}).join('')}<td class="c"><b>${SL().filter(x=>status(s.id,x)==='ok').length}</b></td></tr>`).join('')}</tbody></table></div>
-      <p class="muted" style="margin:0">✅ مقبول · ⏳ بانتظار استماعك · 🔁 طُلب إعادته · — لم يسمّع بعد</p>`;
+    if(tab==='sheet'){const sl=SL(),ic=st=>st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'⬜';
+      if(!sl.length)return tabs+'<div class="card lock"><div class="emoji">📋</div><p class="muted">لا توجد سور بعد. أضف أول واجب تسميع.</p></div>';
+      return tabs+`<p class="muted" style="margin:0">✅ مقبول · ⏳ بانتظار استماعك · 🔁 طُلب إعادته · ⬜ لم يسمّع بعد</p>
+      <div class="card kashf"><table class="kt"><thead><tr><th>الطالب</th>${sl.map(x=>`<th class="c">${esc(x)}</th>`).join('')}<th class="c">✅</th></tr></thead><tbody>
+      ${D.students.map(s=>`<tr><td class="kn">${esc(s.name)}</td>${sl.map(x=>`<td class="c ck">${ic(status(s.id,x))}</td>`).join('')}<td class="c"><b>${sl.filter(x=>status(s.id,x)==='ok').length}/${sl.length}</b></td></tr>`).join('')}</tbody></table>
+      <div class="kl">${D.students.map(s=>`<div class="kr"><div class="kh"><b>${esc(s.name)}</b><span class="pill ok">${sl.filter(x=>status(s.id,x)==='ok').length}/${sl.length}</span></div><div class="kc">${sl.map(x=>`<span class="kchip">${ic(status(s.id,x))} ${esc(x)}</span>`).join('')}</div></div>`).join('')}</div></div>`}
     if(!SL().length)return tabs+'<div class="card lock"><div class="emoji">📖</div><p class="muted">لا توجد سور بعد. أضف أول واجب تسميع وستظهر سورته هنا.</p></div>';const su=S.ui.su&&SL().includes(S.ui.su)?S.ui.su:SL()[SL().length-1];const did=D.students.filter(s=>status(s.id,su)==='ok'),not=D.students.filter(s=>status(s.id,su)!=='ok');
     return tabs+`<label class="f" style="max-width:300px">اختر السورة<select class="input" onchange="S.ui.su=this.value;render()">${SL().map(x=>`<option ${x===su?'selected':''}>${x}</option>`).join('')}</select></label>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"><div class="card"><h3 style="color:var(--ok)">سمّعوا (${did.length})</h3><div class="sec-list" style="margin-top:10px">${did.map(s=>`<div class="row">${ava(s)}${esc(s.name)}</div>`).join('')||'<p class="muted">لا أحد بعد</p>'}</div></div>
