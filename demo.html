@@ -389,7 +389,7 @@ function loginView(){
     <button class="btn ghost" onclick="S.ui.door=null;render()">← رجوع</button></div>`}
   else if(m==='ad'){const lk=D.admin.lockUntil>Date.now();body=`<div class="card login-form">
     <h2>🧑‍🏫 دخول المعلم</h2>
-    <form id="af" style="display:grid;gap:12px"><label class="f">البريد الإلكتروني<input class="input" id="ae" type="email" dir="ltr" autocomplete="username" required></label>
+    <form id="af" style="display:grid;gap:12px"><label class="f">اسم المستخدم (أو البريد)<input class="input" id="ae" type="text" dir="ltr" autocomplete="username" autocapitalize="off" spellcheck="false" required></label>
     <label class="f">كلمة المرور<input class="input" id="ap" type="password" dir="ltr" autocomplete="current-password" required></label>
     <div class="err" id="le">${lk?'تم إيقاف الدخول مؤقتاً بعد 5 محاولات خاطئة. حاول بعد '+Math.ceil((D.admin.lockUntil-Date.now())/60000)+' دقيقة.':''}</div><button class="btn grape" ${lk?'disabled':''}>دخول</button></form>
     ${D.admin&&D.admin.demo!==false&&D.admin.email==='teacher@fasl.demo'?`<div class="hint">للتجربة: <b dir="ltr">teacher@fasl.demo</b> / <b dir="ltr">Abtal@2026</b><br>غيّرها فوراً من «الأمان والخصوصية» قبل مشاركة الرابط.</div>`:''}${SYNC.mode==='db'&&!SYNC.owner?'<div class="hint">🔒 دخول المعلم متاح من حساب صاحب المنصة فقط.</div>':''}
@@ -676,12 +676,12 @@ function vSecurity(){
     ['💾','نسخ احتياطي يومي','مع سجل لكل عملية دخول وتعديل.','عند التنفيذ']];
   return `<div class="sec-list">${L.map(x=>`<div class="sec-li"><span class="k">${x[0]}</span><div style="flex:1"><b>${x[1]}</b> <span class="pill ${x[3].includes('مفعّل')?'ok':'info'}">${x[3]}</span><br><span class="muted">${x[2]}</span></div></div>`).join('')}</div>
   <div class="card" style="display:grid;gap:12px;max-width:520px"><h3>تغيير بيانات دخول المعلم</h3>
-  <label class="f">البريد الإلكتروني<input class="input" id="ne" type="email" dir="ltr" value="${esc(D.admin.email)}"></label>
+  <label class="f">اسم المستخدم (أو البريد)<input class="input" id="ne" type="text" autocapitalize="off" dir="ltr" value="${esc(D.admin.email)}"></label>
   <label class="f">كلمة المرور الجديدة (8 أحرف على الأقل، حرف ورقم ورمز)<input class="input" id="np" type="password" dir="ltr" autocomplete="new-password"></label>
   <button class="btn grape" onclick="changeCreds()">حفظ</button></div>
   <div class="card" style="display:grid;gap:10px"><h3>بيانات التجربة</h3><p class="muted" style="margin:0">لإعادة التجربة من البداية بالبيانات النموذجية.</p><div><button class="btn coral" onclick="confirmBox('مسح كل بيانات التجربة؟',resetAll)">إعادة الضبط</button></div></div>`;
 }
-async function changeCreds(){const e=$('#ne').value.trim().toLowerCase(),p=$('#np').value;if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e))return toast('البريد غير صحيح');
+async function changeCreds(){const e=$('#ne').value.trim().toLowerCase(),p=$('#np').value;if(!/^\S{3,}$/.test(e))return toast('اسم المستخدم غير صحيح');
   if(p){if(p.length<8||!/[0-9]/.test(p)||!/[A-Za-z؀-ۿ]/.test(p)||!/[^A-Za-z0-9؀-ۿ]/.test(p))return toast('كلمة المرور ضعيفة');D.admin.salt=token(16);D.admin.hash=await sha(D.admin.salt+p)}
   D.admin.email=e;D.admin.demo=false;save();render();toast('تم تحديث بيانات الدخول 🔐')}
 
@@ -1006,7 +1006,7 @@ async function flush(){
       for(const [id,j] of cur){if(old.get(id)!==j){if(!await w(()=>col.doc(id).set(JSON.parse(j))))return;old.set(id,j)}}
       for(const id of [...old.keys()])if(!cur.has(id)){if(!await w(()=>col.doc(id).delete()))return;old.delete(id)}
       SYNC.synced[k]=old}
-    for(const k of ['admin','flags']){if(k==='admin'&&!SYNC.owner)continue;const j=metaOf(k);if(SYNC.synced['meta_'+k]!==j){if(!await w(()=>SYNC.db.doc('meta/'+k).set(JSON.parse(j))))return;SYNC.synced['meta_'+k]=j}}
+    for(const k of ['admin','flags']){if(k==='admin'&&(!SYNC.owner||!SYNC.adminLoaded||!D.admin||!D.admin.hash))continue;const j=metaOf(k);if(SYNC.synced['meta_'+k]!==j){if(!await w(()=>SYNC.db.doc('meta/'+k).set(JSON.parse(j))))return;SYNC.synced['meta_'+k]=j}}
   }while(SYNC.again)}finally{SYNC.busy=false}
 }
 /* مخزن الملفات (تسجيلات، ألعاب) مقسّم على مستندات */
@@ -1033,18 +1033,18 @@ async function startCloud(){
   const done=new Promise(r=>{res=r});const timer=setTimeout(()=>res('timeout'),10000);
   const mark=(k,cache)=>{if(cache)return;got++;pending.delete(k);if(!pending.size)res('ok')};
   try{keys.forEach(k=>SYNC.unsub.push(db.collection(colOf(k)).onSnapshot(s=>{ingest(k,s);mark(k,s.metadata.fromCache)},()=>mark(k))));
-    ['admin','flags'].forEach(k=>SYNC.unsub.push(db.doc('meta/'+k).onSnapshot(s=>{ingestMeta(k,s);mark(k,s.metadata.fromCache)},()=>mark(k))))}catch(e){clearTimeout(timer);return false}
+    ['admin','flags'].forEach(k=>SYNC.unsub.push(db.doc('meta/'+k).onSnapshot(s=>{ingestMeta(k,s);if(k==='admin'&&!s.metadata.fromCache)SYNC.adminLoaded=true;mark(k,s.metadata.fromCache)},()=>mark(k))))}catch(e){clearTimeout(timer);return false}
   const r=await done;clearTimeout(timer);
   if(r==='timeout'&&!got){SYNC.unsub.forEach(u=>{try{u()}catch(e){}});SYNC.unsub=[];return false}
   SYNC.mode='db';
   const empty=keys.every(k=>!(SYNC.synced[k]&&SYNC.synced[k].size))&&SYNC.synced.meta_flags===undefined;
   if(empty){
     if(!SYNC.owner||!SYNC.canWrite){SYNC.mode='local';SYNC.unsub.forEach(u=>{try{u()}catch(e){}});return false}
-    const local=load();D=migrate(local||await seed());
+    const remoteAdmin=D.admin&&D.admin.hash?D.admin:null;const local=load();D=migrate(local||await seed());if(remoteAdmin)D.admin=remoteAdmin;SYNC.adminLoaded=true;
     if(local){for(const g of D.games||[])if(g.kind==='file'){try{const b=await IDB.get('game_'+g.id);if(b)await DBB.put('game_'+g.id,b)}catch(e){}}
       for(const x of D.subs||[])if(!x.demo&&!x.inline){try{const b=await IDB.get(x.id);if(b)await DBB.put(x.id,b)}catch(e){}}}
   }else{ARR.forEach(k=>{if(!Array.isArray(D[k]))D[k]=[]});MAPK.forEach(k=>{if(!D[k]||typeof D[k]!=='object')D[k]={}});
-    if(!D.admin)D.admin={email:'',salt:'',hash:'',fails:0,lockUntil:0,demo:false};D=migrate(D)}
+    if(!D.admin||!D.admin.hash){if(SYNC.owner&&SYNC.adminLoaded){const salt=token(16);D.admin={email:'teacher@fasl.demo',salt,hash:await sha(salt+'Abtal@2026'),fails:0,lockUntil:0,demo:true}}else D.admin={email:'',salt:'',hash:'',fails:0,lockUntil:0,demo:false}}D=migrate(D)}
   SYNC.ready=true;await flush();return true;
 }
 async function resetAll(){
