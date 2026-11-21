@@ -243,6 +243,10 @@ td.c,th.c{text-align:center}
 .bub.them{justify-self:end;background:var(--surface-2);border-bottom-left-radius:6px}
 .bub small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
 .privacy{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.game-full{position:fixed;inset:0;z-index:95;background:#000;display:flex;flex-direction:column}
+.gf-bar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface);padding-block:calc(6px + env(safe-area-inset-top,0px)) 6px;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.gf-bar #gfMsg{font-weight:800;font-size:14px}
+.game-full iframe{flex:1;width:100%;border:0;background:#000}
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:120;overflow:hidden}
 .confetti i{position:absolute;top:-14px;width:10px;height:14px;border-radius:3px;animation:fall linear forwards}
 @keyframes fall{to{transform:translate(var(--x),105vh) rotate(var(--r))}}
@@ -468,7 +472,7 @@ function vGames(){
   const tab=S.ui.gt||'play';
   const list=D.games.map(g=>`<div class="card item"><span class="nav-ic" style="background:${g.color};width:64px;height:64px;font-size:34px;border-radius:20px">${esc(g.icon)}</span><h4>${esc(g.title)}</h4><p class="muted" style="margin:0">${esc(g.desc)}</p>
     ${me()?`<small class="muted">أفضل نتيجة لي: ${Math.max(0,...D.scores.filter(x=>x.sid===me().id&&x.gid===g.id).map(x=>x.score))}</small>`:''}
-    <div class="row">${g.kind==='link'?`<a class="btn" href="${safeUrl(g.url)}" target="_blank" rel="noopener">العب ▶</a>`:`<button class="btn" onclick="playGame('${g.id}')">العب ▶</button>`}${delBtn(`confirmBox('حذف اللعبة؟',()=>{D.games=D.games.filter(x=>x.id!=='${g.id}');save();render()})`)}</div></div>`).join('');
+    <div class="row">${g.kind==='link'?`<a class="btn" href="${safeUrl(g.url)}" target="_blank" rel="noopener">العب ▶</a>`:g.kind==='file'?`<button class="btn" data-sfx onclick="sfx('open');openFileGame('${g.id}')">العب ▶</button>`:`<button class="btn" onclick="playGame('${g.id}')">العب ▶</button>`}${delBtn(`confirmBox('حذف اللعبة؟',()=>delGame('${g.id}'))`)}${isAdmin()&&g.kind==='file'?(g.scores?'<span class="pill ok">✓ تُسجَّل النتائج</span>':'<span class="pill warn">لا ترسل النتائج</span>'):''}${isAdmin()&&g.kind==='link'?'<span class="pill warn">رابط: النتائج لا تُسجَّل</span>':''}</div></div>`).join('');
   return `<div class="tabs" style="max-width:420px"><button class="${tab==='play'?'on':''}" onclick="S.ui.gt='play';render()">🎮 الألعاب</button><button class="${tab==='lb'?'on':''}" onclick="S.ui.gt='lb';render()">🏆 المتصدرون</button></div>
   ${tab==='play'?`<div class="sec-head"><p class="muted" style="margin:0">العب وتعلّم، كل إجابة صحيحة تعطيك نجمة ⭐</p>${adminBar('إضافة لعبة','addGame()')}</div><div class="grid">${list}</div>`:leaderboard()}`;
 }
@@ -479,7 +483,37 @@ function leaderboard(){
   <div class="card tbl-wrap"><table><thead><tr><th>الترتيب</th><th>البطل</th><th class="c">النقاط</th><th class="c">مرات اللعب</th></tr></thead><tbody>
   ${rows.map((r,i)=>`<tr ${me()&&r.s.id===me().id?'style="background:color-mix(in srgb,var(--sun) 20%,transparent)"':''}><td>${i+1}</td><td><div class="row">${ava(r.s)}${esc(r.s.name)}</div></td><td class="c"><b>${r.p}</b></td><td class="c">${r.n}</td></tr>`).join('')}</tbody></table></div>`;
 }
-function addGame(){form('إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'icon',label:'أيقونة (رمز تعبيري)',value:'🎲'},{k:'desc',label:'وصف قصير'},{k:'url',label:'رابط اللعبة (ملف HTML من تصميمك)',type:'url',ph:'https://...'}],v=>{if(!v.title||!v.url)return 'الاسم والرابط مطلوبان';D.games.push({id:uid(),title:v.title,icon:v.icon||'🎲',desc:v.desc,kind:'link',url:v.url,color:COLORS[rnd(COLORS.length)]});save();toast('تمت إضافة اللعبة')})}
+function addGame(){form('إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'icon',label:'أيقونة (رمز تعبيري)',value:'🎮'},{k:'desc',label:'وصف قصير'},{k:'file',label:'📁 ملف اللعبة (HTML) — الطريقة المستحسنة',type:'file',accept:'.html,.htm,text/html'},{k:'url',label:'أو رابط اللعبة (لا تُسجَّل نتائجه)',type:'url',ph:'https://...'}],async v=>{
+  if(!v.title)return 'اكتب اسم اللعبة';if(!v.file&&!v.url)return 'اختر ملف اللعبة أو اكتب رابطها';
+  const id=uid(),color=COLORS[rnd(COLORS.length)];
+  if(v.file){if(v.file.size>20e6)return 'الملف كبير جداً (الحد 20MB)';let txt='';try{txt=await v.file.text()}catch(e){return 'تعذّرت قراءة الملف'}
+    if(!/<html|<!doctype|<script|<body/i.test(txt))return 'هذا ليس ملف لعبة HTML';
+    try{await IDB.put('game_'+id,new Blob([txt],{type:'text/html'}))}catch(e){return 'تعذّر حفظ الملف في المتصفح'}
+    const scores=/fasl-score/.test(txt);D.games.push({id,title:v.title,icon:v.icon||'🎮',desc:v.desc,kind:'file',size:v.file.size,scores,color,t:Date.now()});save();
+    setTimeout(()=>{sfx('ex');toast(scores?'✅ أُضيفت اللعبة، ونتائجها ستُسجَّل للطلاب':'⚠️ أُضيفت اللعبة، لكنها لا ترسل النتائج للمنصة')},50);return}
+  if(!/^https:\/\//.test(v.url))return 'الرابط يجب أن يبدأ بـ https://';D.games.push({id,title:v.title,icon:v.icon||'🎮',desc:v.desc,kind:'link',url:v.url,color});save();toast('تمت إضافة اللعبة')})}
+async function delGame(id){await IDB.del('game_'+id);D.games=D.games.filter(x=>x.id!==id);save();sfx('del');render()}
+let GF={frame:null,gid:null,last:0};
+async function openFileGame(id){const g=D.games.find(x=>x.id===id);if(!g)return;let html='';try{const b=await IDB.get('game_'+id);html=b?await b.text():''}catch(e){}
+  if(!html){toast('ملف اللعبة غير موجود على هذا الجهاز');return}
+  modal('');const bg=$('#layer .modal-bg');bg.className='game-full';bg.onclick=null;
+  bg.innerHTML=`<div class="gf-bar"><b>${esc(g.icon)} ${esc(g.title)}</b><span id="gfMsg" class="muted">${me()?'نتيجتك تُحفظ تلقائياً عند نهاية المرحلة':'وضع المعلم: للتجربة فقط'}</span><button class="btn coral sm" onclick="closeLayer()">✖ خروج</button></div><iframe id="gfFrame" title="${esc(g.title)}" sandbox="allow-scripts allow-pointer-lock" allow="autoplay; fullscreen; gamepad"></iframe>`;
+  const f=$('#gfFrame');GF={frame:f,gid:id,last:0};
+  const sk=(me()?me().id:'teacher')+':'+id;D.gstore=D.gstore||{};const init=JSON.stringify(D.gstore[sk]||{}).replace(/</g,'\\u003c');
+  const shim=`<script>(function(){var d=${init},t=0;function sync(){clearTimeout(t);t=setTimeout(function(){try{parent.postMessage({type:'fasl-storage',data:d},'*')}catch(e){}},300)}
+var st={getItem:function(k){k=String(k);return Object.prototype.hasOwnProperty.call(d,k)?d[k]:null},setItem:function(k,v){d[String(k)]=String(v);sync()},removeItem:function(k){delete d[String(k)];sync()},clear:function(){d={};sync()},key:function(i){return Object.keys(d)[i]||null}};
+Object.defineProperty(st,'length',{get:function(){return Object.keys(d).length}});try{Object.defineProperty(window,'localStorage',{value:st,configurable:true})}catch(e){}})();<\/script>`;
+  html=/<head[^>]*>/i.test(html)?html.replace(/<head[^>]*>/i,m=>m+shim):shim+html;
+  GF.sk=sk;f.srcdoc=html;setTimeout(()=>{try{f.focus()}catch(e){}},300)}
+window.addEventListener('message',e=>{
+  const d=e.data;if(d&&d.type==='fasl-storage'&&GF.frame&&GF.frame.isConnected&&e.source===GF.frame.contentWindow&&GF.sk){try{const j=JSON.stringify(d.data||{});if(j.length<300000&&typeof d.data==='object'){D.gstore=D.gstore||{};D.gstore[GF.sk]=JSON.parse(j);save()}}catch(_){}return}
+  if(!d||d.type!=='fasl-score'||!GF.frame||!GF.frame.isConnected||e.source!==GF.frame.contentWindow)return;
+  const sc=Math.round(+d.score),mx=Math.round(+d.max);if(!isFinite(sc)||!isFinite(mx)||mx<1||mx>1000||sc<0||sc>mx)return;
+  if(Date.now()-GF.last<1500)return;GF.last=Date.now();
+  const g=D.games.find(x=>x.id===GF.gid);const s=me();const m=$('#gfMsg');
+  if(!s){if(m)m.textContent=`وضع المعلم: النتيجة ${sc}/${mx} (لا تُحفظ)`;return}
+  D.scores.push({id:uid(),sid:s.id,gid:GF.gid,score:sc,max:mx,t:Date.now()});notify(`🎮 ${s.name} أنهى «${g?g.title:'لعبة'}» بنتيجة ${sc}/${mx}`,'results');save();
+  if(m){m.textContent=`🌟 سُجّلت نتيجتك: ${sc} من ${mx}`;m.classList.remove('pop');void m.offsetWidth;m.classList.add('pop')}sfx('good')});
 /* mini games */
 const WORDS=[['ب','بطة','🦆'],['ت','تفاحة','🍎'],['س','سمكة','🐟'],['ق','قطة','🐱'],['ش','شمس','☀️'],['ف','فيل','🐘'],['ج','جمل','🐫'],['م','موز','🍌'],['ن','نحلة','🐝'],['ك','كرة','⚽'],['ز','زرافة','🦒'],['ح','حصان','🐴']];
 let G=null;
