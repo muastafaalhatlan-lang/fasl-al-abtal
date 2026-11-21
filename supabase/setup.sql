@@ -192,6 +192,8 @@ drop policy if exists docs_student_delete on public.docs;
 create policy docs_student_delete on public.docs for delete to authenticated
   using (public.my_student_id() is not null and col = 'subs' and sid = public.my_student_id());
 
+grant select, insert, update, delete on public.docs, public.students to authenticated;
+grant select on public.teachers to authenticated;
 revoke all on public.login_attempts from anon, authenticated;
 revoke all on public.student_sessions from anon, authenticated;
 revoke all on function public._fail(text) from public, anon, authenticated;
