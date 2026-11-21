@@ -47,6 +47,8 @@ button{cursor:pointer}
 .btn.green{background:var(--grass)}.btn.coral{background:var(--coral)}.btn.sun{background:var(--sun);color:#3a2a00}.btn.grape{background:var(--grape)}
 .btn.sm{padding:6px 12px;font-size:14px;border-radius:11px}
 .input{width:100%;border:2px solid var(--line);background:var(--surface-2);border-radius:14px;padding:11px 14px}
+.input{min-width:0;max-width:100%}
+input[type=date].input{-webkit-appearance:none;appearance:none;display:block;min-height:46px}
 .input:focus{border-color:var(--sky);outline:none}
 label.f{display:grid;gap:6px;font-weight:700}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
@@ -471,9 +473,9 @@ function vHome(){
     <div class="card"><div class="sec-head"><h3>آخر الإشعارات</h3><button class="btn sm ghost" onclick="toggleNotif()">عرض الكل</button></div>
     <div class="sec-list" style="margin-top:10px">${D.notifs.slice(0,4).map(n=>`<div class="sec-li"><span class="k">🔔</span><div>${esc(n.text)}<br><small class="muted">${fmt(n.t)}</small></div></div>`).join('')||'<p class="muted">لا شيء جديد</p>'}</div></div>`;
   }
-  const s=me();const done=SURAHS.filter(x=>status(s.id,x)==='ok').length;
+  const s=me();const done=SL().filter(x=>status(s.id,x)==='ok').length;
   return `<div class="hero" style="background:linear-gradient(135deg,var(--grass),var(--teal))"><span class="big">${esc(s.ava)}</span><div><h1>أهلاً يا بطل ${esc(s.name)}!</h1><p style="margin:4px 0 0;opacity:.95">جمعت ⭐ ${totalScore(s.id)} نقطة وسمّعت ${done} سورة</p></div></div>
-  <div class="card"><b>رحلتي في جزء عمّ</b><div class="progress" style="margin-top:8px"><i style="width:${done/SURAHS.length*100}%"></i></div><small class="muted">${done} من ${SURAHS.length} سورة</small></div>
+  <div class="card"><b>رحلتي في التسميع</b><div class="progress" style="margin-top:8px"><i style="width:${done/SL().length*100}%"></i></div><small class="muted">${done} من ${SL().length} سورة</small></div>
   <div class="grid tiles">${tiles()}<button class="tile" onclick="go('report')"><span class="nav-ic" style="background:var(--orange)">👨‍👩‍👦</span>تقرير ولي الأمر</button></div>`;
 }
 function tiles(){return visibleMenus().filter(m=>m.type!=='home').map(m=>`<button class="tile" onclick="go('${m.id}')"><span class="nav-ic" style="background:${m.color}">${esc(m.icon)}</span>${esc(m.title)}</button>`).join('')}
@@ -552,11 +554,11 @@ function vQuran(){
     const tab=S.ui.qt||'asg';
     const tabs=`<div class="tabs" style="max-width:560px">${[['asg','🚪 الواجبات والتسجيلات'],['sheet','📋 كشف المتابعة'],['who','🔎 من سمّع ومن لم يسمّع']].map(t=>`<button class="${tab===t[0]?'on':''}" onclick="S.ui.qt='${t[0]}';S.ui.pa=null;render()">${t[1]}</button>`).join('')}</div>`;
     if(tab==='asg')return tabs+portalAdmin();
-    if(tab==='sheet')return tabs+`<div class="card tbl-wrap"><table><thead><tr><th>الطالب</th>${SURAHS.map(x=>`<th class="c">${x}</th>`).join('')}<th class="c">المجموع</th></tr></thead><tbody>
-      ${D.students.map(s=>`<tr><td><b>${esc(s.name)}</b></td>${SURAHS.map(x=>{const st=status(s.id,x);return `<td class="c ck">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'<span class="muted">—</span>'}</td>`}).join('')}<td class="c"><b>${SURAHS.filter(x=>status(s.id,x)==='ok').length}</b></td></tr>`).join('')}</tbody></table></div>
+    if(tab==='sheet')return tabs+`<div class="card tbl-wrap"><table><thead><tr><th>الطالب</th>${SL().map(x=>`<th class="c">${x}</th>`).join('')}<th class="c">المجموع</th></tr></thead><tbody>
+      ${D.students.map(s=>`<tr><td><b>${esc(s.name)}</b></td>${SL().map(x=>{const st=status(s.id,x);return `<td class="c ck">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'<span class="muted">—</span>'}</td>`}).join('')}<td class="c"><b>${SL().filter(x=>status(s.id,x)==='ok').length}</b></td></tr>`).join('')}</tbody></table></div>
       <p class="muted" style="margin:0">✅ مقبول · ⏳ بانتظار استماعك · 🔁 طُلب إعادته · — لم يسمّع بعد</p>`;
-    const su=S.ui.su||SURAHS[0];const did=D.students.filter(s=>status(s.id,su)==='ok'),not=D.students.filter(s=>status(s.id,su)!=='ok');
-    return tabs+`<label class="f" style="max-width:300px">اختر السورة<select class="input" onchange="S.ui.su=this.value;render()">${SURAHS.map(x=>`<option ${x===su?'selected':''}>${x}</option>`).join('')}</select></label>
+    if(!SL().length)return tabs+'<div class="card lock"><div class="emoji">📖</div><p class="muted">لا توجد سور بعد. أضف أول واجب تسميع وستظهر سورته هنا.</p></div>';const su=S.ui.su&&SL().includes(S.ui.su)?S.ui.su:SL()[SL().length-1];const did=D.students.filter(s=>status(s.id,su)==='ok'),not=D.students.filter(s=>status(s.id,su)!=='ok');
+    return tabs+`<label class="f" style="max-width:300px">اختر السورة<select class="input" onchange="S.ui.su=this.value;render()">${SL().map(x=>`<option ${x===su?'selected':''}>${x}</option>`).join('')}</select></label>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))"><div class="card"><h3 style="color:var(--ok)">سمّعوا (${did.length})</h3><div class="sec-list" style="margin-top:10px">${did.map(s=>`<div class="row">${ava(s)}${esc(s.name)}</div>`).join('')||'<p class="muted">لا أحد بعد</p>'}</div></div>
       <div class="card"><h3 style="color:var(--bad)">لم يسمّعوا (${not.length})</h3><div class="sec-list" style="margin-top:10px">${not.map(s=>`<div class="row">${ava(s)}${esc(s.name)} ${status(s.id,su)==='new'?'<span class="pill warn">بانتظارك</span>':''}</div>`).join('')||'<p class="muted">الجميع سمّع 🎉</p>'}</div></div></div>`;
   }
@@ -699,13 +701,13 @@ async function changeCreds(){const e=$('#ne').value.trim().toLowerCase(),p=$('#n
 
 /* Parent */
 function vReport(){
-  const s=me();const done=SURAHS.filter(x=>status(s.id,x)==='ok');const left=SURAHS.filter(x=>status(s.id,x)!=='ok');
+  const s=me();const done=SL().filter(x=>status(s.id,x)==='ok');const left=SL().filter(x=>status(s.id,x)!=='ok');
   const sc=D.scores.filter(x=>x.sid===s.id).sort((a,b)=>b.t-a.t);const hero=D.heroes.filter(h=>h.sid===s.id);
   return `<div class="hint">👨‍👩‍👦 هذه الصفحة لولي الأمر: يتابع منها تقدم ابنه في السور والألعاب.</div>
   <div class="hero" style="background:linear-gradient(135deg,var(--orange),var(--coral))"><span class="big">${esc(s.ava)}</span><div style="flex:1"><h1>تقرير البطل ${esc(s.name)}</h1><p style="margin:4px 0 0">الصف الأول الابتدائي · ⭐ ${totalScore(s.id)} نقطة</p></div></div>
-  <div class="stats">${[['📖',done.length+' / '+SURAHS.length,'سور سمّعها','var(--grass)'],['⏳',left.length,'سور متبقية','var(--coral)'],['🎮',sc.length,'محاولة لعب','var(--grape)'],['🌟',hero.length,'تكريم في لوحة الأبطال','var(--sun)']].map(x=>`<div class="card stat"><span class="nav-ic" style="background:${x[3]}">${x[0]}</span><div><div class="n">${x[1]}</div><small class="muted">${x[2]}</small></div></div>`).join('')}</div>
-  <div class="card"><h3>تقدّمه في السور</h3><div class="progress" style="margin:10px 0"><i style="width:${done.length/SURAHS.length*100}%"></i></div>
-  <div class="surahs">${SURAHS.map(x=>{const st=status(s.id,x);return `<div class="surah ${st==='ok'?'done':st==='new'?'pend':st==='rep'?'rep':''}"><span style="font-size:24px">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'⬜'}</span><b>${x}</b><small class="muted">${st==='ok'?'سمّعها':st==='new'?'عند المعلم':st==='rep'?'يحتاج إعادة':'لم يسمّعها'}</small></div>`}).join('')}</div></div>
+  <div class="stats">${[['📖',done.length+' / '+SL().length,'سور سمّعها','var(--grass)'],['⏳',left.length,'سور متبقية','var(--coral)'],['🎮',sc.length,'محاولة لعب','var(--grape)'],['🌟',hero.length,'تكريم في لوحة الأبطال','var(--sun)']].map(x=>`<div class="card stat"><span class="nav-ic" style="background:${x[3]}">${x[0]}</span><div><div class="n">${x[1]}</div><small class="muted">${x[2]}</small></div></div>`).join('')}</div>
+  <div class="card"><h3>تقدّمه في السور</h3><div class="progress" style="margin:10px 0"><i style="width:${done.length/SL().length*100}%"></i></div>
+  <div class="surahs">${SL().map(x=>{const st=status(s.id,x);return `<div class="surah ${st==='ok'?'done':st==='new'?'pend':st==='rep'?'rep':''}"><span style="font-size:24px">${st==='ok'?'✅':st==='new'?'⏳':st==='rep'?'🔁':'⬜'}</span><b>${x}</b><small class="muted">${st==='ok'?'سمّعها':st==='new'?'عند المعلم':st==='rep'?'يحتاج إعادة':'لم يسمّعها'}</small></div>`}).join('')}</div></div>
   ${left.length?`<div class="card"><h3 style="color:var(--bad)">سور لم يسمّعها بعد</h3><p style="margin:6px 0 0">${left.map(esc).join('، ')}</p></div>`:''}
   <div class="card tbl-wrap"><h3 style="margin-bottom:8px">آخر نتائج الألعاب</h3><table><thead><tr><th>اللعبة</th><th class="c">النتيجة</th><th>الوقت</th></tr></thead><tbody>${sc.slice(0,10).map(x=>`<tr><td>${esc((D.games.find(g=>g.id===x.gid)||{}).title||'—')}</td><td class="c">${x.score}/${x.max}</td><td>${fmt(x.t)}</td></tr>`).join('')||'<tr><td colspan="3" class="muted">لا توجد نتائج بعد</td></tr>'}</tbody></table></div>`;
 }
@@ -878,9 +880,10 @@ function portalDetail(a){
   <div class="sec-list">${rows.map(({s,x})=>`<div class="subrow"><div class="row">${ava(s)}<div><b>${esc(s.name)}</b><br><small class="muted">${x?`${fmt(x.t)} · ⏱️ ${mmss(x.dur)} · ${fmtName(x.mime)}`:'لم يسلّم بعد'}</small></div></div>
     <div class="row">${x?(x.rating?`<span class="stamp ${RATING[x.rating].c}" style="font-size:16px;padding:2px 10px">${RATING[x.rating].e} ${RATING[x.rating].t}</span>`:'<span class="pill warn">⏳ بانتظار تقييمك</span>')+`<button class="btn sm green" data-sfx onclick="sfx('open');openReview('${x.id}')">🎧 استماع وتقييم</button><button class="btn sm ghost" onclick="confirmBox('حذف تسجيل هذا الطالب؟',()=>delSub('${x.id}'))" aria-label="حذف التسجيل">🗑️</button>`:'<span class="pill bad">لم يسلّم</span>'}</div></div>`).join('')}</div>`}
 function toggleDoor(id){const a=asg(id);a.open=!a.open;save();sfx(a.open?'open':'stop');render();toast(a.open?'🔓 فُتح الباب للطلاب':'🔒 أُغلق الباب')}
-function editAsg(id){const a=id?asg(id):{title:'',surah:SURAHS[0],range:'السورة كاملة',note:'',due:new Date(Date.now()+3*864e5).toISOString().slice(0,10)};
-  form(id?'تعديل الواجب':'🚪 واجب تسميع جديد',[{k:'title',label:'عنوان الواجب',value:a.title,ph:'مثال: واجب الأسبوع'},{k:'surah',label:'السورة',type:'select',options:SURAHS.map(x=>[x,x]),value:a.surah},{k:'range',label:'المقطع المطلوب',value:a.range,ph:'الآيات 1 إلى 5'},{k:'due',label:'آخر موعد للتسليم',type:'date',value:a.due},{k:'note',label:'ملاحظة للطلاب (اختياري)',value:a.note}],
-  v=>{if(!v.range)return 'اكتب المقطع المطلوب';const title=v.title||('تسميع سورة '+v.surah);
+function SL(){const seen=[];[...(D.assign||[])].sort((a,b)=>(a.t||0)-(b.t||0)).forEach(a=>{const n=String(a.surah||'').trim();if(n&&!seen.includes(n))seen.push(n)});return seen}
+function editAsg(id){const a=id?asg(id):{title:'',surah:'',range:'السورة كاملة',note:'',due:new Date(Date.now()+3*864e5).toISOString().slice(0,10)};
+  form(id?'تعديل الواجب':'🚪 واجب تسميع جديد',[{k:'title',label:'عنوان الواجب',value:a.title,ph:'مثال: واجب الأسبوع'},{k:'surah',label:'اسم السورة',value:a.surah,ph:'اكتب اسم السورة، مثال: الضحى'},{k:'range',label:'المقطع المطلوب',value:a.range,ph:'الآيات 1 إلى 5'},{k:'due',label:'آخر موعد للتسليم',type:'date',value:a.due},{k:'note',label:'ملاحظة للطلاب (اختياري)',value:a.note}],
+  v=>{v.surah=(v.surah||'').replace(/^سورة\s+/,'').trim();if(!v.surah)return 'اكتب اسم السورة';if(!v.range)return 'اكتب المقطع المطلوب';const title=v.title||('تسميع سورة '+v.surah);
     if(id)Object.assign(asg(id),{title,surah:v.surah,range:v.range,due:v.due,note:v.note});
     else{D.assign.push({id:uid(),title,surah:v.surah,range:v.range,due:v.due,note:v.note,open:true,t:Date.now()});setTimeout(()=>{sfx('ex');confetti(40)},50)}
     save();toast(id?'تم حفظ التعديل':'🚪 فُتح باب الواجب للطلاب')})}
