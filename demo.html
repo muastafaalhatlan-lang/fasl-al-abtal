@@ -116,6 +116,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .stat .n{font-family:var(--f-display);font-size:30px;font-variant-numeric:tabular-nums;line-height:1}
 .tile{border:0;text-align:center;border-radius:22px;padding:20px 12px;background:var(--surface);box-shadow:var(--shadow);display:grid;gap:10px;justify-items:center;font-weight:800;font-size:17px;transition:transform .15s}
 .tile:hover{transform:translateY(-3px) rotate(-1deg)}
+.grid.tiles{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
 .tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
 .sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .sec-head h3{font-size:22px}
@@ -454,14 +455,14 @@ function vHome(){
     <div class="stats">
       ${[['👥',D.students.length,'طالب في الفصل','var(--sky)'],['🎙️',pend,'تسجيل جديد','var(--grass)'],['🎮',today,'محاولة لعب اليوم','var(--grape)'],['🌟',D.heroes.length,'بطل في اللوحة','var(--sun)']].map(x=>`<div class="card stat"><span class="nav-ic" style="background:${x[3]}">${x[0]}</span><div><div class="n">${x[1]}</div><small class="muted">${x[2]}</small></div></div>`).join('')}
     </div>
-    <div class="grid">${tiles()}</div>
+    <div class="grid tiles">${tiles()}</div>
     <div class="card"><div class="sec-head"><h3>آخر الإشعارات</h3><button class="btn sm ghost" onclick="toggleNotif()">عرض الكل</button></div>
     <div class="sec-list" style="margin-top:10px">${D.notifs.slice(0,4).map(n=>`<div class="sec-li"><span class="k">🔔</span><div>${esc(n.text)}<br><small class="muted">${fmt(n.t)}</small></div></div>`).join('')||'<p class="muted">لا شيء جديد</p>'}</div></div>`;
   }
   const s=me();const done=SURAHS.filter(x=>status(s.id,x)==='ok').length;
   return `<div class="hero" style="background:linear-gradient(135deg,var(--grass),var(--teal))"><span class="big">${esc(s.ava)}</span><div><h1>أهلاً يا بطل ${esc(s.name)}!</h1><p style="margin:4px 0 0;opacity:.95">جمعت ⭐ ${totalScore(s.id)} نقطة وسمّعت ${done} سورة</p></div></div>
   <div class="card"><b>رحلتي في جزء عمّ</b><div class="progress" style="margin-top:8px"><i style="width:${done/SURAHS.length*100}%"></i></div><small class="muted">${done} من ${SURAHS.length} سورة</small></div>
-  <div class="grid">${tiles()}<button class="tile" onclick="go('report')"><span class="nav-ic" style="background:var(--orange)">👨‍👩‍👦</span>تقرير ولي الأمر</button></div>`;
+  <div class="grid tiles">${tiles()}<button class="tile" onclick="go('report')"><span class="nav-ic" style="background:var(--orange)">👨‍👩‍👦</span>تقرير ولي الأمر</button></div>`;
 }
 function tiles(){return visibleMenus().filter(m=>m.type!=='home').map(m=>`<button class="tile" onclick="go('${m.id}')"><span class="nav-ic" style="background:${m.color}">${esc(m.icon)}</span>${esc(m.title)}</button>`).join('')}
 const adminBar=(label,fn)=>isAdmin()?`<button class="btn green sm" onclick="${fn}">＋ ${label}</button>`:'';
@@ -616,7 +617,7 @@ function vStudents(){
   return tabs+`<div class="hint">في النسخة الفعلية: زر «طباعة البطاقات» يطبعها على ورق A4 لقصها وتوزيعها.</div><div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">${D.students.map(cardHTML).join('')}</div>`;
 }
 function cardHTML(s){return `<div class="qr-card"><b style="font-family:var(--f-display);font-size:20px">${esc(s.ava)} ${esc(s.name)}</b><div class="qr" id="qr_${s.id}"></div><div>المستخدم: <code>${esc(s.username)}</code></div><div>الرقم السري: <code>${esc(s.pin)}</code></div></div>`}
-function drawQR(id,s){const el=document.getElementById(id);if(!el||!window.QRCode)return;el.innerHTML='';new QRCode(el,{text:'FASL1:'+s.qr,width:260,height:260,correctLevel:QRCode.CorrectLevel.M})}
+function drawQR(id,s){const el=document.getElementById(id);if(!el)return;if(!window.QRCode){el.innerHTML='<small style="display:grid;place-items:center;height:100%;text-align:center">تعذّر رسم الباركود، تحقق من الاتصال بالإنترنت ثم أعد فتح الصفحة</small>';return}el.innerHTML='';new QRCode(el,{text:'FASL1:'+s.qr,width:260,height:260,correctLevel:QRCode.CorrectLevel.M})}
 function showCard(id){const s=stu(id);modal(`<div class="modal-h"><h3>بطاقة دخول الطالب</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>${cardHTML(s).replace('id="qr_','id="mqr_')}
   <div class="row"><button class="btn green" onclick="closeLayer();S.session=null;qrLogin('FASL1:${s.qr}')">📷 تجربة الدخول بالباركود</button><button class="btn ghost" onclick="newQR('${s.id}')">🔄 باركود جديد (يلغي القديم)</button></div>`);drawQR('mqr_'+s.id,s)}
 function newQR(id){stu(id).qr=token();save();toast('تم توليد باركود جديد، البطاقة القديمة لم تعد تعمل');showCard(id)}
