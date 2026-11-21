@@ -277,7 +277,7 @@ const fmt=t=>new Date(t).toLocaleString('ar-SA',{day:'numeric',month:'short',hou
 async function sha(s){try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}catch(e){let h=5381;for(const c of s)h=(h*33^c.charCodeAt(0))>>>0;return 'x'+h}}
 
 let D=null, S={session:null,view:'home',ui:{}};
-function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){toast('⚠️ مساحة التخزين ممتلئة: احذف بعض الصور أو التسجيلات')}}
+function save(){if(typeof SYNC!=='undefined'&&SYNC.mode==='db'){clearTimeout(SYNC.ft);SYNC.ft=setTimeout(flush,200);return}try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){toast('⚠️ مساحة التخزين ممتلئة: احذف بعض الصور أو التسجيلات')}}
 function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}catch(e){}return null}
 function saveSess(){try{sessionStorage.setItem(KEY+'_s',JSON.stringify(S.session))}catch(e){}}
 function loadSess(){try{return JSON.parse(sessionStorage.getItem(KEY+'_s'))}catch(e){return null}}
@@ -288,7 +288,7 @@ async function seed(){
   const students=names.map((n,i)=>({id:uid(),name:n,username:users[i],pin:i===0?'1234':pin(),qr:token(),parent:'P-'+token(6).toUpperCase(),ava:AVAS[i%AVAS.length],star:i<3,created:Date.now()}));
   const salt=token(16);
   const d={
-    admin:{email:'teacher@fasl.demo',salt,hash:await sha(salt+'Abtal@2026'),fails:0,lockUntil:0},
+    admin:{email:'teacher@fasl.demo',salt,hash:await sha(salt+'Abtal@2026'),fails:0,lockUntil:0,demo:true},
     students,
     menus:[
       {id:'home',type:'home',title:'الرئيسية',icon:'🏠',color:'var(--sky)',on:true,fixed:true},
@@ -345,7 +345,7 @@ const stu=id=>D.students.find(s=>s.id===id)||{name:'—',ava:'🙂'};
 const ava=s=>s.photo?`<span class="ava"><img src="${s.photo}" alt=""></span>`:`<span class="ava">${esc(s.ava||'🙂')}</span>`;
 function status(sid,surah){const L=D.recs.filter(r=>r.sid===sid&&r.surah===surah).map(r=>({t:r.t,st:r.status}));(D.subs||[]).forEach(x=>{const a=(D.assign||[]).find(a=>a.id===x.aid);if(a&&a.surah===surah&&x.sid===sid)L.push({t:x.ratedAt||x.t,st:!x.rating?'new':x.rating==='weak'?'rep':'ok'})});const r=L.sort((a,b)=>b.t-a.t)[0];return r?r.st:null}
 function totalScore(sid){return D.scores.filter(x=>x.sid===sid).reduce((a,b)=>a+b.score,0)}
-function closeLayer(){if(typeof cleanupRec==='function')cleanupRec();$('#layer').innerHTML=''}
+function closeLayer(){if(typeof cleanupRec==='function')cleanupRec();$('#layer').innerHTML='';if(typeof SYNC!=='undefined'&&SYNC.dirtyRender&&S.session){SYNC.dirtyRender=false;render()}}
 function modal(html,wide){$('#layer').innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeLayer()"><div class="modal ${wide?'wide':''}" role="dialog">${html}</div></div>`}
 function confirmBox(msg,fn){window._cf=fn;modal(`<h3>${esc(msg)}</h3><div class="row"><button class="btn coral" onclick="closeLayer();_cf()">نعم، احذف</button><button class="btn ghost" onclick="closeLayer()">إلغاء</button></div>`)}
 /* نموذج عام: fields=[{k,label,type,options,value,ph}] */
@@ -381,7 +381,7 @@ function loginView(){
     ${t==='pw'?`<form id="lf" style="display:grid;gap:12px"><label class="f">اسم المستخدم<input class="input" id="lu" dir="ltr" autocomplete="username" required></label>
       <label class="f">الرقم السري<input class="input" id="lp" type="password" inputmode="numeric" dir="ltr" autocomplete="current-password" required></label>
       <div class="err" id="le"></div><button class="btn green">ادخل 🚀</button></form>
-      <div class="hint">للتجربة: <b dir="ltr">mohammed</b> والرقم السري <b dir="ltr">1234</b><br>👨‍👩‍👦 ولي الأمر يدخل بحساب ابنه نفسه، ويجد «تقرير ولي الأمر» في القائمة.</div>`
+      <div class="hint">${D.students.some(x=>x.username==='mohammed'&&x.pin==='1234')?'للتجربة: <b dir="ltr">mohammed</b> والرقم السري <b dir="ltr">1234</b><br>':''}👨‍👩‍👦 ولي الأمر يدخل بحساب ابنه نفسه، ويجد «تقرير ولي الأمر» في القائمة.</div>`
     :`<p class="muted" style="margin:0">صوّر بطاقة الباركود الخاصة بك بكاميرا الجهاز.</p>
       <label class="btn green" style="text-align:center">📷 تصوير البطاقة<input type="file" accept="image/*" capture="environment" hidden onchange="scanQR(this.files[0])"></label>
       <div class="err" id="le"></div>
@@ -392,9 +392,9 @@ function loginView(){
     <form id="af" style="display:grid;gap:12px"><label class="f">البريد الإلكتروني<input class="input" id="ae" type="email" dir="ltr" autocomplete="username" required></label>
     <label class="f">كلمة المرور<input class="input" id="ap" type="password" dir="ltr" autocomplete="current-password" required></label>
     <div class="err" id="le">${lk?'تم إيقاف الدخول مؤقتاً بعد 5 محاولات خاطئة. حاول بعد '+Math.ceil((D.admin.lockUntil-Date.now())/60000)+' دقيقة.':''}</div><button class="btn grape" ${lk?'disabled':''}>دخول</button></form>
-    <div class="hint">للتجربة: <b dir="ltr">teacher@fasl.demo</b> / <b dir="ltr">Abtal@2026</b><br>في النسخة الفعلية تضع بريدك وكلمة مرورك من «الأمان والخصوصية»، ويصلك رمز تحقق على البريد.</div>
+    ${D.admin&&D.admin.demo!==false&&D.admin.email==='teacher@fasl.demo'?`<div class="hint">للتجربة: <b dir="ltr">teacher@fasl.demo</b> / <b dir="ltr">Abtal@2026</b><br>غيّرها فوراً من «الأمان والخصوصية» قبل مشاركة الرابط.</div>`:''}${SYNC.mode==='db'&&!SYNC.owner?'<div class="hint">🔒 دخول المعلم متاح من حساب صاحب المنصة فقط.</div>':''}
     <button class="btn ghost" onclick="S.ui.door=null;render()">← رجوع</button></div>`}
-  $('#app').innerHTML=`<div class="demo-band">نسخة تجريبية للعرض. البيانات محفوظة في هذا المتصفح فقط</div><main class="login"><div class="login-box">
+  $('#app').innerHTML=`<div class="demo-band">${bandText()}</div><main class="login"><div class="login-box">
     <div class="brand-hero"><div class="mascot">🦸‍♂️</div><h1>فصل <span>الأبطال</span></h1><p class="muted" style="margin:0;font-size:18px">منصة الصف الأول الابتدائي: نتعلم ونلعب ونتميز</p><p class="school">🏫 مدرسة طارق بن زياد بالدمام</p></div>${body}<p class="credit">جميع الحقوق محفوظة © ${new Date().getFullYear()} · إعداد وتصميم <b>أ. مصطفى الهتلان</b></p></div></main>`;
   const lf=$('#lf'),af=$('#af');
   if(lf)lf.onsubmit=e=>{e.preventDefault();const u=$('#lu').value.trim().toLowerCase(),p=$('#lp').value.trim();const s=D.students.find(s=>s.username===u&&s.pin===p);if(!s){$('#le').textContent='اسم المستخدم أو الرقم السري غير صحيح';return}login('student',s.id)};
@@ -425,7 +425,7 @@ function shell(){
     ${isAdmin()?`<div class="nav-cat">إدارة المعلم</div>${adminLinks.map(link).join('')}`:`<div class="nav-cat">لولي الأمر</div>${link(REP)}`}</nav>
     <div class="side-foot"><button class="btn ghost" style="width:100%" onclick="logout()">🚪 تسجيل الخروج</button><p class="credit" style="margin-top:10px">© إعداد <b>أ. مصطفى الهتلان</b></p></div>
   </aside>
-  <div class="main"><div class="demo-band" style="border-radius:0 0 14px 14px">نسخة تجريبية للعرض قبل التنفيذ</div>
+  <div class="main"><div class="demo-band" style="border-radius:0 0 14px 14px">${bandText()}</div>
     <header class="top"><button class="icon-btn" id="menuBtn" onclick="S.ui.side=1;render()" aria-label="القائمة">☰</button>
       <h2><span>${esc(cur.icon)}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(cur.title)}</span></h2>
       <button class="icon-btn" data-sfx onclick="toggleMute()" aria-label="المؤثرات الصوتية">${muted?'🔇':'🔊'}</button>
@@ -487,15 +487,15 @@ function leaderboard(){
 function addGame(){form('إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'icon',label:'أيقونة (رمز تعبيري)',value:'🎮'},{k:'desc',label:'وصف قصير'},{k:'file',label:'📁 ملف اللعبة (HTML) — الطريقة المستحسنة',type:'file',accept:'.html,.htm,text/html'},{k:'url',label:'أو رابط اللعبة (لا تُسجَّل نتائجه)',type:'url',ph:'https://...'}],async v=>{
   if(!v.title)return 'اكتب اسم اللعبة';if(!v.file&&!v.url)return 'اختر ملف اللعبة أو اكتب رابطها';
   const id=uid(),color=COLORS[rnd(COLORS.length)];
-  if(v.file){if(v.file.size>20e6)return 'الملف كبير جداً (الحد 20MB)';let txt='';try{txt=await v.file.text()}catch(e){return 'تعذّرت قراءة الملف'}
+  if(v.file){if(v.file.size>(SYNC.mode==='db'?8e6:20e6))return 'الملف كبير جداً (الحد '+(SYNC.mode==='db'?8:20)+'MB)';let txt='';try{txt=await v.file.text()}catch(e){return 'تعذّرت قراءة الملف'}
     if(!/<html|<!doctype|<script|<body/i.test(txt))return 'هذا ليس ملف لعبة HTML';
-    try{await IDB.put('game_'+id,new Blob([txt],{type:'text/html'}))}catch(e){return 'تعذّر حفظ الملف في المتصفح'}
+    try{await STORE.put('game_'+id,new Blob([txt],{type:'text/html'}))}catch(e){return 'تعذّر حفظ ملف اللعبة'}
     const scores=/fasl-score/.test(txt);D.games.push({id,title:v.title,icon:v.icon||'🎮',desc:v.desc,kind:'file',size:v.file.size,scores,color,t:Date.now()});save();
     setTimeout(()=>{sfx('ex');toast(scores?'✅ أُضيفت اللعبة، ونتائجها ستُسجَّل للطلاب':'⚠️ أُضيفت اللعبة، لكنها لا ترسل النتائج للمنصة')},50);return}
   if(!/^https:\/\//.test(v.url))return 'الرابط يجب أن يبدأ بـ https://';D.games.push({id,title:v.title,icon:v.icon||'🎮',desc:v.desc,kind:'link',url:v.url,color});save();toast('تمت إضافة اللعبة')})}
-async function delGame(id){await IDB.del('game_'+id);D.games=D.games.filter(x=>x.id!==id);save();sfx('del');render()}
+async function delGame(id){await STORE.del('game_'+id);D.games=D.games.filter(x=>x.id!==id);save();sfx('del');render()}
 let GF={frame:null,gid:null,last:0};
-async function openFileGame(id){const g=D.games.find(x=>x.id===id);if(!g)return;let html='';try{const b=await IDB.get('game_'+id);html=b?await b.text():''}catch(e){}
+async function openFileGame(id){const g=D.games.find(x=>x.id===id);if(!g)return;let html='';try{const b=await STORE.get('game_'+id);html=b?await b.text():''}catch(e){}
   if(!html){toast('ملف اللعبة غير موجود على هذا الجهاز');return}
   modal('');const bg=$('#layer .modal-bg');bg.className='game-full';bg.onclick=null;
   bg.innerHTML=`<div class="gf-bar"><b>${esc(g.icon)} ${esc(g.title)}</b><span id="gfMsg" class="muted">${me()?'نتيجتك تُحفظ تلقائياً عند نهاية المرحلة':'وضع المعلم: للتجربة فقط'}</span><button class="btn coral sm" onclick="closeLayer()">✖ خروج</button></div><iframe id="gfFrame" title="${esc(g.title)}" sandbox="allow-scripts allow-pointer-lock" allow="autoplay; fullscreen; gamepad"></iframe>`;
@@ -622,7 +622,7 @@ function showCard(id){const s=stu(id);modal(`<div class="modal-h"><h3>بطاقة
   <div class="row"><button class="btn green" onclick="closeLayer();S.session=null;qrLogin('FASL1:${s.qr}')">📷 تجربة الدخول بالباركود</button><button class="btn ghost" onclick="newQR('${s.id}')">🔄 باركود جديد (يلغي القديم)</button></div>`);drawQR('mqr_'+s.id,s)}
 function newQR(id){stu(id).qr=token();save();toast('تم توليد باركود جديد، البطاقة القديمة لم تعد تعمل');showCard(id)}
 function resetPin(id){stu(id).pin=pin();save();S.ui.show=id;render();toast('تم توليد رقم سري جديد')}
-function delStudent(id){D.students=D.students.filter(s=>s.id!==id);D.recs=D.recs.filter(r=>r.sid!==id);D.scores=D.scores.filter(r=>r.sid!==id);D.heroes=D.heroes.filter(r=>r.sid!==id);D.subs.filter(x=>x.sid===id).forEach(x=>IDB.del(x.id));D.subs=D.subs.filter(x=>x.sid!==id);D.threads=D.threads.filter(t=>t.sid!==id);save();render();toast('تم الحذف')}
+function delStudent(id){D.students=D.students.filter(s=>s.id!==id);D.recs=D.recs.filter(r=>r.sid!==id);D.scores=D.scores.filter(r=>r.sid!==id);D.heroes=D.heroes.filter(r=>r.sid!==id);D.subs.filter(x=>x.sid===id).forEach(x=>STORE.del(x.id));D.subs=D.subs.filter(x=>x.sid!==id);D.threads=D.threads.filter(t=>t.sid!==id);save();render();toast('تم الحذف')}
 const TR={'ا':'a','أ':'a','إ':'e','آ':'a','ب':'b','ت':'t','ث':'th','ج':'j','ح':'h','خ':'kh','د':'d','ذ':'th','ر':'r','ز':'z','س':'s','ش':'sh','ص':'s','ض':'d','ط':'t','ظ':'z','ع':'a','غ':'gh','ف':'f','ق':'q','ك':'k','ل':'l','م':'m','ن':'n','ه':'h','ة':'a','و':'w','ي':'y','ى':'a','ء':'','ئ':'e','ؤ':'o'};
 function mkUser(name,want){let u=(want||[...name].map(c=>TR[c]??(/[a-z0-9]/i.test(c)?c:'')).join('')).toLowerCase().replace(/[^a-z0-9]/g,'')||'student';let b=u,i=2;while(D.students.some(s=>s.username===u))u=b+i++;return u}
 function newStudent(name,u){const s={id:uid(),name,username:mkUser(name,u),pin:pin(),qr:token(),parent:'P-'+token(6).toUpperCase(),ava:AVAS[rnd(AVAS.length)],star:false,created:Date.now()};D.students.push(s);return s}
@@ -679,11 +679,11 @@ function vSecurity(){
   <label class="f">البريد الإلكتروني<input class="input" id="ne" type="email" dir="ltr" value="${esc(D.admin.email)}"></label>
   <label class="f">كلمة المرور الجديدة (8 أحرف على الأقل، حرف ورقم ورمز)<input class="input" id="np" type="password" dir="ltr" autocomplete="new-password"></label>
   <button class="btn grape" onclick="changeCreds()">حفظ</button></div>
-  <div class="card" style="display:grid;gap:10px"><h3>بيانات التجربة</h3><p class="muted" style="margin:0">لإعادة التجربة من البداية بالبيانات النموذجية.</p><div><button class="btn coral" onclick="confirmBox('مسح كل بيانات التجربة؟',async()=>{try{indexedDB.deleteDatabase(KEY+'_audio')}catch(e){}IDB.p=null;D=migrate(await seed());save();logout()})">إعادة الضبط</button></div></div>`;
+  <div class="card" style="display:grid;gap:10px"><h3>بيانات التجربة</h3><p class="muted" style="margin:0">لإعادة التجربة من البداية بالبيانات النموذجية.</p><div><button class="btn coral" onclick="confirmBox('مسح كل بيانات التجربة؟',resetAll)">إعادة الضبط</button></div></div>`;
 }
 async function changeCreds(){const e=$('#ne').value.trim().toLowerCase(),p=$('#np').value;if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e))return toast('البريد غير صحيح');
   if(p){if(p.length<8||!/[0-9]/.test(p)||!/[A-Za-z؀-ۿ]/.test(p)||!/[^A-Za-z0-9؀-ۿ]/.test(p))return toast('كلمة المرور ضعيفة');D.admin.salt=token(16);D.admin.hash=await sha(D.admin.salt+p)}
-  D.admin.email=e;save();render();toast('تم تحديث بيانات الدخول 🔐')}
+  D.admin.email=e;D.admin.demo=false;save();render();toast('تم تحديث بيانات الدخول 🔐')}
 
 /* Parent */
 function vReport(){
@@ -743,7 +743,7 @@ function demoWav(seed){const sr=8000,sec=6,n=sr*sec,buf=new ArrayBuffer(44+n*2),
   const notes=[392,440,494,440,392,349,392,440].map(f=>f*(1+(seed%3)*.06));for(let i=0;i<n;i++){const k=Math.floor(i/(n/notes.length)),ph=(i%(n/notes.length))/(n/notes.length);const env=Math.sin(Math.PI*ph)*.35;v.setInt16(44+i*2,Math.sin(2*Math.PI*notes[k]*i/sr)*env*32767,true)}
   return new Blob([buf],{type:'audio/wav'})}
 let objURLs=[];
-async function srcFor(sub){try{if(sub.inline)return sub.inline;if(sub.demo){const u=URL.createObjectURL(demoWav(sub.t%7));objURLs.push(u);return u}const b=await IDB.get(sub.id);if(!b)return null;const u=URL.createObjectURL(b);objURLs.push(u);return u}catch(e){return null}}
+async function srcFor(sub){try{if(sub.inline)return sub.inline;if(sub.demo){const u=URL.createObjectURL(demoWav(sub.t%7));objURLs.push(u);return u}const b=await STORE.get(sub.id);if(!b)return null;const u=URL.createObjectURL(b);objURLs.push(u);return u}catch(e){return null}}
 
 /* ---------- مشغّل الصوت الكامل ---------- */
 const RATES=[0.5,0.75,1,1.25,1.5,2];
@@ -872,8 +872,8 @@ function editAsg(id){const a=id?asg(id):{title:'',surah:SURAHS[0],range:'الس�
     if(id)Object.assign(asg(id),{title,surah:v.surah,range:v.range,due:v.due,note:v.note});
     else{D.assign.push({id:uid(),title,surah:v.surah,range:v.range,due:v.due,note:v.note,open:true,t:Date.now()});setTimeout(()=>{sfx('ex');confetti(40)},50)}
     save();toast(id?'تم حفظ التعديل':'🚪 فُتح باب الواجب للطلاب')})}
-async function delAsg(id){const subs=D.subs.filter(x=>x.aid===id);for(const x of subs)await IDB.del(x.id);D.subs=D.subs.filter(x=>x.aid!==id);D.assign=D.assign.filter(a=>a.id!==id);S.ui.pa=null;save();sfx('del');render();toast('حُذف الواجب')}
-async function delSub(id){await IDB.del(id);D.subs=D.subs.filter(x=>x.id!==id);save();sfx('del');render();toast('🗑️ حُذف التسجيل')}
+async function delAsg(id){const subs=D.subs.filter(x=>x.aid===id);for(const x of subs)await STORE.del(x.id);D.subs=D.subs.filter(x=>x.aid!==id);D.assign=D.assign.filter(a=>a.id!==id);S.ui.pa=null;save();sfx('del');render();toast('حُذف الواجب')}
+async function delSub(id){await STORE.del(id);D.subs=D.subs.filter(x=>x.id!==id);save();sfx('del');render();toast('🗑️ حُذف التسجيل')}
 async function openReview(id){const x=D.subs.find(s=>s.id===id);if(!x)return;const s=stu(x.sid),a=asg(x.aid);
   modal(`<div class="modal-h"><h3>🎧 ${esc(s.name)}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
   <div class="asg"><b>${esc(a?a.title:'')}</b>${a?asgMeta(a):''}<small class="muted">${fmt(x.t)} · ⏱️ ${mmss(x.dur)} · الصيغة: ${fmtName(x.mime)} · ${kb(x.size||0)}${x.demo?' · (صوت نموذجي للتجربة)':''}</small></div>
@@ -928,13 +928,13 @@ async function sendSub(){
   if(!a.open){toast('أغلق المعلم الباب لهذا الواجب');return}
   REC.st='sending';drawRec();stopPlayers();
   const id=uid();let inline='';
-  try{await IDB.put(id,REC.blob)}catch(e){if(REC.blob.size>1.5e6){REC.st='done';drawRec();toast('تعذّر حفظ التسجيل، جرّب تسجيلاً أقصر');return}try{inline=await blobToDataURL(REC.blob)}catch(e2){REC.st='done';drawRec();toast('تعذّر حفظ التسجيل');return}}
-  const old=subOf(a.id,s.id);if(old){await IDB.del(old.id);D.subs=D.subs.filter(x=>x!==old)}
+  try{await STORE.put(id,REC.blob)}catch(e){if(SYNC.mode==='db'||REC.blob.size>1.5e6){REC.st='done';drawRec();toast('تعذّر حفظ التسجيل، جرّب تسجيلاً أقصر');return}try{inline=await blobToDataURL(REC.blob)}catch(e2){REC.st='done';drawRec();toast('تعذّر حفظ التسجيل');return}}
+  const old=subOf(a.id,s.id);if(old){await STORE.del(old.id);D.subs=D.subs.filter(x=>x!==old)}
   D.subs.push({id,aid:a.id,sid:s.id,t:Date.now(),dur:REC.dur,mime:REC.mime,size:REC.blob.size,inline,rating:null,seen:true});
   notify(`🎙️ تسجيل جديد: ${s.name} سمّع «${a.title}»`,'quran');save();
   REC.blob=null;REC.st='idle';objURLs.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});objURLs=[];
   sfx('send');setTimeout(()=>{sfx('ex');confetti(70)},350);toast('📤 وصل تسجيلك للمعلم!');render();drawRec()}
-async function mySubDel(id){await IDB.del(id);D.subs=D.subs.filter(x=>x.id!==id);save();REC.confirm=false;sfx('del');toast('🗑️ حُذف تسجيلك');render();drawRec()}
+async function mySubDel(id){await STORE.del(id);D.subs=D.subs.filter(x=>x.id!==id);save();REC.confirm=false;sfx('del');toast('🗑️ حُذف تسجيلك');render();drawRec()}
 
 /* ---------- صندوق الاقتراحات والرسائل ---------- */
 function vSuggest(){
@@ -961,6 +961,99 @@ document.addEventListener('submit',e=>{if(e.target.id!=='rf')return;e.preventDef
   const by=isAdmin()?'t':'s';t.msgs.push({by,text:txt.slice(0,1000),t:Date.now()});if(by==='t'){t.readS=false;t.readT=true}else{t.readT=false;t.readS=true;notify(`💌 ردّ جديد من ${stu(t.sid).name}: ${t.subject.slice(0,40)}`,'suggest')}
   save();sfx('msg');render();const c=document.querySelector('.chat');if(c)c.scrollTop=c.scrollHeight});
 
+/* ======================================================
+   الحفظ السحابي: كل البيانات تُحفظ مع رابط المنصة (مشتركة بين الأجهزة)
+   عند عدم توفرها يعمل الموقع بالحفظ المحلي في المتصفح
+   ====================================================== */
+const SYNC={mode:'local',db:null,owner:false,canWrite:true,ready:false,synced:{},busy:false,again:false,warned:false,dirtyRender:false,unsub:[]};
+const ARR=['students','menus','games','scores','recs','notifs','sheets','videos','stories','heroes','assign','subs','threads'];
+const MAPK=['custom','gstore'];
+const ORD={notifs:-1,scores:1,recs:1,subs:1,threads:1,assign:1};
+const colOf=k=>(MAPK.includes(k)?'m_':'c_')+k;
+const safeId=id=>String(id).replace(/[^A-Za-z0-9_\-.~:@+]/g,'_').slice(0,180)||'_';
+function itemsOf(k){
+  if(ARR.includes(k))return (Array.isArray(D[k])?D[k]:[]).filter(x=>x&&x.id!=null).map((x,i)=>[safeId(x.id),JSON.stringify(ORD[k]?x:Object.assign({},x,{_o:i}))]);
+  return Object.entries(D[k]&&typeof D[k]==='object'?D[k]:{}).map(([id,v])=>[safeId(id),JSON.stringify({k:id,v})]);
+}
+const metaOf=k=>k==='admin'?JSON.stringify(D.admin||{}):JSON.stringify({_v2:D._v2||0,_v3:D._v3||0});
+function isDirty(k){const old=SYNC.synced[k]||new Map();const cur=itemsOf(k);if(cur.length!==old.size)return true;return cur.some(([id,j])=>old.get(id)!==j)}
+function ingest(k,snap){
+  const m=new Map(),arr=[];snap.docs.forEach(d=>{const b=JSON.parse(JSON.stringify(d.data()||{}));m.set(d.id,JSON.stringify(b));arr.push(b)});
+  if(SYNC.ready&&isDirty(k))return;
+  const prev=SYNC.synced[k];SYNC.synced[k]=m;
+  if(prev&&prev.size===m.size&&[...m].every(([id,j])=>prev.get(id)===j))return;
+  if(ARR.includes(k)){if(ORD[k])arr.sort((x,y)=>ORD[k]*((x.t||0)-(y.t||0)));else{arr.sort((x,y)=>(x._o||0)-(y._o||0));arr.forEach(x=>delete x._o)}D[k]=arr}
+  else{const o={};arr.forEach(b=>{o[b.k]=b.v});D[k]=o}
+  remoteRender();
+}
+function ingestMeta(k,snap){
+  const b=snap.exists?JSON.parse(JSON.stringify(snap.data()||{})):null;
+  if(SYNC.ready&&SYNC.synced['meta_'+k]!==undefined&&metaOf(k)!==SYNC.synced['meta_'+k])return;
+  if(!b){SYNC.synced['meta_'+k]=undefined;return}
+  if(k==='admin')D.admin=b;else{D._v2=b._v2;D._v3=b._v3}
+  SYNC.synced['meta_'+k]=metaOf(k);remoteRender();
+}
+function remoteRender(){if(!SYNC.ready)return;if($('#layer').innerHTML||!S.session){SYNC.dirtyRender=true;return}render()}
+async function w(fn){
+  for(let i=0;i<2;i++){try{await fn();return true}catch(e){const c=e&&e.code;
+    if(c==='unavailable'&&i===0){await new Promise(r=>setTimeout(r,500+Math.random()*700));continue}
+    if(!SYNC.warned){SYNC.warned=true;toast(c==='quota_exceeded'?'⚠️ امتلأت مساحة التخزين: احذف بعض التسجيلات أو الصور':c==='invalid_argument'?'⚠️ لا تملك صلاحية الحفظ. اطلب من المعلم مشاركة الرابط معك بصلاحية «مساهم»':'⚠️ تعذّر الحفظ، تحقق من الاتصال')}
+    if(c==='invalid_argument'||c==='revoked'||c==='not_granted')SYNC.canWrite=false;return false}}return false}
+async function flush(){
+  if(SYNC.mode!=='db'||!SYNC.canWrite)return;if(SYNC.busy){SYNC.again=true;return}SYNC.busy=true;
+  try{do{SYNC.again=false;
+    for(const k of [...ARR,...MAPK]){const old=SYNC.synced[k]||new Map();const cur=new Map(itemsOf(k));const col=SYNC.db.collection(colOf(k));
+      for(const [id,j] of cur){if(old.get(id)!==j){if(!await w(()=>col.doc(id).set(JSON.parse(j))))return;old.set(id,j)}}
+      for(const id of [...old.keys()])if(!cur.has(id)){if(!await w(()=>col.doc(id).delete()))return;old.delete(id)}
+      SYNC.synced[k]=old}
+    for(const k of ['admin','flags']){if(k==='admin'&&!SYNC.owner)continue;const j=metaOf(k);if(SYNC.synced['meta_'+k]!==j){if(!await w(()=>SYNC.db.doc('meta/'+k).set(JSON.parse(j))))return;SYNC.synced['meta_'+k]=j}}
+  }while(SYNC.again)}finally{SYNC.busy=false}
+}
+/* مخزن الملفات (تسجيلات، ألعاب) مقسّم على مستندات */
+const b64Of=b=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]||'');fr.onerror=rej;fr.readAsDataURL(b)});
+function blobOfB64(s,type){const bin=atob(s);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:type||''})}
+const DBB={CH:180000,cache:new Map(),
+  async put(k,blob){if(!SYNC.canWrite)throw new Error('readonly');const id=safeId(k),s=await b64Of(blob),n=Math.max(1,Math.ceil(s.length/this.CH));
+    for(let i=0;i<n;i++){if(!await w(()=>SYNC.db.collection('bchunk').doc(id+'~'+i).set({d:s.slice(i*this.CH,(i+1)*this.CH)})))throw new Error('write')}
+    if(!await w(()=>SYNC.db.collection('blobs').doc(id).set({type:blob.type||'',size:blob.size,n,t:Date.now()})))throw new Error('write');this.cache.set(id,blob)},
+  async get(k){const id=safeId(k);if(this.cache.has(id))return this.cache.get(id);const m=await SYNC.db.collection('blobs').doc(id).get();if(!m.exists)return undefined;const meta=m.data();
+    const parts=await Promise.all(Array.from({length:meta.n},(_,i)=>SYNC.db.collection('bchunk').doc(id+'~'+i).get()));if(parts.some(p=>!p.exists))return undefined;
+    const b=blobOfB64(parts.map(p=>p.data().d).join(''),meta.type);this.cache.set(id,b);return b},
+  async del(k){const id=safeId(k);this.cache.delete(id);try{const m=await SYNC.db.collection('blobs').doc(id).get();const n=m.exists?m.data().n:0;for(let i=0;i<n;i++)await w(()=>SYNC.db.collection('bchunk').doc(id+'~'+i).delete());await w(()=>SYNC.db.collection('blobs').doc(id).delete())}catch(e){}}
+};
+const STORE={put:(k,v)=>SYNC.mode==='db'?DBB.put(k,v):IDB.put(k,v),get:k=>SYNC.mode==='db'?DBB.get(k):IDB.get(k),del:k=>SYNC.mode==='db'?DBB.del(k):IDB.del(k)};
+const bandText=()=>SYNC.mode==='db'?'نسخة تجريبية · البيانات محفوظة مع رابط المنصة وتظهر من أي جهاز ☁️':'نسخة تجريبية · البيانات محفوظة في هذا المتصفح فقط';
+async function startCloud(){
+  if(!window.claude||typeof window.claude.use!=='function')return false;
+  let db=null,user=null;try{db=await window.claude.use('db')}catch(e){}if(!db)return false;
+  try{user=await window.claude.use('user')}catch(e){}
+  SYNC.db=db;try{SYNC.owner=user?!!(await user.isOwner()):false}catch(e){}
+  try{const cw=user?await user.can('data.write'):null;SYNC.canWrite=cw!==false}catch(e){}
+  D={};const keys=[...ARR,...MAPK],pending=new Set([...keys,'admin','flags']);let got=0,res;
+  const done=new Promise(r=>{res=r});const timer=setTimeout(()=>res('timeout'),10000);
+  const mark=(k,cache)=>{if(cache)return;got++;pending.delete(k);if(!pending.size)res('ok')};
+  try{keys.forEach(k=>SYNC.unsub.push(db.collection(colOf(k)).onSnapshot(s=>{ingest(k,s);mark(k,s.metadata.fromCache)},()=>mark(k))));
+    ['admin','flags'].forEach(k=>SYNC.unsub.push(db.doc('meta/'+k).onSnapshot(s=>{ingestMeta(k,s);mark(k,s.metadata.fromCache)},()=>mark(k))))}catch(e){clearTimeout(timer);return false}
+  const r=await done;clearTimeout(timer);
+  if(r==='timeout'&&!got){SYNC.unsub.forEach(u=>{try{u()}catch(e){}});SYNC.unsub=[];return false}
+  SYNC.mode='db';
+  const empty=keys.every(k=>!(SYNC.synced[k]&&SYNC.synced[k].size))&&SYNC.synced.meta_flags===undefined;
+  if(empty){
+    if(!SYNC.owner||!SYNC.canWrite){SYNC.mode='local';SYNC.unsub.forEach(u=>{try{u()}catch(e){}});return false}
+    const local=load();D=migrate(local||await seed());
+    if(local){for(const g of D.games||[])if(g.kind==='file'){try{const b=await IDB.get('game_'+g.id);if(b)await DBB.put('game_'+g.id,b)}catch(e){}}
+      for(const x of D.subs||[])if(!x.demo&&!x.inline){try{const b=await IDB.get(x.id);if(b)await DBB.put(x.id,b)}catch(e){}}}
+  }else{ARR.forEach(k=>{if(!Array.isArray(D[k]))D[k]=[]});MAPK.forEach(k=>{if(!D[k]||typeof D[k]!=='object')D[k]={}});
+    if(!D.admin)D.admin={email:'',salt:'',hash:'',fails:0,lockUntil:0,demo:false};D=migrate(D)}
+  SYNC.ready=true;await flush();return true;
+}
+async function resetAll(){
+  for(const g of D.games||[])if(g.kind==='file')await STORE.del('game_'+g.id);
+  for(const x of D.subs||[])if(!x.demo)await STORE.del(x.id);
+  if(SYNC.mode!=='db'){try{indexedDB.deleteDatabase(KEY+'_audio')}catch(e){}IDB.p=null}
+  D=migrate(await seed());save();logout();toast('تمت إعادة الضبط')
+}
+
 /* ---------- Render & boot ---------- */
 function render(){document.querySelectorAll('.notif-panel').forEach(p=>p.remove());
   if(!S.session)return loginView();
@@ -968,5 +1061,8 @@ function render(){document.querySelectorAll('.notif-panel').forEach(p=>p.remove(
   shell()}
 ['click','keydown','touchstart'].forEach(e=>addEventListener(e,()=>{if(S.session){S.session.last=Date.now();saveSess()}},{passive:true}));
 setInterval(()=>{if(S.session&&Date.now()-S.session.last>20*60000){logout();toast('تم تسجيل الخروج تلقائياً لحمايتك')}},30000);
-(async()=>{D=migrate(load()||await seed());save();const ss=loadSess();if(ss&&Date.now()-ss.last<20*60000)S.session=ss;render()})();
+(async()=>{$('#app').innerHTML='<main class="login"><div class="brand-hero"><div class="mascot">🦸‍♂️</div><h2>جارٍ تحميل بيانات المنصة…</h2></div></main>';
+  let ok=false;try{ok=await startCloud()}catch(e){ok=false}
+  if(!ok){SYNC.mode='local';D=migrate(load()||await seed());save()}
+  const ss=loadSess();if(ss&&Date.now()-ss.last<20*60000&&(ss.role==='admin'||D.students.some(x=>x.id===ss.id)))S.session=ss;render()})();
 </script>
