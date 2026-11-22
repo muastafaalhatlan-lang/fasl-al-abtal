@@ -211,6 +211,11 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .gc-body p{margin:0;color:var(--muted);font-size:14px}
 .gc-tools{display:flex;gap:4px;flex-wrap:wrap}
 .gs-cat{width:auto;flex:1 1 100%;padding:6px 10px;font-size:14px;border-radius:10px}
+.scan-box{position:relative;border-radius:18px;overflow:hidden;background:#000;aspect-ratio:3/4;max-height:62vh;max-width:100%;margin-inline:auto;width:100%}
+.scan-box video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scan-frame{position:absolute;inset:20% 14%;border:4px solid #fff;border-radius:20px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.scan-frame::after{content:"";position:absolute;left:6%;right:6%;height:3px;background:var(--grass);top:10%;animation:scanl 1.8s ease-in-out infinite alternate;box-shadow:0 0 12px var(--grass)}
+@keyframes scanl{to{top:88%}}
 .tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
 .sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .sec-head h3{font-size:22px}
@@ -1282,7 +1287,8 @@ function loginView(){
       <div class="err" id="le"></div><button class="btn green" id="lb">ادخل 🚀</button></form>
       <div class="hint">👨‍👩‍👦 ولي الأمر يدخل بحساب ابنه نفسه، ويجد «تقرير ولي الأمر» في القائمة.</div>`
     :`<p class="muted" style="margin:0">صوّر بطاقة الباركود الخاصة بك بكاميرا الجهاز.</p>
-      <label class="btn green" style="text-align:center">📷 تصوير البطاقة<input type="file" accept="image/*" capture="environment" hidden onchange="scanQR(this.files[0])"></label>
+      <button class="btn green" type="button" data-sfx onclick="sfx('open');liveScan()" style="font-size:18px;padding:14px">📹 امسح الباركود بالكاميرا</button>
+      <label class="btn ghost" style="text-align:center">📷 أو صوّر البطاقة<input type="file" accept="image/*" capture="environment" hidden onchange="scanQR(this.files[0]);this.value=''"></label>
       <div class="err" id="le"></div>`}
     <button class="btn ghost" onclick="S.ui.door=null;render()">← رجوع</button></div>`}
   else if(m==='ad'){body=`<div class="card login-form">
@@ -1303,14 +1309,46 @@ function loginView(){
 }
 function busyBtn(sel,on){const b=$(sel);if(b){b.disabled=on;b.style.opacity=on?.6:1}}
 async function ensureAnon(){const {data:{session}}=await sb.auth.getSession();if(session&&session.user&&session.user.is_anonymous)return true;if(session)await sb.auth.signOut();const {error}=await sb.auth.signInAnonymously();return !error}
-async function studentAuth(call){
+async function studentAuth(call,mode){
   const err=t=>{const x=$('#le');if(x)x.textContent=t;else toast(t)};
   try{if(!await ensureAnon()){err('تعذّر الاتصال، تحقق من الإنترنت');return}
     const {data,error}=await call();if(error){err('تعذّر الاتصال، حاول مرة أخرى');return}
-    if(!data||!data.ok){err(data&&data.error==='locked'?'محاولات خاطئة كثيرة. انتظر 10 دقائق ثم حاول':S.ui.stTab==='qr'?'لم نتعرف على البطاقة. حاول مرة أخرى بإضاءة أفضل.':'اسم المستخدم أو الرقم السري غير صحيح');return}
+    if(!data||!data.ok){err(data&&data.error==='locked'?'محاولات خاطئة كثيرة. انتظر 10 دقائق ثم حاول':mode==='qr'?'قرأنا الباركود لكن البطاقة غير صالحة، ربما أُلغيت وصدرت بطاقة جديدة. اطلب بطاقتك الحالية من المعلم.':'اسم المستخدم أو الرقم السري غير صحيح');return}
     await startData('student');closeLayer();login('student',data.id)}catch(x){err('تعذّر الاتصال، تحقق من الإنترنت')}
 }
-function qrLogin(data){const t=(data||'').replace(/^FASL1:/,'').trim();if(!t){const e=$('#le');if(e)e.textContent='لم نتعرف على البطاقة. حاول مرة أخرى بإضاءة أفضل.';return}studentAuth(()=>sb.rpc('student_login_qr',{p_token:t}))}
+/* ---------- قراءة الباركود: كاميرا مباشرة + صورة ---------- */
+const QRS={stream:null,raf:0,busy:false,det:null};
+function qrDecodeCanvas(c){const g=c.getContext('2d',{willReadFrequently:true});const d=g.getImageData(0,0,c.width,c.height);
+  const r=window.jsQR?jsQR(d.data,c.width,c.height,{inversionAttempts:'attemptBoth'}):null;return r&&r.data?r.data:null}
+function qrFromImage(im){
+  const W=im.naturalWidth||im.width,H=im.naturalHeight||im.height;
+  for(const max of [1400,900,2000,600]){const k=Math.min(1,max/Math.max(W,H));const c=document.createElement('canvas');c.width=Math.round(W*k);c.height=Math.round(H*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);const r=qrDecodeCanvas(c);if(r)return r}
+  for(const f of [.6,.4]){const cw=W*f,ch=H*f,k=Math.min(1,1000/Math.max(cw,ch));const c=document.createElement('canvas');c.width=Math.round(cw*k);c.height=Math.round(ch*k);c.getContext('2d').drawImage(im,(W-cw)/2,(H-ch)/2,cw,ch,0,0,c.width,c.height);const r=qrDecodeCanvas(c);if(r)return r}
+  return null}
+async function scanQR(file){if(!file)return;const e=$('#le');if(e)e.textContent='⏳ نقرأ البطاقة...';
+  let data=null;try{if('BarcodeDetector' in window){const bd=new BarcodeDetector({formats:['qr_code']});const bm=await createImageBitmap(file);const r=await bd.detect(bm);if(r&&r[0])data=r[0].rawValue}}catch(x){}
+  if(!data){try{const url=URL.createObjectURL(file);const im=new Image();im.src=url;await im.decode();data=qrFromImage(im);URL.revokeObjectURL(url)}catch(x){}}
+  if(!data){if(e)e.textContent='ما قدرنا نقرأ الباركود من الصورة. قرّب الجوال من البطاقة حتى يملأ الباركود الصورة، أو جرّب «المسح المباشر».';return}
+  qrLogin(data)}
+function stopScan(){cancelAnimationFrame(QRS.raf);if(QRS.stream){QRS.stream.getTracks().forEach(t=>t.stop());QRS.stream=null}}
+async function liveScan(){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){const e=$('#le');if(e)e.textContent='هذا الجهاز لا يدعم المسح المباشر، استخدم «تصوير البطاقة».';return}
+  modal(`<div class="modal-h"><h3>📷 وجّه الكاميرا نحو الباركود</h3><button class="icon-btn" onclick="stopScan();closeLayer()" aria-label="إغلاق">✖️</button></div>
+  <div class="scan-box"><video id="scv" playsinline muted autoplay></video><div class="scan-frame"></div></div><p class="muted" id="scm" style="margin:0;text-align:center">ضع الباركود داخل المربع وثبّت الجوال</p>`);
+  try{QRS.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false})}
+  catch(x){const m=$('#scm');if(m)m.textContent='لم يُسمح باستخدام الكاميرا. اسمح بها من إعدادات المتصفح، أو استخدم «تصوير البطاقة».';return}
+  const v=$('#scv');if(!v){stopScan();return}v.srcObject=QRS.stream;try{await v.play()}catch(x){}
+  try{if('BarcodeDetector' in window)QRS.det=new BarcodeDetector({formats:['qr_code']})}catch(x){QRS.det=null}
+  const c=document.createElement('canvas');let last=0;
+  const loop=async t=>{if(!QRS.stream||!v.isConnected)return stopScan();QRS.raf=requestAnimationFrame(loop);if(t-last<220||QRS.busy||!v.videoWidth)return;last=t;QRS.busy=true;
+    try{let data=null;if(QRS.det){const r=await QRS.det.detect(v);if(r&&r[0])data=r[0].rawValue}
+      if(!data){const k=Math.min(1,720/Math.max(v.videoWidth,v.videoHeight));c.width=Math.round(v.videoWidth*k);c.height=Math.round(v.videoHeight*k);c.getContext('2d').drawImage(v,0,0,c.width,c.height);data=qrDecodeCanvas(c)}
+      if(data){stopScan();sfx('ex');closeLayer();qrLogin(data)}}catch(x){}finally{QRS.busy=false}};
+  QRS.raf=requestAnimationFrame(loop)}
+function qrLogin(data){const raw=String(data||'').trim();const e=$('#le');
+  if(!/^FASL1:/i.test(raw)){if(e)e.textContent='هذا الباركود ليس بطاقة دخول المنصة.';return}
+  const t=raw.replace(/^FASL1:/i,'').trim();if(e)e.textContent='⏳ جارٍ الدخول...';
+  studentAuth(()=>sb.rpc('student_login_qr',{p_token:t}),'qr')}
 async function logout(){const role=SYNC.role;S.session=null;saveSess();SYNC.role=null;SYNC.ready=false;SYNC.synced={};D=emptyD();S.ui={};closeLayer();render();
   try{if(role==='student')await sb.rpc('student_logout');else await sb.auth.signOut()}catch(e){}}
 function showCard(id){const s=stu(id);modal(`<div class="modal-h"><h3>بطاقة دخول الطالب</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>${cardHTML(s).replace('id="qr_','id="mqr_')}
