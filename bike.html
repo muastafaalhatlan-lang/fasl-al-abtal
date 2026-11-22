@@ -89,7 +89,7 @@ h1{font-size:clamp(30px,7vw,44px);margin:0;font-weight:900;color:var(--pri)}
     <p class="sub">قُدْ الدراجة وتعلّم الحروف في طريق ممتع!</p>
     <div class="topics">
       <button class="topic" data-topic="abc"><div class="ic" style="font-weight:900;color:var(--grape)">أ ب ت</div><div class="t">الحروف الهجائية</div><div class="d">اعرف ترتيب الحروف: اجمع الحرف التالي</div></button>
-      <button class="topic" data-topic="snd"><div class="ic">🔊</div><div class="t">الحروف وأصواتها</div><div class="d">اسمع الصوت، انظر للصورة، وتعلّم الحركات بَ بُ بِ</div></button>
+      <button class="topic" data-topic="snd"><div class="ic">🔊</div><div class="t">الحروف وأصواتها</div><div class="d">اسمع الصوت، انظر للصورة، وتعلّم الحركات والسكون والتنوين</div></button>
     </div>
     <p class="how">🎮 حرّك الدراجة بالأسهم ◀ ▶ أو اسحب بإصبعك<br>🚦 إذا رأيت الإشارة الحمراء اضغط <b>قِف</b> &nbsp;·&nbsp; 🚧 ابتعد عن الحواجز</p>
   </div>
@@ -129,7 +129,23 @@ const L=[
  ['ق','قاف','قَ','قمر','🌙'],['ك','كاف','كَ','كتاب','📖'],['ل','لام','لَ','ليمون','🍋'],['م','ميم','مَ','موز','🍌'],
  ['ن','نون','نَ','نحلة','🐝'],['ه','هاء','هَ','هدية','🎁'],['و','واو','وَ','وردة','🌹'],['ي','ياء','يَ','يد','✋']
 ];
-const HAR=[['َ','الفتحة','#e53935'],['ُ','الضمة','#1e88e5'],['ِ','الكسرة','#43a047']];
+// الحركات: الفتحة، الضمة، الكسرة، السكون، والتنوين بأنواعه
+const MK=[{m:'َ',n:'الفتحة',c:'#e53935'},{m:'ُ',n:'الضمة',c:'#1e88e5'},{m:'ِ',n:'الكسرة',c:'#43a047'},{m:'ْ',n:'السكون',c:'#8e24aa'},
+ {m:'ً',n:'تنوين الفتح',c:'#fb8c00',s:0},{m:'ٌ',n:'تنوين الضم',c:'#00897b',s:1},{m:'ٍ',n:'تنوين الكسر',c:'#6d4c41',s:2}];
+const MKT=['har','suk','tan','allh'];
+const wr=(ch,i)=>{if(ch==='ا')ch=i===2||i===6?'إ':'أ';return ch+MK[i].m+(i===4&&ch!=='أ'?'ا':'')};
+const spk=(ch,i)=>{const t=wr(ch,i);if(i===3)return `${t}، كما في أَ${ch}ْ`;if(i>=4)return `${t}، ${ch}${MK[MK[i].s].m}نْ`;return t};
+const INTRO={
+ har:['الحركات القصيرة','بَ بُ بِ','الفتحة فوق الحرف، والضمة واو صغيرة فوقه، والكسرة تحته','الفتحة فوق الحرف: بَ. الضمة فوق الحرف: بُ. الكسرة تحت الحرف: بِ'],
+ suk:['السكون ( ـْـ )','أَبْ','دائرة صغيرة فوق الحرف، والحرف الساكن لا يتحرك','السكون دائرة صغيرة فوق الحرف. الحرف الساكن لا يتحرك، مثل بْ في أَبْ'],
+ tan:['التنوين ( ـً  ـٌ  ـٍ )','بًا بٌ بٍ','حركتان، ونسمع بعدهما نونًا ساكنة: بًا = بَنْ · بٌ = بُنْ · بٍ = بِنْ','التنوين حركتان، ونسمع بعدهما نونًا ساكنة. بًا بَنْ. بٌ بُنْ. بٍ بِنْ'],
+ allh:['كل الحركات','بَ بُ بِ بْ بًا بٌ بٍ','الفتحة والضمة والكسرة والسكون والتنوين','هيا نراجع كل الحركات: الفتحة والضمة والكسرة والسكون والتنوين']};
+function mkQ(q,set){q.type='mk';q.set=set;const R=a=>a[Math.random()*a.length|0];let h,pool;
+ if(set==='har'){pool=[0,1,2];h=R(pool)}
+ else if(set==='suk'){const sh=shuffle([0,1,2]);h=Math.random()<.6?3:sh[0];pool=[3,sh[0],sh[1]]}
+ else if(set==='tan'){pool=[4,5,6];h=R(pool)}
+ else{h=Math.random()*7|0;pool=h<3?[h,h+4,3]:h===3?[3,...shuffle([0,1,2]).slice(0,2)]:[h,MK[h].s,R([4,5,6].filter(x=>x!==h))]}
+ q.h=h;q.pool=pool;q.ans=wr(L[q.i][0],h);return q}
 const IDX=Object.fromEntries(L.map((l,i)=>[l[0],i]));
 // letters that look or sound alike — great distractors for learning
 const SIM=[['ب','ت','ث','ن','ي'],['ج','ح','خ'],['د','ذ'],['ر','ز','و'],['س','ش','ص'],['ص','ض'],['ط','ظ'],['ع','غ'],['ف','ق'],['ك','ل'],['ه','ة'],['ت','ط'],['س','ص'],['ذ','ز','ظ'],['ه','ح'],['ك','ق']];
@@ -202,12 +218,12 @@ function buildQueue(){
   for(let i=a;i<b;i++)S.queue.push({type:'abc',i,prev:i>0?L[i-1][0]:null,ans:L[i][0]});
  }else{
   const[a,b]=GROUPS[S.group];const ids=shuffle([...Array(b-a)].map((_,k)=>a+k)).slice(0,Math.min(10,b-a));
-  ids.forEach((i,k)=>{const type=S.sub==='mix'?['snd','pic','har'][k%3]:S.sub;const q={type,i,ans:L[i][0]};if(type==='har'){q.h=Math.random()*3|0;q.ans=L[i][0]+HAR[q.h][0]}S.queue.push(q)});
+  ids.forEach((i,k)=>{const type=S.sub==='mix'?['snd','pic','har','suk','tan'][k%5]:S.sub;if(i===0&&MKT.includes(type)&&type!=='har')i=1+(Math.random()*27|0);const q={type,i,ans:L[i][0]};S.queue.push(MKT.includes(type)?mkQ(q,type):q)});
  }
 }
 function qOptions(q){
  const ch=L[q.i][0];let ds;
- if(q.type==='har')return shuffle(HAR.map(h=>ch+h[0]));
+ if(q.type==='mk')return shuffle(q.pool.map(i=>wr(ch,i)));
  if(q.type==='abc'){ // nearby letters in the alphabet, plus a look‑alike
   const near=[q.i-1,q.i+1,q.i+2,q.i-2].filter(k=>k>=0&&k<28&&k!==q.i).map(k=>L[k][0]);
   ds=shuffle([...new Set([...distractors(ch,1),...near])]).filter(x=>x!==ch).slice(0,2);
@@ -222,7 +238,7 @@ function showQuestion(){
   if(!q.prev){tb.textContent='ابدأ بأول حرف: اجمع';bb.innerHTML=`<span class="q">${l[0]}</span>`}
   else{tb.textContent='ما الحرف الذي يأتي بعد؟';bb.innerHTML=`<span class="trail">${prevs.map(x=>`<span>${x}</span>`).join('')}</span><span class="slot">؟</span>`;$('hintB').hidden=false}
  }else if(q.type==='snd'){tb.textContent='اسمع الصوت واختر الحرف';bb.innerHTML=`<span style="font-size:.9em">👂🔊</span>`}
- else if(q.type==='har'){tb.textContent='اسمع واختر الحركة الصحيحة';bb.innerHTML=`<span style="font-size:.8em">👂</span><span>${l[0]}</span><span class="slot" style="font-size:.6em">؟</span>`}
+ else if(q.type==='mk'){tb.textContent={har:'اسمع واختر الحركة الصحيحة',suk:'ساكن أم متحرك؟ اسمع واختر',tan:'اسمع واختر التنوين الصحيح',allh:'اسمع واختر الحركة الصحيحة'}[q.set];bb.innerHTML=`<span style="font-size:.8em">👂</span><span>${q.i===0?'أ':l[0]}</span><span class="slot" style="font-size:.6em">؟</span>`}
  else{tb.textContent='بأي حرف تبدأ الكلمة؟';bb.innerHTML=`<span>${l[4]}</span><span style="font-size:.55em">${l[3]}</span>`}
  sayQ();
 }
@@ -230,7 +246,7 @@ function sayQ(){
  const q=S.cur;if(!q)return;const l=L[q.i];
  if(q.type==='abc'){q.prev?say(`ما الحرف الذي يأتي بعد ${L[q.i-1][1]}؟`):say(`ابدأ بحرف ال${l[1]}`)}
  else if(q.type==='snd')say(`اختر الحرف ${l[2]} ... ${l[2]}`,.7);
- else if(q.type==='har')say(`اختر ${q.ans} ... ${q.ans}`,.65);
+ else if(q.type==='mk')say(`اختر ${spk(l[0],q.h)} ... ${q.ans}`,.65);
  else say(`${l[3]}. بأي حرف تبدأ كلمة ${l[3]}؟`);
 }
 function hint(){const q=S.cur;if(!q||q.type!=='abc')return;$('qbig').querySelector('.slot').textContent=L[q.i][0];say(`بعد ${L[q.i-1][1]} يأتي ${L[q.i][1]}`);q.hinted=true}
@@ -249,7 +265,8 @@ function spawnLight(){S.light={k:'light',d:FAR,state:'red',stopped:false,phase:0
 function startGame(){
  hideAll();S.mode='play';S.stars=0;S.correct=0;S.learned=[];S.qi=0;S.objs=[];S.parts=[];S.lane=1;S.px=0;S.speed=0;S.target=9;S.light=null;S.lightDone=0;S.pendingGate=false;S.bumpT=0;S.run=(S.run||0)+1;
  buildQueue();$('hud').hidden=$('prog').hidden=$('ctrl').hidden=false;updHud();SFX.bell();
- later(nextQ,700);
+ $('qnote')?.remove();const it=S.topic==='snd'&&INTRO[S.sub];if(it){$('qcard').hidden=false;$('hintB').hidden=true;$('qtext').textContent='📘 '+it[0];$('qbig').innerHTML=`<span style="color:var(--grape)">${it[1]}</span>`;$('qtext').insertAdjacentHTML('afterend',`<div id="qnote" style="font-size:16px;color:var(--muted);line-height:1.6">${it[2]}</div>`);setTimeout(()=>say(it[3],.75),400)}
+ later(()=>{const n=$('qnote');n&&n.remove();nextQ()},it?7500:700);
 }
 function nextQ(){
  if(S.mode!=='play')return;
@@ -266,12 +283,12 @@ function judge(g){
  if(ok){
   S.tries===0&&!S.cur.hinted&&(S.stars++,S.correct++);S.learned.push(S.cur.ans);
   burst(sx,sy,40,true);SFX.ok();toast(pick(['أحسنت! 🌟','رائع! 🎉','ممتاز! 👏','بطل! 🏅']));
-  {const q=S.cur;setTimeout(()=>say(q.type==='abc'?`${l[1]}`:q.type==='har'?`أحسنت! ${l[1]} مع ${HAR[q.h][1]}: ${q.ans}`:`أحسنت! ${l[2]} ... ${l[3]}`),250);
-  if(q.type==='har'){$('qcard').hidden=false;$('qtext').textContent=`${l[1]} مع ${HAR[q.h][1]}`;$('qbig').innerHTML=`<span style="color:${HAR[q.h][2]}">${q.ans}</span>`;setTimeout(()=>{if(S.cur===q)$('qcard').hidden=true},1500)}}
-  S.qi++;updHud();if(S.cur.type!=='har')$('qcard').hidden=true;later(nextQ,1800);
+  {const q=S.cur;setTimeout(()=>say(q.type==='abc'?`${l[1]}`:q.type==='mk'?`أحسنت! ${l[1]} مع ${MK[q.h].n}: ${spk(l[0],q.h)}`:`أحسنت! ${l[2]} ... ${l[3]}`),250);
+  if(q.type==='mk'){$('qcard').hidden=false;$('hintB').hidden=true;$('qtext').textContent=`${l[1]} مع ${MK[q.h].n}`;$('qbig').innerHTML=`<span style="color:${MK[q.h].c}">${q.ans}</span>`;setTimeout(()=>{if(S.cur===q)$('qcard').hidden=true},1500)}}
+  S.qi++;updHud();if(S.cur.type!=='mk')$('qcard').hidden=true;later(nextQ,1800);
  }else{
   S.tries++;SFX.bad();burst(sx,sy,14,false);toast('حاول مرة أخرى 💪');
-  setTimeout(()=>say(S.cur&&S.cur.type==='har'?`هذا ${pickd}. حاول مرة أخرى`:`هذا حرف ال${L[IDX[pickd]]?.[1]||''}. حاول مرة أخرى`),250);
+  setTimeout(()=>say(S.cur&&S.cur.type==='mk'?(()=>{const c=L[S.cur.i][0],k=S.cur.pool.find(i=>wr(c,i)===pickd);return k===undefined?'حاول مرة أخرى':`هذا ${MK[k].n}: ${spk(c,k)}. حاول مرة أخرى`})():`هذا حرف ال${L[IDX[pickd]]?.[1]||''}. حاول مرة أخرى`),250);
   if(S.cur.type==='abc'&&S.cur.prev&&S.tries>=2)later(hint,1600);
   later(()=>{sayQ();spawnGate()},2600);
  }
@@ -291,7 +308,7 @@ function later(fn,ms){const r=S.run;setTimeout(()=>{if(S.run===r&&S.mode==='play
 let toastT=0;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1300)}
 function burst(x,y,n,good){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=2+Math.random()*6;S.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-3,life:1,c:good?pick(['#ffd23f','#ff5c8a','#4fc3f7','#8bc34a','#b388ff']):'#9aa7b4',star:good&&Math.random()<.5,r:3+Math.random()*4})}}
 function hideAll(){['menu','levels','endL'].forEach(i=>$(i).hidden=true)}
-function toMenu(){S.mode='menu';S.run=(S.run||0)+1;S.cur=null;S.objs=[];S.light=null;S.pendingGate=false;S.target=4;try{speechSynthesis.cancel()}catch(e){}
+function toMenu(){$('qnote')?.remove();S.mode='menu';S.run=(S.run||0)+1;S.cur=null;S.objs=[];S.light=null;S.pendingGate=false;S.target=4;try{speechSynthesis.cancel()}catch(e){}
  ['hud','prog','ctrl','qcard','stop','endL','levels'].forEach(i=>$(i).hidden=true);$('menu').hidden=false}
 
 /* ---------------- Input ---------------- */
@@ -317,7 +334,7 @@ function openLevels(){
   GROUPS.forEach((g,i)=>{const b=document.createElement('button');b.className='chip';b.innerHTML=`${g[2]}<small>${g[1]-g[0]} حروف</small>`;b.onclick=()=>{S.group=i;startGame()};box.appendChild(b)});
   say('اختر مجموعة الحروف');
  }else{$('lvTitle').textContent='🔊 الحروف وأصواتها';$('lvSub').textContent='كيف تريد أن تلعب؟';
-  [['snd','👂 صوت الحرف','اسمع واختر'],['pic','🖼️ أول حرف','من الصورة'],['har','بَ بُ بِ الحركات','فتحة · ضمة · كسرة'],['mix','🌈 مختلط','صوت وصورة وحركات']].forEach(([k,t,s])=>{const b=document.createElement('button');b.className='chip';b.innerHTML=`${t}<small>${s}</small>`;b.onclick=()=>{S.sub=k;S.group=4;startGame()};box.appendChild(b)});
+  [['snd','👂 صوت الحرف','اسمع واختر'],['pic','🖼️ أول حرف','من الصورة'],['har','بَ بُ بِ','فتحة · ضمة · كسرة'],['suk','بْ السكون','ساكن أم متحرك'],['tan','بًا بٌ بٍ','التنوين'],['allh','🎯 كل الحركات','مراجعة شاملة'],['mix','🌈 مختلط','صوت وصورة وحركات']].forEach(([k,t,s])=>{const b=document.createElement('button');b.className='chip';b.innerHTML=`${t}<small>${s}</small>`;b.onclick=()=>{S.sub=k;S.group=4;startGame()};box.appendChild(b)});
   say('كيف تريد أن تلعب؟');
  }
 }
