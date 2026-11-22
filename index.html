@@ -584,25 +584,31 @@ function gcats(){const c=D.custom&&D.custom._gamecats;return Array.isArray(c)?c:
 function setGcats(a){D.custom=Object.assign({},D.custom||{},{_gamecats:a});save()}
 const gcatRaw=g=>g.cat!==undefined?g.cat:(g.id==='g1'?'lang':g.id==='g2'?'math':'');
 function gcatOf(g){const cats=gcats(),r=gcatRaw(g);if(r&&cats.some(c=>c.id===r))return r;return cats.some(c=>c.id==='other')?'other':(cats[0]?cats[0].id:'')}
+function ensureCats(){if(!isAdmin())return;if(!(D.custom&&D.custom._gcat_action)){const cats=gcats().slice();if(!cats.some(c=>c.id==='action'))cats.push({id:'action',name:'ألعاب الأكشن',icon:'⚡',color:'var(--coral)'});D.custom=Object.assign({},D.custom||{},{_gamecats:cats,_gcat_action:true});save()}}
+function wwEmbed(x){x=String(x||'').trim();const m=x.match(/src\s*=\s*["']([^"']+)["']/i);if(m)x=m[1];x=x.replace(/&amp;/g,'&');
+  let u;try{u=new URL(x)}catch(e){return null}if(u.protocol!=='https:'||!/(^|\.)wordwall\.net$/i.test(u.hostname))return null;
+  if(/\/embed\//.test(u.pathname))return {kind:'embed',url:u.href};return {kind:'link',url:u.href}}
+function openEmbed(g){modal('');const bg=$('#layer .modal-bg');bg.className='game-full';bg.onclick=null;
+  bg.innerHTML=`<div class="gf-bar"><b>${esc(g.icon||'🎯')} ${esc(g.title)}</b><span class="muted">لعبة Wordwall</span><button class="btn coral sm" onclick="closeLayer()">✖ خروج</button></div><iframe title="${esc(g.title)}" src="${esc(g.url)}" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" allow="autoplay; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" style="background:#fff"></iframe>`}
 function ensureOther(){if(!isAdmin())return;const cats=gcats();if(cats.some(c=>c.id==='other'))return;const known=new Set(cats.map(c=>c.id));if(D.games.some(g=>!known.has(gcatRaw(g))))setGcats([...cats,{id:'other',name:'ألعاب أخرى',icon:'🎲',color:'var(--teal)'}])}
 function setGameCat(id,cat){const g=D.games.find(x=>x.id===id);if(!g)return;g.cat=cat;const c=gcatById(cat);SYNC.dirtyRender=true;save();sfx('tap');toast(`نُقلت «${g.title}» إلى ${c?c.icon+' '+c.name:'القسم'}`)}
 const gcatById=id=>gcats().find(c=>c.id===id);
 function bestOf(g){const s=me();if(!s)return 0;return Math.max(0,...D.scores.filter(x=>x.sid===s.id&&x.gid===g.id).map(x=>x.score))}
 function playG(id){const g=D.games.find(x=>x.id===id);if(!g)return;sfx('open');
   if(g.kind==='link'){const a=document.createElement('a');a.href=safeUrl(g.url);a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();return}
-  if(g.kind==='file')return openFileGame(id);playGame(id)}
+  if(g.kind==='embed')return openEmbed(g);if(g.kind==='file')return openFileGame(id);playGame(id)}
 function gameCard(g,c){const col=g.color||(c&&c.color)||'var(--sky)',b=bestOf(g);
   return `<div class="gcard" style="--gc:${col}">
     <button class="gc-cover ${g.cover?'has-img':''}" onclick="playG('${g.id}')" aria-label="العب ${esc(g.title)}">${g.cover?`<img src="${g.cover}" alt="">`:`<span class="gc-rays"></span><span class="gc-spark s1">✨</span><span class="gc-spark s2">⭐</span><span class="gc-spark s3">✨</span><span class="gc-scene"><span class="gc-floor"></span><span class="gc-emoji">${esc(g.icon||'🎮')}</span><span class="gc-title">${esc(g.title)}</span></span>`}<span class="gc-play">▶</span></button>
     <div class="gc-body">${g.cover?`<h4>${esc(g.title)}</h4>`:''}${g.desc?`<p>${esc(g.desc)}</p>`:''}
     ${b?`<span class="pill ok">⭐ أفضل نتيجة لي: ${b}</span>`:''}
     ${isAdmin()?`<div class="gc-tools"><button class="btn sm ghost" onclick="editGame('${g.id}')">✏️ تعديل</button><button class="btn sm ghost" onclick="sortGames('${gcatOf(g)}','${g.id}')">↕️ نقل</button><button class="btn sm ghost" onclick="confirmBox('حذف اللعبة؟',()=>delGame('${g.id}'))" aria-label="حذف">🗑️</button></div>
-      ${g.kind==='file'?(g.scores?'<small class="muted">✓ تُسجَّل النتائج</small>':'<small style="color:var(--warn)">لا ترسل النتائج</small>'):g.kind==='link'?'<small style="color:var(--warn)">رابط: النتائج لا تُسجَّل</small>':''}`:''}</div></div>`}
+      ${g.kind==='file'?(g.scores?'<small class="muted">✓ تُسجَّل النتائج</small>':'<small style="color:var(--warn)">لا ترسل النتائج</small>'):g.kind==='link'?'<small style="color:var(--warn)">رابط: النتائج لا تُسجَّل</small>':g.kind==='embed'?'<small class="muted">🟣 Wordwall (النتائج لا تُسجَّل)</small>':''}`:''}</div></div>`}
 function vGames(){
   const tab=S.ui.gt||'play';
   const head=`<div class="tabs" style="max-width:420px"><button class="${tab==='play'?'on':''}" onclick="S.ui.gt='play';render()">🎮 الألعاب</button><button class="${tab==='lb'?'on':''}" onclick="S.ui.gt='lb';render()">🏆 المتصدرون</button></div>`;
   if(tab!=='play')return head+leaderboard();
-  ensureOther();const cats=gcats(),f=S.ui.gc||'';
+  ensureCats();ensureOther();const cats=gcats(),f=S.ui.gc||'';
   const secs=cats.map(c=>({c,games:D.games.filter(g=>gcatOf(g)===c.id)}))
     .filter(x=>(!f||x.c.id===f)&&(x.games.length||isAdmin()));
   return head+`<div class="gm-hero pop"><span class="gm-joy">🎮</span><div><h1>هيا نلعب ونتعلم!</h1><p>كل إجابة صحيحة تعطيك نجمة ⭐</p></div></div>
@@ -624,8 +630,8 @@ function sortGames(cat,focus){if(!gcatById(cat)){const g=D.games.find(x=>x.id===
 function moveGame(id,d){const g=D.games.find(x=>x.id===id);if(!g)return;const c=gcatOf(g);const same=D.games.map((x,i)=>[x,i]).filter(([x])=>gcatOf(x)===c);const k=same.findIndex(([x])=>x===g),t=same[k+d];if(!t)return;
   const i=same[k][1],j=t[1];[D.games[i],D.games[j]]=[D.games[j],D.games[i]];save();render()}
 const catOpts=()=>[...gcats().map(c=>[c.id,`${c.icon} ${c.name}`]),['','🎲 بدون قسم']];
-function addGame(){form('🎮 إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:S.ui.gc||gcats()[0]?.id||''},{k:'icon',label:'أيقونة اللعبة (رمز تعبيري)',value:'🎮'},{k:'desc',label:'وصف قصير يشوّق الطفل'},{k:'cover',label:'🖼️ صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'file',label:'📁 ملف اللعبة (HTML) — الطريقة المستحسنة',type:'file',accept:'.html,.htm,text/html'},{k:'url',label:'أو رابط اللعبة (لا تُسجَّل نتائجه)',type:'url',ph:'https://...'}],async v=>{
-  if(!v.title)return 'اكتب اسم اللعبة';if(!v.file&&!v.url)return 'اختر ملف اللعبة أو اكتب رابطها';
+function addGame(){form('🎮 إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:S.ui.gc||gcats()[0]?.id||''},{k:'icon',label:'أيقونة اللعبة (رمز تعبيري)',value:'🎮'},{k:'desc',label:'وصف قصير يشوّق الطفل'},{k:'cover',label:'🖼️ صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'file',label:'📁 ملف اللعبة (HTML) — الطريقة المستحسنة',type:'file',accept:'.html,.htm,text/html'},{k:'ww',label:'🟣 أو لعبة من Wordwall: الصق كود التضمين أو الرابط',type:'textarea',rows:3,ph:'<iframe src="https://wordwall.net/embed/..."'},{k:'url',label:'أو رابط لعبة أخرى (لا تُسجَّل نتائجه)',type:'url',ph:'https://...'}],async v=>{
+  if(!v.title)return 'اكتب اسم اللعبة';if(!v.file&&!v.url&&!v.ww)return 'اختر ملف اللعبة أو الصق رابطها';
   const id=uid(),c=gcatById(v.cat),color=c?c.color:COLORS[rnd(COLORS.length)];let cover='';
   if(v.cover){try{cover=await readImg(v.cover,640)}catch(e){return 'تعذّرت قراءة صورة الغلاف'}}
   const base={id,title:v.title,icon:v.icon||'🎮',desc:v.desc,cat:v.cat,cover,color,t:Date.now()};
@@ -634,7 +640,8 @@ function addGame(){form('🎮 إضافة لعبة جديدة',[{k:'title',label:
     try{await STORE.put('game_'+id,new Blob([txt],{type:'text/html'}))}catch(e){return 'تعذّر حفظ ملف اللعبة'}
     const scores=/fasl-score/.test(txt);D.games.push(Object.assign(base,{kind:'file',size:v.file.size,scores}));save();
     setTimeout(()=>{sfx('ex');toast(scores?'✅ أُضيفت اللعبة، ونتائجها ستُسجَّل للطلاب':'⚠️ أُضيفت اللعبة، لكنها لا ترسل النتائج للمنصة')},50);return}
-  if(!/^https:\/\//.test(v.url))return 'الرابط يجب أن يبدأ بـ https://';D.games.push(Object.assign(base,{kind:'link',url:v.url}));save();toast('تمت إضافة اللعبة')})}
+  if(v.ww){const w=wwEmbed(v.ww);if(!w)return 'هذا ليس رابط Wordwall صحيحاً';if(base.icon==='🎮')base.icon='🟣';D.games.push(Object.assign(base,w));save();toast(w.kind==='embed'?'✅ أُضيفت لعبة Wordwall وتفتح داخل المنصة':'أُضيفت. للعب داخل المنصة استخدم «كود التضمين» من Wordwall');return}
+  if(!/^https:\/\//.test(v.url))return 'الرابط يجب أن يبدأ بـ https://';const w2=wwEmbed(v.url);D.games.push(Object.assign(base,w2||{kind:'link',url:v.url}));save();toast('تمت إضافة اللعبة')})}
 function editGame(id){const g=D.games.find(x=>x.id===id);if(!g)return;
   form('✏️ تعديل اللعبة',[{k:'title',label:'اسم اللعبة',value:g.title},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:gcatOf(g)},{k:'icon',label:'أيقونة اللعبة',value:g.icon},{k:'desc',label:'وصف قصير',value:g.desc||''},{k:'cover',label:g.cover?'🖼️ تغيير صورة الغلاف':'🖼️ صورة الغلاف',type:'file',accept:'image/*'},...(g.cover?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة واستخدام الأيقونة']]}]:[]),{k:'color',label:'لون البطاقة',type:'select',options:CNAMES,value:g.color}],async v=>{
     if(!v.title)return 'اكتب اسم اللعبة';let cover=g.cover||'';if(v.rm==='1')cover='';
