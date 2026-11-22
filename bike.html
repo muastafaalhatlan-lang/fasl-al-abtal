@@ -57,11 +57,25 @@ h1{font-size:clamp(30px,7vw,44px);margin:0;font-weight:900;color:var(--pri)}
 #stop{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);left:50%;transform:translateX(-50%);z-index:6;width:110px;height:110px;border-radius:50%;border:6px solid #fff;background:#e53935;color:#fff;font-size:28px;font-weight:900;box-shadow:0 8px 0 #9b1c1a;animation:pulse .7s infinite alternate}
 #stop[hidden]{display:none}
 @keyframes pulse{to{transform:translateX(-50%) scale(1.08)}}
-#toast{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);font-size:clamp(28px,8vw,46px);font-weight:900;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.35),0 0 18px rgba(0,0,0,.25);z-index:7;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;white-space:nowrap}
+#toast{position:fixed;left:50%;top:44%;transform:translate(-50%,-50%);font-size:clamp(28px,8vw,46px);font-weight:900;color:#fff;text-shadow:0 4px 0 rgba(0,0,0,.35),0 0 18px rgba(0,0,0,.25);z-index:7;pointer-events:none;opacity:0;transition:opacity .25s,transform .25s;width:max-content;max-width:92vw;text-align:center;line-height:1.3}
 #toast.on{opacity:1;transform:translate(-50%,-60%) scale(1.05)}
 .big-stars{font-size:52px;letter-spacing:6px;margin:8px 0}
 .learned{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:10px 0;direction:rtl}
 .learned span{background:var(--bg);border:2px solid var(--pri);border-radius:12px;min-width:46px;padding:2px 8px;font-size:28px;font-weight:900}
+.inp{font:inherit;font-size:22px;font-weight:800;text-align:center;border:3px solid var(--pri);border-radius:16px;padding:10px 12px;background:var(--bg);color:var(--ink);width:min(100%,280px)}
+.inp.code{width:140px;letter-spacing:6px;direction:ltr}
+.colors{display:flex;gap:12px;justify-content:center;margin:14px 0 6px}
+.colors button{width:54px;height:54px;border-radius:50%;border:4px solid transparent;font-size:26px;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.colors button.on{border-color:var(--ink);transform:scale(1.12)}
+.code-big{font-size:58px;font-weight:900;letter-spacing:12px;direction:ltr;color:var(--grape);background:var(--bg);border-radius:20px;padding:4px 10px;margin:4px auto 12px;width:fit-content}
+.players{display:flex;flex-direction:column;gap:8px;align-items:center}
+.pl{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:16px;padding:8px 16px;font-size:22px;font-weight:900;min-width:220px}
+.pl i{width:26px;height:26px;border-radius:50%;display:inline-block;flex:none}
+.pl small{font-size:14px;color:var(--muted);font-weight:700}
+.err{color:var(--bad);font-weight:800;min-height:24px;margin:10px 0 0}
+.mpbtn{margin-top:16px;width:100%;font-size:22px;background:linear-gradient(90deg,#ff7a59,#8b5cf6)}
+#roomTag{position:fixed;top:calc(env(safe-area-inset-top,0px) + 16px);right:76px;z-index:5;background:var(--card);border:3px solid var(--grape);border-radius:14px;padding:4px 10px;font-weight:900;font-size:15px;max-width:40vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#roomTag[hidden]{display:none}
 @media (max-width:420px){#ctrl button{width:64px;height:64px;font-size:30px}#stop{width:94px;height:94px;font-size:24px}}
 </style></head>
 <body>
@@ -72,6 +86,7 @@ h1{font-size:clamp(30px,7vw,44px);margin:0;font-weight:900;color:var(--pri)}
   <div class="stars" id="starsB" dir="ltr">⭐ 0</div>
   <button class="hb" id="muteB" aria-label="الصوت">🔊</button>
 </div>
+<div id="roomTag" hidden></div>
 <div id="prog" hidden><i></i></div>
 <div id="qcard" hidden>
   <div id="qtext"></div>
@@ -91,7 +106,32 @@ h1{font-size:clamp(30px,7vw,44px);margin:0;font-weight:900;color:var(--pri)}
       <button class="topic" data-topic="abc"><div class="ic" style="font-weight:900;color:var(--grape)">أ ب ت</div><div class="t">الحروف الهجائية</div><div class="d">اعرف ترتيب الحروف: اجمع الحرف التالي</div></button>
       <button class="topic" data-topic="snd"><div class="ic">🔊</div><div class="t">الحروف وأصواتها</div><div class="d">اسمع الصوت، انظر للصورة، وتعلّم الحركات والسكون والتنوين</div></button>
     </div>
+    <button class="btn mpbtn" id="mpB">👫 لعب جماعي مع أصدقائي (أونلاين)</button>
     <p class="how">🎮 حرّك الدراجة بالأسهم ◀ ▶ أو اسحب بإصبعك<br>🚦 إذا رأيت الإشارة الحمراء اضغط <b>قِف</b> &nbsp;·&nbsp; 🚧 ابتعد عن الحواجز</p>
+  </div>
+</div>
+
+<!-- Multiplayer lobby -->
+<div class="layer" id="mpL" hidden>
+  <div class="panel">
+    <h1>👫 لعب جماعي</h1>
+    <div id="mpForm">
+      <p class="sub">العبوا معاً حتى 3 لاعبين، كل واحد على جهازه، وتجمعون النجوم لفريقكم</p>
+      <input id="mpName" class="inp" maxlength="12" placeholder="اكتب اسمك" autocomplete="off">
+      <div class="colors" id="mpColors"></div>
+      <div class="row"><button class="btn" id="mpCreate">➕ إنشاء غرفة جديدة</button></div>
+      <p class="sub" style="margin:18px 0 6px">أو ادخل رمز غرفة صديقك:</p>
+      <div class="row" style="margin-top:0"><input id="mpCode" class="inp code" inputmode="numeric" maxlength="4" placeholder="0000" autocomplete="off"><button class="btn" id="mpJoin">🚪 دخول</button></div>
+    </div>
+    <div id="mpRoom" hidden>
+      <p class="sub" style="margin-bottom:4px">رمز الغرفة: أخبر أصدقاءك به</p>
+      <div class="code-big" id="mpCodeBig"></div>
+      <div class="players" id="mpPlayers"></div>
+      <p class="sub" id="mpStatus" style="margin-top:12px"></p>
+      <div class="row"><button class="btn" id="mpStart" hidden>▶ اختر الموضوع وابدأ</button></div>
+    </div>
+    <p class="err" id="mpErr"></p>
+    <div class="row"><button class="btn alt" id="mpBack">→ رجوع</button></div>
   </div>
 </div>
 
@@ -108,10 +148,11 @@ h1{font-size:clamp(30px,7vw,44px);margin:0;font-weight:900;color:var(--pri)}
 <!-- End -->
 <div class="layer" id="endL" hidden>
   <div class="panel">
-    <h1>🏆 أحسنت يا بطل!</h1>
+    <h1 id="endT">🏆 أحسنت يا بطل!</h1>
     <div class="big-stars" id="endStars"></div>
     <p class="sub" id="endSub"></p>
     <div class="learned" id="endLearned"></div>
+    <p class="sub" id="endWait" hidden></p>
     <div class="row"><button class="btn" id="againB">🔁 العب مرة أخرى</button><button class="btn alt" id="topicsB">🔤 اختر موضوعاً آخر</button></div>
   </div>
 </div>
@@ -251,68 +292,85 @@ function sayQ(){
 }
 function hint(){const q=S.cur;if(!q||q.type!=='abc')return;$('qbig').querySelector('.slot').textContent=L[q.i][0];say(`بعد ${L[q.i-1][1]} يأتي ${L[q.i][1]}`);q.hinted=true}
 
-function spawnGate(){
- const opts=qOptions(S.cur);
+function spawnGate(opts,gid){
+ opts=opts||qOptions(S.cur);
  const cols=[['#ff5c8a','#c2185b'],['#4fc3f7','#0277bd'],['#8bc34a','#558b2f'],['#ffb300','#e65100'],['#b388ff','#6200ea']];
  const cs=shuffle(cols.slice());
- S.objs.push({k:'gate',d:FAR,opts,cols:cs.slice(0,3),done:false,bob:Math.random()*6});
+ S.objs.push({k:'gate',d:FAR,opts,gid,cols:cs.slice(0,3),done:false,bob:Math.random()*6});
  S.gateOut=true;
 }
-function spawnBarrier(){S.objs.push({k:'barrier',d:FAR,lane:Math.random()*3|0,hit:false})}
+function spawnBarrier(lane){S.objs.push({k:'barrier',d:FAR,lane:lane??(Math.random()*3|0),hit:false})}
+// host (or solo) creates a gate and tells the others
+function hostGate(retry){const opts=qOptions(S.cur),gid=(S.gid=(S.gid||0)+1);if(MP.on){send('gate',{opts,gid,retry:!!retry})}spawnGate(opts,gid)}
 function spawnLight(){S.light={k:'light',d:FAR,state:'red',stopped:false,phase:0};S.objs.push(S.light);S.stopReq=false;S.lightNoticed=false}
 
 /* ---------------- Flow ---------------- */
-function startGame(){
- hideAll();S.mode='play';S.stars=0;S.correct=0;S.learned=[];S.qi=0;S.objs=[];S.parts=[];S.lane=1;S.px=0;S.speed=0;S.target=9;S.light=null;S.lightDone=0;S.pendingGate=false;S.bumpT=0;S.run=(S.run||0)+1;
- buildQueue();$('hud').hidden=$('prog').hidden=$('ctrl').hidden=false;updHud();SFX.bell();
+function startGame(remote){
+ hideAll();$('mpL').hidden=true;S.mode='play';S.stars=0;S.correct=0;S.learned=[];S.qi=0;S.objs=[];S.parts=[];S.lane=1;S.px=0;S.speed=0;S.target=9;S.light=null;S.lightDone=0;S.pendingGate=false;S.bumpT=0;S.run=(S.run||0)+1;
+ if(remote)S.queue=remote;else buildQueue();
+ if(MP.on&&MP.host){MP.playing=new Set(Object.keys(MP.peers));MP.pend={}}
+ if(MP.on&&MP.host)send('start',{topic:S.topic,group:S.group,sub:S.sub,queue:S.queue});
+ $('hud').hidden=$('prog').hidden=$('ctrl').hidden=false;$('roomTag').hidden=true;updHud();SFX.bell();
  $('qnote')?.remove();const it=S.topic==='snd'&&INTRO[S.sub];if(it){$('qcard').hidden=false;$('hintB').hidden=true;$('qtext').textContent='📘 '+it[0];$('qbig').innerHTML=`<span style="color:var(--grape)">${it[1]}</span>`;$('qtext').insertAdjacentHTML('afterend',`<div id="qnote" style="font-size:16px;color:var(--muted);line-height:1.6">${it[2]}</div>`);setTimeout(()=>say(it[3],.75),400)}
- later(()=>{const n=$('qnote');n&&n.remove();nextQ()},it?7500:700);
+ later(()=>{const n=$('qnote');n&&n.remove();if(!MP.on||MP.host)nextQ()},it?7500:700);
 }
 function nextQ(){
  if(S.mode!=='play')return;
- if(S.qi>=S.queue.length)return finish();
- S.cur=S.queue[S.qi];S.tries=0;showQuestion();
+ if(S.qi>=S.queue.length){if(MP.on)send('end',{stars:S.stars});return finish()}
+ if(MP.on)send('q',{qi:S.qi});
+ S.cur=S.queue[S.qi];S.tries=0;$('qnote')?.remove();showQuestion();
  // every 3 questions: a traffic light first; otherwise maybe a barrier
- if(S.qi>0&&S.qi%3===0&&S.lightDone<S.qi){S.lightDone=S.qi;spawnLight();S.pendingGate=true;return}
- if(S.qi>0&&Math.random()<.7)spawnBarrier();
- later(spawnGate,S.qi>0?1400:200);
+ if(S.qi>0&&S.qi%3===0&&S.lightDone<S.qi){S.lightDone=S.qi;if(MP.on)send('light',{});spawnLight();S.pendingGate=true;return}
+ if(S.qi>0&&Math.random()<.7){const lane=Math.random()*3|0;if(MP.on)send('bar',{lane});spawnBarrier(lane)}
+ later(()=>hostGate(),S.qi>0?1400:200);
 }
+function sayRight(q){const l=L[q.i];say(q.type==='abc'?`${l[1]}`:q.type==='mk'?`أحسنت! ${l[1]} مع ${MK[q.h].n}: ${spk(l[0],q.h)}`:`أحسنت! ${l[2]} ... ${l[3]}`)}
+function showRight(q){const l=L[q.i];if(q.type!=='mk'){$('qcard').hidden=true;return}
+ $('qcard').hidden=false;$('hintB').hidden=true;$('qtext').textContent=`${l[1]} مع ${MK[q.h].n}`;$('qbig').innerHTML=`<span style="color:${MK[q.h].c}">${q.ans}</span>`;setTimeout(()=>{if(S.cur===q)$('qcard').hidden=true},1500)}
+function sayWrong(pickd){const q=S.cur;if(!q)return;say(q.type==='mk'?(()=>{const c=L[q.i][0],k=q.pool.find(i=>wr(c,i)===pickd);return k===undefined?'حاول مرة أخرى':`هذا ${MK[k].n}: ${spk(c,k)}. حاول مرة أخرى`})():`هذا حرف ال${L[IDX[pickd]]?.[1]||''}. حاول مرة أخرى`)}
 function judge(g){
  g.done=true;const pickd=g.opts[S.lane],ok=pickd===S.cur.ans,l=L[S.cur.i];
  const sx=px((S.lane-1)*LANE,0.5),sy=py(.5)-unit()*1.6;
+ if(MP.on){ // team play: show my result, the host decides for the team
+  if(ok){burst(sx,sy,30,true);SFX.ok();toast('صح ✔')}else{SFX.bad();burst(sx,sy,14,false);toast('✖')}
+  S.myMark={ok,t:S.t};send('ans',{gid:g.gid,ok});if(MP.host)gotAns(MP.pid,g.gid,ok);return}
  if(ok){
   S.tries===0&&!S.cur.hinted&&(S.stars++,S.correct++);S.learned.push(S.cur.ans);
   burst(sx,sy,40,true);SFX.ok();toast(pick(['أحسنت! 🌟','رائع! 🎉','ممتاز! 👏','بطل! 🏅']));
-  {const q=S.cur;setTimeout(()=>say(q.type==='abc'?`${l[1]}`:q.type==='mk'?`أحسنت! ${l[1]} مع ${MK[q.h].n}: ${spk(l[0],q.h)}`:`أحسنت! ${l[2]} ... ${l[3]}`),250);
-  if(q.type==='mk'){$('qcard').hidden=false;$('hintB').hidden=true;$('qtext').textContent=`${l[1]} مع ${MK[q.h].n}`;$('qbig').innerHTML=`<span style="color:${MK[q.h].c}">${q.ans}</span>`;setTimeout(()=>{if(S.cur===q)$('qcard').hidden=true},1500)}}
-  S.qi++;updHud();if(S.cur.type!=='mk')$('qcard').hidden=true;later(nextQ,1800);
+  {const q=S.cur;setTimeout(()=>sayRight(q),250);showRight(q)}
+  S.qi++;updHud();later(nextQ,1800);
  }else{
   S.tries++;SFX.bad();burst(sx,sy,14,false);toast('حاول مرة أخرى 💪');
-  setTimeout(()=>say(S.cur&&S.cur.type==='mk'?(()=>{const c=L[S.cur.i][0],k=S.cur.pool.find(i=>wr(c,i)===pickd);return k===undefined?'حاول مرة أخرى':`هذا ${MK[k].n}: ${spk(c,k)}. حاول مرة أخرى`})():`هذا حرف ال${L[IDX[pickd]]?.[1]||''}. حاول مرة أخرى`),250);
+  setTimeout(()=>sayWrong(pickd),250);
   if(S.cur.type==='abc'&&S.cur.prev&&S.tries>=2)later(hint,1600);
-  later(()=>{sayQ();spawnGate()},2600);
+  later(()=>{sayQ();hostGate(true)},2600);
  }
 }
 function finish(){
  S.mode='end';$('ctrl').hidden=true;$('stop').hidden=true;$('qcard').hidden=true;SFX.win();
  const total=S.queue.length;
- const ratio=S.stars/Math.max(1,total);const n=ratio>.85?3:ratio>.5?2:1;
+ const ratio=S.stars/Math.max(1,total*(MP.on?Math.max(1,Object.keys(MP.peers).length):1));const n=ratio>.85?3:ratio>.5?2:1;
  $('endStars').textContent='⭐'.repeat(n)+'☆'.repeat(3-n);
- $('endSub').textContent=`جمعت ${S.stars} نجمة! تعلّمت هذه الحروف:`;
+ const team=Object.values(MP.peers);
+ $('endSub').textContent=MP.on?`فريقكم (${team.map(p=>p.name).join(' و ')}) جمع ${S.stars} نجمة! تعلّمتم:`:`جمعت ${S.stars} نجمة! تعلّمت هذه الحروف:`;
+ $('endT').textContent=MP.on?'🏆 أحسنتم يا أبطال!':'🏆 أحسنت يا بطل!';
+ $('againB').hidden=MP.on&&!MP.host;$('topicsB').textContent=MP.on?(MP.host?'🔤 موضوع آخر':'🚪 خروج من الغرفة'):'🔤 اختر موضوعاً آخر';
+ $('endWait').hidden=!(MP.on&&!MP.host);$('endWait').textContent=MP.on?`بانتظار ${MP.hostName||'المضيف'} ليبدأ جولة جديدة…`:'';
  $('endLearned').innerHTML=[...new Set(S.learned)].map(x=>`<span>${x}</span>`).join('');
- setTimeout(()=>{$('endL').hidden=false;say('أحسنت يا بطل! أكملت الطريق')},900);
+ setTimeout(()=>{$('endL').hidden=false;say(MP.on?'أحسنتم يا أبطال! أكملتم الطريق معاً':'أحسنت يا بطل! أكملت الطريق')},900);
  for(let i=0;i<6;i++)setTimeout(()=>burst(Math.random()*W,H*.3+Math.random()*H*.3,30,true),i*250);
 }
+function teamStar(){if(!MP.on){S.stars++;updHud()}else if(MP.host){S.stars++;updHud();send('stars',{n:S.stars})}else send('star',{})}
 function updHud(){$('starsB').textContent='⭐ '+S.stars;$('prog').firstElementChild.style.width=(100*S.qi/Math.max(1,S.queue.length))+'%'}
 function later(fn,ms){const r=S.run;setTimeout(()=>{if(S.run===r&&S.mode==='play')fn()},ms)}
 let toastT=0;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1300)}
 function burst(x,y,n,good){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=2+Math.random()*6;S.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-3,life:1,c:good?pick(['#ffd23f','#ff5c8a','#4fc3f7','#8bc34a','#b388ff']):'#9aa7b4',star:good&&Math.random()<.5,r:3+Math.random()*4})}}
-function hideAll(){['menu','levels','endL'].forEach(i=>$(i).hidden=true)}
-function toMenu(){$('qnote')?.remove();S.mode='menu';S.run=(S.run||0)+1;S.cur=null;S.objs=[];S.light=null;S.pendingGate=false;S.target=4;try{speechSynthesis.cancel()}catch(e){}
+function hideAll(){['menu','levels','endL','mpL'].forEach(i=>$(i).hidden=true)}
+function toMenu(){$('qnote')?.remove();syncMenu();S.mode='menu';S.run=(S.run||0)+1;S.cur=null;S.objs=[];S.light=null;S.pendingGate=false;S.target=4;try{speechSynthesis.cancel()}catch(e){}
  ['hud','prog','ctrl','qcard','stop','endL','levels'].forEach(i=>$(i).hidden=true);$('menu').hidden=false}
 
 /* ---------------- Input ---------------- */
-function steer(dir){if(S.mode!=='play')return;const n=Math.max(0,Math.min(2,S.lane+dir));if(n!==S.lane){S.lane=n;S.lean=dir;tone(700,.06,'triangle',.06)}}
+function steer(dir){if(S.mode!=='play')return;const n=Math.max(0,Math.min(2,S.lane+dir));if(n!==S.lane){S.lane=n;S.lean=dir;tone(700,.06,'triangle',.06);if(MP.on)send('lane',{lane:n})}}
 // screen-left lane is index 0 visually at x<0
 addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){steer(-1);e.preventDefault()}else if(e.key==='ArrowRight'){steer(1);e.preventDefault()}else if(e.key===' '||e.key==='ArrowDown'){if(!$('stop').hidden)doStop();e.preventDefault()}});
 $('lB').addEventListener('pointerdown',e=>{e.preventDefault();ac();steer(-1)});
@@ -324,7 +382,7 @@ cv.addEventListener('pointerup',e=>{if(sw&&!sw.moved&&S.mode==='play'){steer(e.c
 function doStop(){if(!S.light||S.stopReq)return;S.stopReq=true;$('stop').hidden=true;tone(300,.2,'sine',.1)}
 $('stop').addEventListener('pointerdown',e=>{e.preventDefault();doStop()});
 $('sayB').onclick=()=>{ac();sayQ()};$('hintB').onclick=hint;
-$('homeB').onclick=toMenu;
+$('homeB').onclick=()=>{if(MP.on){if(!confirm('هل تريد الخروج من الغرفة؟'))return;leaveRoom()}toMenu()};
 $('muteB').onclick=()=>{muted=!muted;$('muteB').textContent=muted?'🔇':'🔊';try{localStorage.setItem('bike_mute',muted?'1':'0')}catch(e){}if(muted)try{speechSynthesis.cancel()}catch(e){}};
 $('muteB').textContent=muted?'🔇':'🔊';
 document.querySelectorAll('.topic').forEach(b=>b.onclick=()=>{ac();SFX.bell();S.topic=b.dataset.topic;openLevels()});
@@ -339,8 +397,100 @@ function openLevels(){
  }
 }
 $('backB').onclick=()=>{$('levels').hidden=true;$('menu').hidden=false};
+function syncMenu(){$('mpB').hidden=MP.on;$('roomTag').hidden=!MP.on;if(MP.on)$('roomTag').textContent=`👫 غرفة ${MP.code}`}
 $('againB').onclick=()=>{ac();startGame()};
-$('topicsB').onclick=toMenu;
+$('topicsB').onclick=()=>{if(MP.on&&MP.host){S.mode='menu';$('endL').hidden=true;['hud','prog','ctrl','qcard','stop'].forEach(i=>$(i).hidden=true);$('menu').hidden=false;syncMenu();return}if(MP.on)leaveRoom();toMenu()};
+
+/* ---------------- Online co-op (Supabase Realtime) ---------------- */
+const SB_URL='https://ivqxjswamlqwmrkirmqo.supabase.co',SB_KEY='sb_publishable_94PDmT9UTFbuUNigLrnV2A_0ztOFaVj';
+const COLORS=[{c:'#1e88e5',d:'#1565c0',n:'أزرق'},{c:'#e53935',d:'#b71c1c',n:'أحمر'},{c:'#43a047',d:'#2e7d32',n:'أخضر'},{c:'#8b5cf6',d:'#6d28d9',n:'بنفسجي'}];
+const MAXP=3;
+const MP={on:false,host:false,code:'',pid:Math.random().toString(36).slice(2,10),name:'',color:0,ch:null,sb:null,peers:{},pend:{},joined:0,hostName:'',hostSeen:false};
+let sbLoading=null;
+function loadSB(){if(window.supabase)return Promise.resolve();return sbLoading||(sbLoading=new Promise((res,rej)=>{const sc_=document.createElement('script');sc_.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js';sc_.onload=res;sc_.onerror=()=>{sbLoading=null;rej()};document.head.appendChild(sc_)}))}
+function send(t,data){if(!MP.ch)return;try{MP.ch.send({type:'broadcast',event:'m',payload:Object.assign({t,from:MP.pid},data)})}catch(e){}}
+function mpErr(t){$('mpErr').textContent=t||''}
+function me(){return {pid:MP.pid,name:MP.name,color:MP.color,host:MP.host,joined:MP.joined,lane:S.lane}}
+async function enterRoom(code,host){
+ mpErr('');$('mpCreate').disabled=$('mpJoin').disabled=true;
+ try{await loadSB()}catch(e){mpErr('تعذّر الاتصال بالإنترنت. تأكد من الشبكة وحاول مرة أخرى');$('mpCreate').disabled=$('mpJoin').disabled=false;return}
+ MP.sb=MP.sb||window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:'fasl-bike'}});
+ MP.code=code;MP.host=host;MP.on=true;MP.peers={};MP.pend={};MP.joined=Date.now();MP.hostSeen=host;MP.hostName=host?MP.name:'';
+ const ch=MP.sb.channel('fasl-bike-'+code,{config:{broadcast:{self:false},presence:{key:MP.pid}}});MP.ch=ch;
+ ch.on('broadcast',{event:'m'},({payload})=>onMsg(payload));
+ ch.on('presence',{event:'sync'},onPresence);
+ ch.subscribe(async st=>{
+  if(st==='SUBSCRIBED'){await ch.track(me());showRoom();
+   if(!host)setTimeout(()=>{if(MP.on&&MP.ch===ch&&!MP.hostSeen){leaveRoom();showForm();mpErr('لم نجد هذه الغرفة. تأكد من الرمز 🔢')}},5000)}
+  else if(st==='CHANNEL_ERROR'||st==='TIMED_OUT'){if(MP.ch===ch){leaveRoom();showForm();mpErr('تعذّر الاتصال. حاول مرة أخرى')}}
+ });
+}
+function leaveRoom(){const ch=MP.ch;MP.on=false;MP.ch=null;MP.peers={};MP.host=false;if(ch){try{ch.untrack();MP.sb.removeChannel(ch)}catch(e){}}$('roomTag').hidden=true;$('mpB').hidden=false;$('mpCreate').disabled=$('mpJoin').disabled=false}
+function onPresence(){
+ if(!MP.ch)return;const st=MP.ch.presenceState(),list=[];
+ for(const k in st){const m=st[k][st[k].length-1];if(m&&m.pid)list.push(m)}
+ list.sort((a,b)=>a.joined-b.joined);
+ // room full? the latest to arrive leaves
+ if(list.length>MAXP&&list.findIndex(p=>p.pid===MP.pid)>=MAXP){leaveRoom();toMenu();$('menu').hidden=true;$('mpL').hidden=false;showForm();mpErr('الغرفة ممتلئة (3 لاعبين) 🙁');return}
+ const old=MP.peers;MP.peers={};
+ for(const p of list.slice(0,MAXP))MP.peers[p.pid]=Object.assign({},old[p.pid]||{},{pid:p.pid,name:p.name,color:p.color,host:p.host,lane:old[p.pid]?.lane??p.lane});
+ const h=list.find(p=>p.host);
+ if(h){MP.hostSeen=true;MP.hostName=h.name}
+ else if(MP.hostSeen&&!MP.host){leaveRoom();toMenu();$('menu').hidden=true;$('mpL').hidden=false;showForm();mpErr('خرج صاحب الغرفة، فانتهت اللعبة');return}
+ // colour clash: the later player picks a free colour
+ const mine=list.findIndex(p=>p.pid===MP.pid);
+ if(mine>0&&list.slice(0,mine).some(p=>p.color===MP.color)){const used=new Set(list.filter(p=>p.pid!==MP.pid).map(p=>p.color));const f=COLORS.findIndex((_,i)=>!used.has(i));if(f>=0){MP.color=f;MP.ch.track(me())}}
+ if(MP.host)for(const gid in MP.pend)tryResolve(+gid);
+ renderRoom();
+}
+function renderRoom(){
+ $('mpPlayers').innerHTML=Object.values(MP.peers).map(p=>`<div class="pl"><i style="background:${(COLORS[p.color]||COLORS[0]).c}"></i>🚲 ${esc(p.name)} ${p.host?'<small>👑 صاحب الغرفة</small>':''}${p.pid===MP.pid?'<small>(أنت)</small>':''}</div>`).join('');
+ const n=Object.keys(MP.peers).length;
+ $('mpStart').hidden=!MP.host;$('mpStart').disabled=n<1;
+ $('mpStatus').textContent=MP.host?(n<2?'بانتظار أصدقائك… أعطهم الرمز ليدخلوا':`اكتمل ${n} لاعبين! اضغط ابدأ`):`أنت في الغرفة ✔ بانتظار ${MP.hostName||'صاحب الغرفة'} ليبدأ اللعبة…`;
+}
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function onMsg(m){
+ if(!m||m.from===MP.pid)return;const p=MP.peers[m.from];
+ switch(m.t){
+  case 'lane':if(p)p.lane=m.lane;break;
+  case 'start':if(MP.host)return;S.topic=m.topic;S.group=m.group;S.sub=m.sub;startGame(m.queue);break;
+  case 'q':if(MP.host||S.mode!=='play')return;S.qi=m.qi;updHud();S.cur=S.queue[m.qi];S.tries=0;$('qnote')?.remove();showQuestion();break;
+  case 'light':if(!MP.host&&S.mode==='play'){spawnLight();S.pendingGate=false}break;
+  case 'bar':if(!MP.host&&S.mode==='play')spawnBarrier(m.lane);break;
+  case 'gate':if(!MP.host&&S.mode==='play'){if(m.retry)sayQ();spawnGate(m.opts,m.gid)}break;
+  case 'ans':if(MP.host)gotAns(m.from,m.gid,m.ok);break;
+  case 'res':if(!MP.host)applyRes(m);break;
+  case 'star':if(MP.host&&S.mode==='play'){S.stars++;updHud();send('stars',{n:S.stars})}break;
+  case 'stars':if(!MP.host){S.stars=m.n;updHud()}break;
+  case 'end':if(!MP.host&&S.mode==='play'){S.stars=m.stars;S.qi=S.queue.length;updHud();finish()}break;
+ }
+}
+// host: collect each player's answer for a gate, then decide for the team
+function gotAns(pid,gid,ok){const P=MP.pend[gid]||(MP.pend[gid]={a:{},t:setTimeout(()=>tryResolve(gid,true),3500)});P.a[pid]=ok;tryResolve(gid)}
+function tryResolve(gid,force){const P=MP.pend[gid];if(!P||P.done)return;const ids=Object.keys(MP.peers).filter(id=>!MP.playing||MP.playing.has(id));if(!force&&!ids.every(id=>id in P.a))return;
+ P.done=true;clearTimeout(P.t);const oks=P.a,vals=Object.values(oks),nOk=vals.filter(Boolean).length,all=nOk===ids.length&&ids.length>1;
+ const res={gid,oks,adv:nOk>0,stars:S.stars+nOk+(all?1:0),all};send('res',res);applyRes(res)}
+function applyRes(r){
+ const q=S.cur;if(!q)return;S.stars=r.stars;
+ for(const id in r.oks){if(MP.peers[id])MP.peers[id].mark={ok:r.oks[id],t:S.t}}
+ if(r.adv){S.learned.push(q.ans);setTimeout(()=>{toast(r.all?'فريق رائع! كلكم صح 🎉':'الفريق ساعد بعضه 🤝');SFX.star();sayRight(q)},700);showRight(q);S.qi++;updHud();if(MP.host)later(nextQ,2600)}
+ else{updHud();setTimeout(()=>{toast('حاولوا مرة أخرى معاً 💪');say('حاولوا مرة أخرى معاً')},700);if(MP.host)later(()=>{sayQ();hostGate(true)},3000)}
+}
+function showForm(){$('mpForm').hidden=false;$('mpRoom').hidden=true}
+function showRoom(){$('mpForm').hidden=true;$('mpRoom').hidden=false;$('mpCodeBig').textContent=MP.code;renderRoom();syncMenu()}
+function paintColors(){$('mpColors').innerHTML=COLORS.map((c,i)=>`<button style="background:${c.c}" class="${i===MP.color?'on':''}" data-c="${i}" aria-label="${c.n}">🚲</button>`).join('');
+ $('mpColors').querySelectorAll('button').forEach(b=>b.onclick=()=>{MP.color=+b.dataset.c;paintColors();tone(800,.08,'triangle',.08)})}
+try{MP.name=localStorage.getItem('bike_name')||'';MP.color=+(localStorage.getItem('bike_color')||0)||0}catch(e){}
+$('mpName').value=MP.name;paintColors();
+function readName(){const n=$('mpName').value.trim().slice(0,12);if(!n){mpErr('اكتب اسمك أولاً ✏️');$('mpName').focus();return false}MP.name=n;try{localStorage.setItem('bike_name',n);localStorage.setItem('bike_color',MP.color)}catch(e){}return true}
+$('mpB').onclick=()=>{ac();SFX.bell();$('menu').hidden=true;$('mpL').hidden=false;mpErr('');if(MP.on)showRoom();else showForm()};
+$('mpCreate').onclick=()=>{if(!readName())return;enterRoom(String(1000+Math.random()*9000|0),true)};
+$('mpJoin').onclick=()=>{if(!readName())return;const c=$('mpCode').value.replace(/\D/g,'');if(c.length!==4){mpErr('رمز الغرفة 4 أرقام');return}enterRoom(c,false)};
+$('mpCode').addEventListener('keydown',e=>{if(e.key==='Enter')$('mpJoin').click()});
+$('mpBack').onclick=()=>{if(MP.on){if(!confirm('هل تريد الخروج من الغرفة؟'))return;leaveRoom()}$('mpL').hidden=true;$('menu').hidden=false;syncMenu()};
+$('mpStart').onclick=()=>{SFX.bell();$('mpL').hidden=true;$('menu').hidden=false;syncMenu()};
+setInterval(()=>{if(MP.on&&S.mode==='play')send('lane',{lane:S.lane})},2000);
 
 /* ---------------- Update ---------------- */
 let last=performance.now();
@@ -355,14 +505,14 @@ function update(dt){
    const stopD=5.2;
    if(L_.d<=stopD+.05){tgt=0;S.speed=0;L_.d=stopD;
     if(!L_.stopped){L_.stopped=true;$('stop').hidden=true;
-     if(S.stopReq){S.stars++;updHud();SFX.star();toast('أحسنت! توقفت 🛑⭐');setTimeout(()=>say('أحسنت! نتوقف عند الإشارة الحمراء'),200)}
+     if(S.stopReq){teamStar();SFX.star();toast('أحسنت! توقفت 🛑⭐');setTimeout(()=>say('أحسنت! نتوقف عند الإشارة الحمراء'),200)}
      else{toast('نقف عند الأحمر 🛑');setTimeout(()=>say('تذكّر: عند الإشارة الحمراء نقف'),200)}
      later(()=>{L_.state='yellow';tone(500,.2)},1700);
      later(()=>{L_.state='green';SFX.go();toast('🟢 انطلق!');say('أخضر، انطلق');},2700);
     }
    }else if(S.stopReq||L_.d<16){tgt=Math.min(tgt,Math.max(1.4,(L_.d-stopD)*.9))}
   }
-  if(L_.state==='green'&&S.pendingGate){S.pendingGate=false;later(()=>{sayQ();spawnGate()},1500)}
+  if(L_.state==='green'&&S.pendingGate){S.pendingGate=false;if(!MP.on||MP.host)later(()=>{sayQ();hostGate()},1500)}
  }
  S.speed+=(tgt-S.speed)*Math.min(1,dt*(tgt<S.speed?3:1.2));
  if(S.bumpT>0){S.bumpT-=dt;S.speed*=.96}
@@ -374,6 +524,7 @@ function update(dt){
  for(const c of S.clouds){c.x-=c.v*dt*(.3+S.speed*.05);if(c.x<-.2)c.x=1.2}
  // player
  const tx=(S.lane-1)*LANE;S.px+=(tx-S.px)*Math.min(1,dt*7);S.lean*=Math.pow(.02,dt);
+ if(MP.on)for(const p of Object.values(MP.peers)){const t=((p.lane??1)-1)*LANE;p.px=(p.px??t)+(t-(p.px??t))*Math.min(1,dt*6)}
  // objects
  for(const o of S.objs){
   if(o.k==='light'&&o.state==='red'&&o.stopped)continue;
@@ -496,10 +647,11 @@ function drawGate(o){
  const fl=['#ffd23f','#4fc3f7','#8bc34a','#b388ff'];for(let k=0;k<12;k++){const fx=xl+(xr-xl)*(k+.5)/12;cx.fillStyle=fl[k%4];cx.beginPath();cx.moveTo(fx-s*.12,top+s*.27);cx.lineTo(fx+s*.12,top+s*.27);cx.lineTo(fx,top+s*.55);cx.fill()}
  cx.globalAlpha=1;
 }
-function drawRider(){
- const u=unit(),x=W/2+S.px*u,y=py(-.35);const s=u*1.05;
- const bob=Math.sin(S.t*9*Math.min(1,S.speed/3+.1))*s*.025*(S.speed>.3?1:0),wob=S.bumpT>0?Math.sin(S.t*40)*.12:0;
- const lean=S.lean*.12+wob+((S.lane-1)*LANE-S.px)*.07;
+function drawRider(R){
+ R=R||{xw:S.px,d:-.35,lane:S.lane,lean:S.lean,bump:S.bumpT,name:MP.on?MP.name:'',mark:S.myMark,shirt:MP.on?COLORS[MP.color].c:'#ffb300',shirt2:MP.on?COLORS[MP.color].d:'#ff8f00'};
+ const u=unit()*sc(R.d)/sc(-.35)*1.0,x=px(R.xw,R.d)+(R.d<0?0:0),y=py(R.d);const s=u*1.05;
+ const bob=Math.sin(S.t*9*Math.min(1,S.speed/3+.1)+(R.ph||0))*s*.025*(S.speed>.3?1:0),wob=R.bump>0?Math.sin(S.t*40)*.12:0;
+ const lean=(R.lean||0)*.12+wob+((R.lane-1)*LANE-R.xw)*.07;
  cx.save();cx.translate(x,y);
  // shadow
  cx.fillStyle='rgba(0,0,0,.22)';cx.beginPath();cx.ellipse(0,0,s*.55,s*.12,0,0,7);cx.fill();
@@ -524,13 +676,13 @@ function drawRider(){
  cx.strokeStyle='#90a4ae';cx.lineWidth=s*.07;cx.beginPath();cx.moveTo(-s*.62,-s*1.5);cx.quadraticCurveTo(0,-s*1.62,s*.62,-s*1.5);cx.stroke();
  cx.fillStyle='#ff5252';rr(-s*.72,-s*1.56,s*.16,s*.11,s*.05);cx.fill();rr(s*.56,-s*1.56,s*.16,s*.11,s*.05);cx.fill();
  // body (shirt)
- cx.fillStyle='#ffb300';rr(-s*.3,-s*1.75,s*.6,s*.72,s*.2);cx.fill();
- cx.fillStyle='#ff8f00';rr(-s*.3,-s*1.24,s*.6,s*.1,s*.04);cx.fill();
+ cx.fillStyle=R.shirt;rr(-s*.3,-s*1.75,s*.6,s*.72,s*.2);cx.fill();
+ cx.fillStyle=R.shirt2;rr(-s*.3,-s*1.24,s*.6,s*.1,s*.04);cx.fill();
  // backpack
  cx.fillStyle='#8b5cf6';rr(-s*.22,-s*1.66,s*.44,s*.46,s*.12);cx.fill();cx.fillStyle='#a78bfa';rr(-s*.14,-s*1.42,s*.28,s*.16,s*.06);cx.fill();
  cx.fillStyle='#ffd23f';cx.beginPath();cx.arc(0,-s*1.54,s*.05,0,7);cx.fill();
  // arms
- cx.strokeStyle='#ffb300';cx.lineWidth=s*.14;cx.lineCap='round';cx.beginPath();cx.moveTo(-s*.26,-s*1.66);cx.lineTo(-s*.58,-s*1.52);cx.moveTo(s*.26,-s*1.66);cx.lineTo(s*.58,-s*1.52);cx.stroke();
+ cx.strokeStyle=R.shirt;cx.lineWidth=s*.14;cx.lineCap='round';cx.beginPath();cx.moveTo(-s*.26,-s*1.66);cx.lineTo(-s*.58,-s*1.52);cx.moveTo(s*.26,-s*1.66);cx.lineTo(s*.58,-s*1.52);cx.stroke();
  cx.fillStyle='#f2c29b';cx.beginPath();cx.arc(-s*.62,-s*1.52,s*.07,0,7);cx.arc(s*.62,-s*1.52,s*.07,0,7);cx.fill();
  // head
  cx.fillStyle='#f2c29b';cx.beginPath();cx.arc(-s*.24,-s*1.95,s*.07,0,7);cx.arc(s*.24,-s*1.95,s*.07,0,7);cx.fill();
@@ -540,12 +692,16 @@ function drawRider(){
  cx.beginPath();cx.arc(0,-s*2.0,s*.29,Math.PI*1.02,Math.PI*1.98);cx.closePath();cx.fill();
  cx.fillStyle='#fff';rr(-s*.04,-s*2.28,s*.08,s*.27,s*.03);cx.fill();rr(-s*.16,-s*2.24,s*.05,s*.2,s*.02);cx.fill();rr(s*.11,-s*2.24,s*.05,s*.2,s*.02);cx.fill();
  cx.strokeStyle='#01579b';cx.lineWidth=s*.03;cx.beginPath();cx.moveTo(-s*.24,-s*1.95);cx.lineTo(-s*.16,-s*1.8);cx.moveTo(s*.24,-s*1.95);cx.lineTo(s*.16,-s*1.8);cx.stroke();
+ if(R.name){cx.rotate(-lean);const fs=Math.max(12,s*.32);cx.font=`900 ${fs}px Tajawal, sans-serif`;cx.textAlign='center';cx.textBaseline='middle';const tw=cx.measureText(R.name).width+fs;
+  cx.fillStyle=R.shirt;rr(-tw/2,-s*2.75-fs*.6,tw,fs*1.3,fs*.6);cx.fill();cx.fillStyle='#fff';cx.fillText(R.name,0,-s*2.75);
+  if(R.mark&&S.t-R.mark.t<2){cx.font=`900 ${fs*1.6}px Tajawal, sans-serif`;cx.fillStyle=R.mark.ok?'#2fbf71':'#ff6b6b';cx.fillText(R.mark.ok?'✔':'✖',0,-s*2.75-fs*1.6)}}
  cx.restore();
 }
 function drawParts(){for(const p of S.parts){cx.globalAlpha=Math.max(0,p.life);cx.fillStyle=p.c;if(p.star){cx.save();cx.translate(p.x,p.y);cx.rotate(p.life*6);cx.beginPath();for(let i=0;i<10;i++){const r=i%2?p.r:p.r*2.2,a=i*Math.PI/5;cx.lineTo(Math.cos(a)*r,Math.sin(a)*r)}cx.fill();cx.restore()}else{cx.beginPath();cx.arc(p.x,p.y,p.r,0,7);cx.fill()}}cx.globalAlpha=1}
 function draw(){
  cx.clearRect(0,0,W,H);drawSky();drawGround();
- const items=[...S.deco.map(o=>({o,d:o.d,t:'deco'})),...S.objs.map(o=>({o,d:o.d,t:o.k}))].filter(i=>i.d>-2.5&&i.d<FAR).sort((a,b)=>b.d-a.d);
+ const peers=MP.on&&S.mode!=='menu'?Object.values(MP.peers).filter(p=>p.pid!==MP.pid).map((p,k)=>({o:p,d:1.5+k*1.4,t:'peer'})):[];
+ const items=[...S.deco.map(o=>({o,d:o.d,t:'deco'})),...S.objs.map(o=>({o,d:o.d,t:o.k})),...peers].filter(i=>i.d>-2.5&&i.d<FAR).sort((a,b)=>b.d-a.d);
  let riderDrawn=false;
  for(const it of items){
   if(!riderDrawn&&it.d<-.35){drawRider();riderDrawn=true}
@@ -554,6 +710,7 @@ function draw(){
    cx.globalAlpha=Math.min(1,(FAR-o.d)/6);
    if(o.k==='tree')drawTree(x,y,s*1.3,o.v);else if(o.k==='flowers')drawFlowers(x,y,s,o.c);else if(o.k==='bush')drawBush(x,y,s);else if(o.k==='fence')drawFence(x,y,s);else drawSign(x,y,s,o.sign);
    cx.globalAlpha=1}
+  else if(it.t==='peer'){const c=COLORS[o.color]||COLORS[0];drawRider({xw:o.px||0,d:it.d,lane:o.lane??1,lean:0,bump:0,shirt:c.c,shirt2:c.d,name:o.name,mark:o.mark,ph:it.d*3})}
   else{cx.globalAlpha=Math.min(1,(FAR-o.d)/5);if(it.t==='gate')drawGate(o);else if(it.t==='barrier')drawBarrier(o);else if(it.t==='light')drawLight(o);cx.globalAlpha=1}
  }
  if(!riderDrawn)drawRider();
