@@ -216,6 +216,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .scan-frame{position:absolute;inset:20% 14%;border:4px solid #fff;border-radius:20px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
 .scan-frame::after{content:"";position:absolute;left:6%;right:6%;height:3px;background:var(--grass);top:10%;animation:scanl 1.8s ease-in-out infinite alternate;box-shadow:0 0 12px var(--grass)}
 @keyframes scanl{to{top:88%}}
+.sh-hero{border-radius:26px;padding:20px;color:#fff;background:linear-gradient(135deg,var(--orange),var(--sun));display:flex;gap:14px;align-items:center;box-shadow:var(--shadow)}
+.sh-hero h1{font-size:clamp(24px,5vw,32px)}.sh-hero p{margin:2px 0 0;opacity:.95}.sh-i{font-size:54px;line-height:1;animation:bob 3s ease-in-out infinite}
+.sh-card{border-top:6px solid var(--sc)}
 .tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
 .sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .sec-head h3{font-size:22px}
@@ -664,8 +667,8 @@ function editCat(id){const c=id?gcatById(id):{name:'',icon:'🎯',color:'var(--p
 
 async function delGame(id){await STORE.del('game_'+id);D.games=D.games.filter(x=>x.id!==id);save();sfx('del');render()}
 let GF={frame:null,gid:null,last:0};
-async function openFileGame(id){const g=D.games.find(x=>x.id===id);if(!g)return;let html='';try{const b=await STORE.get('game_'+id);html=b?await b.text():''}catch(e){}
-  if(!html){toast('ملف اللعبة غير موجود على هذا الجهاز');return}
+async function openFileGame(id,alt){const g=alt||D.games.find(x=>x.id===id);if(!g)return;let html='';try{const b=await STORE.get(alt?alt.key:'game_'+id);html=b?await b.text():''}catch(e){}
+  if(!html){toast('تعذّر فتح الملف، تحقق من الإنترنت');return}
   modal('');const bg=$('#layer .modal-bg');bg.className='game-full';bg.onclick=null;
   bg.innerHTML=`<div class="gf-bar"><b>${esc(g.icon)} ${esc(g.title)}</b><span id="gfMsg" class="muted">${me()?'نتيجتك تُحفظ تلقائياً عند نهاية المرحلة':'وضع المعلم: للتجربة فقط'}</span><button class="btn coral sm" onclick="closeLayer()">✖ خروج</button></div><iframe id="gfFrame" title="${esc(g.title)}" sandbox="allow-scripts allow-pointer-lock" allow="autoplay; fullscreen; gamepad"></iframe>`;
   const f=$('#gfFrame');GF={frame:f,gid:id,last:0};
@@ -680,7 +683,7 @@ window.addEventListener('message',e=>{
   if(!d||d.type!=='fasl-score'||!GF.frame||!GF.frame.isConnected||e.source!==GF.frame.contentWindow)return;
   const sc=Math.round(+d.score),mx=Math.round(+d.max);if(!isFinite(sc)||!isFinite(mx)||mx<1||mx>1000||sc<0||sc>mx)return;
   if(Date.now()-GF.last<1500)return;GF.last=Date.now();
-  const g=D.games.find(x=>x.id===GF.gid);const s=me();const m=$('#gfMsg');
+  const g=D.games.find(x=>x.id===GF.gid)||D.sheets.find(x=>x.id===GF.gid);const s=me();const m=$('#gfMsg');
   if(!s){if(m)m.textContent=`وضع المعلم: النتيجة ${sc}/${mx} (لا تُحفظ)`;return}
   D.scores.push({id:uid(),sid:s.id,gid:GF.gid,score:sc,max:mx,t:Date.now()});notify(`🎮 ${s.name} أنهى «${g?g.title:'لعبة'}» بنتيجة ${sc}/${mx}`,'results');save();
   if(m){m.textContent=`🌟 سُجّلت نتيجتك: ${sc} من ${mx}`;m.classList.remove('pop');void m.offsetWidth;m.classList.add('pop')}sfx('good')});
@@ -724,13 +727,32 @@ function vQuran(){
 }
 
 /* Sheets */
+const FTYPE=t=>/html?$|text\/html/i.test(t)?['🧩','ورقة تفاعلية']:/pdf/i.test(t)?['📄','PDF']:/image/i.test(t)?['🖼️','صورة']:/word|docx?$/i.test(t)?['📝','Word']:/powerpoint|presentation|pptx?$/i.test(t)?['📊','عرض']:['📎','ملف'];
 function vSheets(){
   const f=S.ui.sf||'all';const list=D.sheets.filter(x=>f==='all'||x.kind===f);
-  return `<div class="sec-head"><div class="tabs">${[['all','الكل'],['paper','🖨️ ورقية'],['online','💻 إلكترونية']].map(t=>`<button class="${f===t[0]?'on':''}" onclick="S.ui.sf='${t[0]}';render()">${t[1]}</button>`).join('')}</div>${adminBar('إضافة ورقة عمل','addSheet()')}</div>
-  <div class="grid">${list.map(x=>`<div class="card item"><span class="emoji">${x.kind==='paper'?'🖨️':'💻'}</span><h4>${esc(x.title)}</h4><span class="pill ${x.kind==='paper'?'warn':'info'}">${x.kind==='paper'?'ورقية للطباعة':'إلكترونية تفاعلية'}</span><p class="muted" style="margin:0">${esc(x.note||'')}</p>
-  <div class="row"><a class="btn ${x.kind==='paper'?'sun':''}" href="${safeUrl(x.url)}" target="_blank" rel="noopener">${x.kind==='paper'?'تحميل وطباعة':'ابدأ الحل'}</a>${delBtn(`confirmBox('حذف الورقة؟',()=>{D.sheets=D.sheets.filter(s=>s.id!=='${x.id}');save();render()})`)}</div></div>`).join('')||'<p class="muted">لا توجد أوراق بعد</p>'}</div>`;
+  return `<div class="sh-hero pop"><span class="sh-i">📝</span><div><h1>أوراق العمل</h1><p>اطبعها وحلّها، أو حلّها على الجهاز</p></div></div>
+  <div class="sec-head"><div class="tabs">${[['all','الكل'],['paper','🖨️ ورقية'],['online','💻 إلكترونية']].map(t=>`<button class="${f===t[0]?'on':''}" onclick="S.ui.sf='${t[0]}';render()">${t[1]}</button>`).join('')}</div>${adminBar('إضافة ورقة عمل','addSheet()')}</div>
+  <div class="grid">${list.map(x=>{const ft=x.file?FTYPE(x.ftype||x.fname||''):null;const paper=x.kind==='paper';return `<div class="card item sh-card" style="--sc:${paper?'var(--orange)':'var(--sky)'}">
+    <div class="row" style="justify-content:space-between"><span class="emoji">${ft?ft[0]:paper?'🖨️':'💻'}</span><span class="pill ${paper?'warn':'info'}">${paper?'ورقية للطباعة':'إلكترونية تفاعلية'}</span></div>
+    <h4>${esc(x.title)}</h4>${x.note?`<p class="muted" style="margin:0">${esc(x.note)}</p>`:''}${ft?`<small class="muted">${ft[1]}${x.size?' · '+kb(x.size):''}${x.html&&isAdmin()?(x.scores?' · ✓ تُسجَّل الدرجات':' · لا ترسل الدرجات'):''}</small>`:''}
+    <div class="row">${x.file?(x.html?`<button class="btn" data-sfx onclick="sfx('open');openSheet('${x.id}')">✏️ افتح وحلّ</button>`:`<button class="btn ${paper?'sun':''}" data-sfx onclick="sfx('open');openSheet('${x.id}')">${paper?'🖨️ افتح واطبع':'✏️ افتح وحلّ'}</button><button class="btn ghost sm" onclick="openSheet('${x.id}',1)">⬇️ تحميل</button>`)
+      :`<a class="btn ${paper?'sun':''}" href="${safeUrl(x.url)}" target="_blank" rel="noopener">${paper?'تحميل وطباعة':'ابدأ الحل'}</a>`}${delBtn(`confirmBox('حذف الورقة؟',()=>delSheet('${x.id}'))`)}</div></div>`}).join('')||'<div class="card lock"><div class="emoji">📝</div><p class="muted">لا توجد أوراق بعد</p></div>'}</div>`;
 }
-function addSheet(){form('إضافة ورقة عمل',[{k:'title',label:'عنوان الورقة'},{k:'kind',label:'النوع',type:'select',options:[['paper','ورقية (PDF للطباعة)'],['online','إلكترونية (تُحل على الجهاز)']]},{k:'url',label:'الرابط',type:'url',ph:'https://...'},{k:'note',label:'ملاحظة للطالب'}],v=>{if(!v.title||!v.url)return 'العنوان والرابط مطلوبان';D.sheets.unshift({id:uid(),...v});save();toast('تمت الإضافة')})}
+async function openSheet(id,dl){const x=D.sheets.find(s=>s.id===id);if(!x||!x.file)return;if(x.html)return openFileGame(id,{id,title:x.title,icon:'📝',key:'sheet_'+id});toast('⏳ جارٍ فتح الملف...');
+  const b=await STORE.get('sheet_'+id);if(!b){toast('تعذّر فتح الملف، تحقق من الإنترنت');return}
+  const blob=b.type&&b.type!=='application/octet-stream'?b:new Blob([b],{type:x.ftype||'application/octet-stream'});const u=URL.createObjectURL(blob);
+  if(dl||!/pdf|image/i.test(blob.type)){const a=document.createElement('a');a.href=u;a.download=x.fname||x.title;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);return}
+  if(/image/i.test(blob.type)){modal(`<div class="modal-h"><h3>${esc(x.title)}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div><img src="${u}" alt="${esc(x.title)}" style="border-radius:12px;width:100%"><a class="btn sun" href="${u}" download="${esc(x.fname||'worksheet')}" style="text-align:center">⬇️ تحميل للطباعة</a>`,true);return}
+  const w=window.open(u,'_blank');if(!w){const a=document.createElement('a');a.href=u;a.target='_blank';document.body.appendChild(a);a.click();a.remove()}setTimeout(()=>URL.revokeObjectURL(u),120000)}
+async function delSheet(id){const x=D.sheets.find(s=>s.id===id);if(x&&x.file)await STORE.del('sheet_'+id);D.sheets=D.sheets.filter(s=>s.id!==id);save();sfx('del');render()}
+function addSheet(){form('📝 إضافة ورقة عمل',[{k:'title',label:'عنوان الورقة'},{k:'kind',label:'النوع',type:'select',options:[['paper','🖨️ ورقية (للطباعة)'],['online','💻 إلكترونية (تُحل على الجهاز)']]},{k:'file',label:'📁 ارفع ملف الورقة: تفاعلية HTML مثل الألعاب، أو PDF، أو صورة، أو Word',type:'file',accept:'.html,.htm,text/html,.pdf,image/*,.doc,.docx,.ppt,.pptx'},{k:'url',label:'🔗 أو الصق رابط الورقة',type:'url',ph:'https://...'},{k:'note',label:'ملاحظة للطالب (اختياري)'}],async v=>{
+  if(!v.title)return 'اكتب عنوان الورقة';if(!v.file&&!v.url)return 'ارفع ملف الورقة أو الصق رابطها';const id=uid();
+  if(v.file&&/\.html?$/i.test(v.file.name||'')||v.file&&/html/i.test(v.file.type||'')){if(v.file.size>20e6)return 'الملف كبير جداً (الحد 20MB)';let txt='';try{txt=await v.file.text()}catch(e){return 'تعذّرت قراءة الملف'}
+    if(!/<html|<!doctype|<script|<body/i.test(txt))return 'هذا ليس ملف HTML صحيحاً';try{await STORE.put('sheet_'+id,new Blob([txt],{type:'text/html'}))}catch(e){return 'تعذّر رفع الملف، تحقق من الإنترنت'}
+    const scores=/fasl-score/.test(txt);D.sheets.unshift({id,title:v.title,kind:'online',note:v.note,file:true,html:true,scores,fname:v.file.name,ftype:'text/html',size:v.file.size,t:Date.now()});save();toast(scores?'✅ رُفعت الورقة التفاعلية، ودرجات الطلاب ستُسجَّل':'✅ رُفعت الورقة التفاعلية');return}
+  if(v.file){if(v.file.size>20e6)return 'الملف كبير جداً (الحد 20MB)';try{await STORE.put('sheet_'+id,v.file)}catch(e){return 'تعذّر رفع الملف، تحقق من الإنترنت'}
+    D.sheets.unshift({id,title:v.title,kind:v.kind,note:v.note,file:true,fname:v.file.name,ftype:v.file.type||'',size:v.file.size,t:Date.now()});save();toast('✅ رُفعت ورقة العمل');return}
+  if(!/^https:\/\//.test(v.url))return 'الرابط يجب أن يبدأ بـ https://';D.sheets.unshift({id,title:v.title,kind:v.kind,note:v.note,url:v.url,t:Date.now()});save();toast('تمت الإضافة')})}
 
 /* Letters */
 /* ---------- طريقة كتابة الحروف: حسب منهج لغتي ---------- */
@@ -853,7 +875,7 @@ function vResults(){
   const sc=[...D.scores].sort((a,b)=>b.t-a.t);
   return `<div class="card"><h3>📊 نتائج الألعاب</h3><p class="muted" style="margin:4px 0 0">كل محاولة لعب يقوم بها الطالب تظهر هنا مباشرة.</p></div>
   <div class="card tbl-wrap"><table><thead><tr><th>الطالب</th><th>اللعبة</th><th class="c">النتيجة</th><th>الوقت</th></tr></thead><tbody>
-  ${sc.map(x=>{const g=D.games.find(g=>g.id===x.gid)||{title:'—'};const p=x.score/x.max;return `<tr><td>${esc(stu(x.sid).name)}</td><td>${esc(g.title)}</td><td class="c"><span class="pill ${p>=.8?'ok':p>=.5?'warn':'bad'}">${x.score}/${x.max}</span></td><td>${fmt(x.t)}</td></tr>`}).join('')}</tbody></table></div>
+  ${sc.map(x=>{const g=D.games.find(g=>g.id===x.gid)||D.sheets.find(g=>g.id===x.gid)||{title:'—'};const p=x.score/x.max;return `<tr><td>${esc(stu(x.sid).name)}</td><td>${esc(g.title)}</td><td class="c"><span class="pill ${p>=.8?'ok':p>=.5?'warn':'bad'}">${x.score}/${x.max}</span></td><td>${fmt(x.t)}</td></tr>`}).join('')}</tbody></table></div>
   <div class="card"><h3>🏆 المتصدرون</h3></div>${leaderboard()}`;
 }
 
@@ -1273,9 +1295,9 @@ async function startData(role){
   D=migrate(D);SYNC.ready=true;if(role==='admin')await flush();
 }
 /* الملفات: التسجيلات والألعاب في Supabase Storage */
-function pathFor(k){if(String(k).startsWith('game_'))return ['games',k];const s=(D.subs||[]).find(x=>x.id===k);const sid=s?s.sid:(me()?me().id:'x');return ['audio',sid+'/'+k]}
+function pathFor(k){if(String(k).startsWith('game_'))return ['games',k];if(String(k).startsWith('sheet_'))return ['games','sheets/'+k];const s=(D.subs||[]).find(x=>x.id===k);const sid=s?s.sid:(me()?me().id:'x');return ['audio',sid+'/'+k]}
 const STORE={cache:new Map(),
-  async put(k,blob){const [b,p]=pathFor(k);const type=b==='games'?'text/plain':((blob.type||'application/octet-stream').split(';')[0]);
+  async put(k,blob){const [b,p]=pathFor(k);const type=(String(k).startsWith('game_')||/html/i.test(blob.type||''))?'text/plain':((blob.type||'application/octet-stream').split(';')[0]);
     const {error}=await sb.storage.from(b).upload(p,blob,{contentType:type,upsert:false});if(error)throw error;this.cache.set(k,blob)},
   async get(k){if(this.cache.has(k))return this.cache.get(k);const [b,p]=pathFor(k);const {data,error}=await sb.storage.from(b).download(p);if(error||!data)return undefined;this.cache.set(k,data);return data},
   async del(k){this.cache.delete(k);const [b,p]=pathFor(k);try{await sb.storage.from(b).remove([p])}catch(e){}}
