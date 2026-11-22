@@ -143,6 +143,37 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .kcell{border:0;background:transparent;font-size:20px;padding:4px;border-radius:10px;cursor:pointer}
 .kcell:hover,.kchip:hover{background:color-mix(in srgb,var(--sky) 14%,var(--surface))}
 @media (max-width:700px){.kt{display:none}.kl{display:grid}}
+.lt-hero{border-radius:26px;padding:20px;color:#fff;background:linear-gradient(135deg,var(--coral),var(--orange));display:flex;gap:14px;align-items:center;box-shadow:var(--shadow)}
+.lt-hero h1{font-size:clamp(24px,5vw,32px)}.lt-hero p{margin:2px 0 0;opacity:.95}
+.lt-pencil{font-size:54px;line-height:1;animation:wiggle 2.4s ease-in-out infinite}
+.lt-tabs button{font-size:15px}
+.lt-unit{background:var(--surface);border-radius:24px;box-shadow:var(--shadow);padding:14px;display:grid;gap:12px;border-top:8px solid var(--uc)}
+.lt-uh{display:flex;align-items:center;gap:10px}
+.lt-ui{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:28px;background:color-mix(in srgb,var(--uc) 22%,var(--surface));flex-shrink:0}
+.lt-uh small{color:var(--muted);font-weight:800}.lt-uh h3{font-size:24px;color:var(--uc)}
+.lt-cnt{margin-inline-start:auto;font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}
+.lt-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
+.lt-tile{position:relative;border:0;border-radius:20px;aspect-ratio:1/1.1;max-width:100%;background:color-mix(in srgb,var(--uc) 13%,var(--surface));box-shadow:0 5px 0 color-mix(in srgb,var(--uc) 35%,transparent);display:grid;place-items:center;align-content:center;gap:0;transition:transform .15s}
+.lt-tile:hover{transform:translateY(-3px) rotate(-2deg)}
+.lt-tile:active{transform:translateY(3px);box-shadow:none}
+.lt-big{font-family:var(--f-display);font-size:54px;line-height:1.15;color:var(--uc);font-weight:800}
+.lt-w{font-size:22px;line-height:1}
+.lt-n{position:absolute;top:6px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--uc);color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}
+.lt-v{position:absolute;top:6px;left:6px;font-size:11px;font-weight:800;background:var(--surface);border-radius:999px;padding:1px 6px;color:var(--coral)}
+.lt-card{border-radius:28px;padding:20px;background:linear-gradient(160deg,color-mix(in srgb,var(--uc) 25%,var(--surface)),var(--surface));box-shadow:var(--shadow);display:flex;gap:16px;align-items:center;justify-content:space-around;flex-wrap:wrap;border:3px solid color-mix(in srgb,var(--uc) 40%,transparent)}
+.lt-hugeW{display:grid;justify-items:center}
+.lt-huge{font-family:var(--f-display);font-size:clamp(110px,30vw,170px);line-height:1.1;color:var(--uc);font-weight:800}
+.lt-name{font-family:var(--f-display);font-size:24px;font-weight:800}
+.lt-ex{display:grid;justify-items:center;gap:4px;background:var(--surface);border-radius:22px;padding:14px 22px;box-shadow:var(--shadow)}
+.lt-exe{font-size:64px;line-height:1}.lt-ex b{font-family:var(--f-display);font-size:28px}
+.lt-forms{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.lt-form{background:var(--surface-2);border-radius:16px;padding:10px 4px;display:grid;justify-items:center;gap:2px;text-align:center}
+.lt-form span{font-family:var(--f-display);font-size:44px;line-height:1.3;color:var(--ink)}
+.lt-form small{color:var(--muted);font-weight:800;font-size:12px}
+@media (max-width:520px){.lt-forms{grid-template-columns:repeat(2,1fr)}}
+.lt-frame{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;border-radius:16px;overflow:hidden;background:#000}
+.lt-frame.tt{aspect-ratio:9/16;max-height:70vh;width:auto;margin-inline:auto}
+.lt-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
 .sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .sec-head h3{font-size:22px}
@@ -592,14 +623,60 @@ function vSheets(){
 function addSheet(){form('إضافة ورقة عمل',[{k:'title',label:'عنوان الورقة'},{k:'kind',label:'النوع',type:'select',options:[['paper','ورقية (PDF للطباعة)'],['online','إلكترونية (تُحل على الجهاز)']]},{k:'url',label:'الرابط',type:'url',ph:'https://...'},{k:'note',label:'ملاحظة للطالب'}],v=>{if(!v.title||!v.url)return 'العنوان والرابط مطلوبان';D.sheets.unshift({id:uid(),...v});save();toast('تمت الإضافة')})}
 
 /* Letters */
+/* ---------- طريقة كتابة الحروف: حسب منهج لغتي ---------- */
+const CURR=[
+  {sem:'الفصل الدراسي الأول',units:[
+    {name:'أسرتي',icon:'🏠',color:'var(--coral)',letters:['م','ب','ل','د','ن','ر']},
+    {name:'مدرستي',icon:'🏫',color:'var(--sky)',letters:['ص','ف','س','ق','ت','ح']},
+    {name:'مدينتي',icon:'🏙️',color:'var(--grape)',letters:['أ','ط','ز','و','ج','ش']}]},
+  {sem:'الفصل الدراسي الثاني',units:[
+    {name:'صحتي وسلامتي',icon:'🩺',color:'var(--grass)',letters:['ض','ع','ك','خ','ي','ذ']},
+    {name:'ألعابي وهواياتي',icon:'🎈',color:'var(--orange)',letters:['هـ','ث','غ','ظ']}]}];
+const LWORD={'م':['موز','🍌'],'ب':['بطة','🦆'],'ل':['ليمون','🍋'],'د':['دب','🐻'],'ن':['نحلة','🐝'],'ر':['ريشة','🪶'],
+  'ص':['صقر','🦅'],'ف':['فيل','🐘'],'س':['سمكة','🐟'],'ق':['قطة','🐱'],'ت':['تفاحة','🍎'],'ح':['حصان','🐴'],
+  'أ':['أرنب','🐰'],'ط':['طائرة','✈️'],'ز':['زرافة','🦒'],'و':['وردة','🌹'],'ج':['جمل','🐫'],'ش':['شمس','☀️'],
+  'ض':['ضفدع','🐸'],'ع':['عنب','🍇'],'ك':['كرة','⚽'],'خ':['خروف','🐑'],'ي':['يد','✋'],'ذ':['ذرة','🌽'],
+  'هـ':['هدية','🎁'],'ث':['ثعلب','🦊'],'غ':['غيمة','☁️'],'ظ':['ظرف','✉️']};
+const NOJOIN='أادذرزو';
+const LNAME={'م':'الميم','ب':'الباء','ل':'اللام','د':'الدال','ن':'النون','ر':'الراء','ص':'الصاد','ف':'الفاء','س':'السين','ق':'القاف','ت':'التاء','ح':'الحاء','أ':'الألف','ط':'الطاء','ز':'الزاي','و':'الواو','ج':'الجيم','ش':'الشين','ض':'الضاد','ع':'العين','ك':'الكاف','خ':'الخاء','ي':'الياء','ذ':'الذال','هـ':'الهاء','ث':'الثاء','غ':'الغين','ظ':'الظاء'};
+const normL=l=>l==='ا'||l==='إ'||l==='آ'?'أ':l==='ه'?'هـ':l;
+const ALL_L=CURR.flatMap(s=>s.units.flatMap(u=>u.letters.map(l=>({l,u}))));
+function lForms(l){const b=l==='هـ'?'ه':l;return NOJOIN.includes(b)?[b,b,'ـ'+b,'ـ'+b]:[b,b+'ـ','ـ'+b+'ـ','ـ'+b]}
+const lVideos=l=>(D.videos||[]).filter(v=>normL(v.letter)===l);
+function ytId(u){const m=String(u).match(/(?:youtu\.be\/|v=|shorts\/|embed\/|live\/)([A-Za-z0-9_-]{11})/);return m?m[1]:''}
+function ttId(u){const m=String(u).match(/\/video\/(\d{8,})/);return m?m[1]:''}
 function vLetters(){
-  const L=S.ui.lt||'';const list=D.videos.filter(v=>!L||v.letter===L);
-  return `<div class="sec-head"><p class="muted" style="margin:0">اختر الحرف وشاهد طريقة كتابته ✏️</p>${adminBar('إضافة فيديو','addVideo()')}</div>
-  <div class="card"><div class="chips"><button class="chip ${!L?'on':''}" onclick="S.ui.lt='';render()">الكل</button>${LETTERS.map(l=>`<button class="chip ${L===l?'on':''}" onclick="S.ui.lt='${l}';render()">${l}</button>`).join('')}</div></div>
-  <div class="grid">${list.map(v=>{const p=platform(v.url);return `<div class="card item"><div class="row" style="justify-content:space-between"><span style="font-family:var(--f-display);font-size:56px;line-height:1;color:var(--coral)">${esc(v.letter)}</span><span class="plat ${p[0]}">${p[1]}</span></div><h4>${esc(v.title)}</h4>
-  <div class="row"><a class="btn coral" href="${safeUrl(v.url)}" target="_blank" rel="noopener">▶ شاهد الفيديو</a>${delBtn(`confirmBox('حذف الفيديو؟',()=>{D.videos=D.videos.filter(s=>s.id!=='${v.id}');save();render()})`)}</div></div>`}).join('')||'<p class="muted">لا يوجد فيديو لهذا الحرف بعد</p>'}</div>`;
+  const sel=S.ui.lt?normL(S.ui.lt):'';if(sel&&LNAME[sel])return letterPage(sel);
+  const si=S.ui.sem||0;
+  return `<div class="lt-hero pop"><span class="lt-pencil">✏️</span><div><h1>نتعلم كتابة الحروف</h1><p>حسب منهج لغتي، حرفاً بعد حرف</p></div></div>
+  <div class="tabs lt-tabs">${CURR.map((s,i)=>`<button class="${si===i?'on':''}" onclick="S.ui.sem=${i};render()">${i?'🌷':'🌱'} ${s.sem}</button>`).join('')}</div>
+  ${CURR[si].units.map((u,ui)=>`<section class="lt-unit pop" style="--uc:${u.color}">
+    <div class="lt-uh"><span class="lt-ui">${u.icon}</span><div><small>الوحدة ${['الأولى','الثانية','الثالثة'][ui]||''}</small><h3>${u.name}</h3></div><span class="lt-cnt">${u.letters.length} حروف</span></div>
+    <div class="lt-grid">${u.letters.map((l,i)=>{const n=lVideos(l).length;return `<button class="lt-tile" onclick="S.ui.lt='${l}';render();scrollTo(0,0)" aria-label="حرف ${LNAME[l]}">
+      <span class="lt-n">${i+1}</span><span class="lt-big">${l}</span><span class="lt-w">${LWORD[l][1]}</span>${n?`<span class="lt-v">▶ ${n}</span>`:''}</button>`}).join('')}</div>
+  </section>`).join('')}`;
 }
-function addVideo(){form('إضافة فيديو حرف',[{k:'letter',label:'الحرف',type:'select',options:LETTERS.map(l=>[l,l])},{k:'title',label:'عنوان الفيديو'},{k:'url',label:'رابط يوتيوب أو تيك توك',type:'url',ph:'https://youtube.com/...'}],v=>{if(!v.url||!/^https:\/\//.test(v.url))return 'أدخل رابطاً صحيحاً يبدأ بـ https://';D.videos.unshift({id:uid(),...v,title:v.title||'كتابة حرف '+v.letter});save();toast('تمت الإضافة')})}
+function letterPage(l){
+  const idx=ALL_L.findIndex(x=>x.l===l),u=ALL_L[idx].u,prev=ALL_L[idx-1],next=ALL_L[idx+1],f=lForms(l),vids=lVideos(l),w=LWORD[l];
+  return `<div class="row" style="justify-content:space-between"><button class="btn ghost sm" onclick="S.ui.lt='';render()">→ كل الحروف</button><span class="pill" style="background:color-mix(in srgb,${u.color} 18%,var(--surface));color:var(--ink)">${u.icon} وحدة ${u.name}</span></div>
+  <div class="lt-card pop" style="--uc:${u.color}">
+    <div class="lt-hugeW"><span class="lt-huge">${l}</span><span class="lt-name">حرف ${LNAME[l]}</span></div>
+    <div class="lt-ex"><span class="lt-exe">${w[1]}</span><b>${w[0]}</b></div>
+  </div>
+  <div class="card"><h3 style="margin-bottom:10px">أشكال الحرف ✍️</h3><div class="lt-forms">${[['مفرد',f[0]],['في أول الكلمة',f[1]],['في وسط الكلمة',f[2]],['في آخر الكلمة',f[3]]].map(x=>`<div class="lt-form"><span>${x[1]}</span><small>${x[0]}</small></div>`).join('')}</div></div>
+  <div class="sec-head"><h3>🎬 فيديوهات طريقة الكتابة</h3>${adminBar('إضافة فيديو',`addVideo('${l}')`)}</div>
+  <div class="grid">${vids.map(v=>{const p=platform(v.url);return `<div class="card item lt-vid"><div class="row" style="justify-content:space-between"><b>${esc(v.title||'كتابة حرف '+LNAME[l])}</b><span class="plat ${p[0]}">${p[1]}</span></div>
+    <div class="row"><button class="btn coral" data-sfx onclick="sfx('open');playVideo('${v.id}')">▶ شاهد</button>${delBtn(`confirmBox('حذف الفيديو؟',()=>{D.videos=D.videos.filter(s=>s.id!=='${v.id}');save();render()})`)}</div></div>`}).join('')||`<div class="card lock"><div class="emoji">🎬</div><p class="muted">${isAdmin()?'أضف فيديو لهذا الحرف من الزر أعلاه':'سيضيف المعلم فيديو هذا الحرف قريباً'}</p></div>`}</div>
+  <div class="row" style="justify-content:space-between">${prev?`<button class="btn ghost" onclick="S.ui.lt='${prev.l}';render();scrollTo(0,0)">→ حرف ${LNAME[prev.l]} ${prev.l}</button>`:'<span></span>'}${next?`<button class="btn" onclick="S.ui.lt='${next.l}';render();scrollTo(0,0)">حرف ${LNAME[next.l]} ${next.l} ←</button>`:''}</div>`;
+}
+function playVideo(id){const v=(D.videos||[]).find(x=>x.id===id);if(!v)return;const y=ytId(v.url),t=ttId(v.url);
+  const src=y?`https://www.youtube-nocookie.com/embed/${y}?rel=0&modestbranding=1&playsinline=1`:t?`https://www.tiktok.com/embed/v2/${t}`:'';
+  modal(`<div class="modal-h"><h3>🎬 ${esc(v.title||'')}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
+  ${src?`<div class="lt-frame ${t?'tt':''}"><iframe src="${src}" title="${esc(v.title||'فيديو')}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`:''}
+  <a class="btn ghost" href="${safeUrl(v.url)}" target="_blank" rel="noopener" style="text-align:center">${src?'فتح في '+platform(v.url)[1]:'▶ فتح الفيديو'}</a>`,true)}
+function addVideo(pre){const opts=ALL_L.map(x=>[x.l,`${x.l} — ${x.u.name}`]);
+  form('🎬 إضافة فيديو حرف',[{k:'letter',label:'الحرف',type:'select',options:opts,value:pre||'م'},{k:'title',label:'عنوان الفيديو (اختياري)'},{k:'url',label:'رابط يوتيوب أو تيك توك',type:'url',ph:'https://youtube.com/...'}],
+  v=>{if(!v.url||!/^https:\/\//.test(v.url))return 'أدخل رابطاً صحيحاً يبدأ بـ https://';D.videos.push({id:uid(),letter:v.letter,title:v.title||('كتابة حرف '+LNAME[v.letter]),url:v.url});save();toast('أُضيف الفيديو 🎬')})}
 
 /* Enrichment */
 function vEnrich(){
