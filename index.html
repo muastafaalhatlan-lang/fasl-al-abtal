@@ -406,7 +406,8 @@ async function seed(){
     games:[
       {id:'g1',title:'صيد الحروف',icon:'🔤',desc:'اختر الصورة التي تبدأ بالحرف',kind:'letters',color:'var(--grape)'},
       {id:'g2',title:'عدّ واختر',icon:'🧮',desc:'عُدّ الأشكال واختر الرقم الصحيح',kind:'count',color:'var(--orange)'},
-      {id:'g3',title:'تحليل الكلمات',icon:'🧩',desc:'لعبة من تصميم المعلم عبر Claude (رابط خارجي)',kind:'link',url:'game.html',color:'var(--teal)'}
+      {id:'g3',title:'تحليل الكلمات',icon:'🧩',desc:'لعبة من تصميم المعلم عبر Claude (رابط خارجي)',kind:'link',url:'game.html',color:'var(--teal)'},
+      {id:'g4',title:'دراجة الحروف',icon:'🚲',desc:'قُد الدراجة وتعلّم الحروف وأصواتها والحركات',kind:'link',url:'bike.html',color:'var(--coral)'}
     ],
     scores:[], recs:[], notifs:[],
     sheets:[
@@ -1066,6 +1067,7 @@ function migrate(d){
   d.assign=d.assign||[];d.subs=d.subs||[];d.threads=d.threads||[];
   d.menus=d.menus.filter(m=>m.type!=='portal');d.notifs.forEach(n=>{if(n.go==='portal')n.go='quran'});
   if(!d._v3){d._v3=1;d.recs=d.recs.filter(r=>r.status!=='new');d.notifs=d.notifs.filter(n=>!/^🎙️ تسجيل جديد/.test(n.text))}
+  if(!d._bike){d._bike=1;if(!d.games.some(g=>g.url==='bike.html'))d.games.push({id:'g4',title:'دراجة الحروف',icon:'🚲',desc:'قُد الدراجة وتعلّم الحروف وأصواتها والحركات',kind:'link',url:'bike.html',color:'var(--coral)'})}
   if(!d.menus.some(m=>m.type==='suggest'))d.menus.push({id:'suggest',type:'suggest',title:'الاقتراحات والرسائل',icon:'💌',color:'var(--pink)',on:true});
   if(!d._v2&&d.students.length){d._v2=1;const now=Date.now(),day=864e5,ds=n=>new Date(now+n*day).toISOString().slice(0,10),S_=d.students;
     const a1={id:uid(),title:'واجب الأسبوع: سورة الفيل',surah:'الفيل',range:'الآيات 1 إلى 5',note:'رتّل بصوت واضح وهدوء',due:ds(3),open:true,t:now-2*day};
