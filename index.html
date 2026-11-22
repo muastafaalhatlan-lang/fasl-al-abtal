@@ -174,6 +174,27 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .lt-frame{position:relative;width:100%;aspect-ratio:16/9;max-width:100%;border-radius:16px;overflow:hidden;background:#000}
 .lt-frame.tt{aspect-ratio:9/16;max-height:70vh;width:auto;margin-inline:auto}
 .lt-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.gm-hero{border-radius:26px;padding:20px;color:#fff;background:linear-gradient(135deg,var(--grape),var(--pink));display:flex;gap:14px;align-items:center;box-shadow:var(--shadow)}
+.gm-hero h1{font-size:clamp(24px,5vw,32px)}.gm-hero p{margin:2px 0 0;opacity:.95}
+.gm-joy{font-size:54px;line-height:1;animation:bob 2.6s ease-in-out infinite}
+.gc-nav .chip{font-size:15px;font-family:var(--f-body)}
+.gc-nav .chip.on{background:var(--cc,var(--sky));border-color:var(--cc,var(--sky))}
+.gsec{display:grid;gap:12px;background:var(--surface);border-radius:24px;padding:14px;box-shadow:var(--shadow);border-top:8px solid var(--gc)}
+.gsec-h{display:flex;align-items:center;gap:10px}
+.gsec-i{width:50px;height:50px;border-radius:16px;display:grid;place-items:center;font-size:28px;background:color-mix(in srgb,var(--gc) 22%,var(--surface));flex-shrink:0}
+.gsec-h h3{font-size:24px;color:var(--gc)}
+.ggrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(138px,1fr))}
+.gcard{background:var(--surface-2);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 5px 0 color-mix(in srgb,var(--gc) 30%,transparent)}
+.gc-cover{position:relative;border:0;padding:0;width:100%;aspect-ratio:4/3;max-width:100%;display:grid;place-items:center;overflow:hidden;cursor:pointer;
+  background:radial-gradient(circle at 20% 25%,rgba(255,255,255,.35) 0 14%,transparent 15%),radial-gradient(circle at 85% 80%,rgba(255,255,255,.25) 0 18%,transparent 19%),linear-gradient(145deg,var(--gc),color-mix(in srgb,var(--gc) 55%,#ffffff))}
+.gc-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.gc-emoji{font-size:clamp(56px,16vw,76px);line-height:1;filter:drop-shadow(0 6px 0 rgba(0,0,0,.15));transition:transform .2s}
+.gc-cover:hover .gc-emoji{transform:scale(1.12) rotate(-6deg)}
+.gc-play{position:absolute;bottom:10px;left:10px;width:46px;height:46px;border-radius:50%;background:#fff;color:#1B2A4A;display:grid;place-items:center;font-size:20px;box-shadow:0 4px 0 rgba(0,0,0,.18);z-index:1}
+.gc-body{padding:12px;display:grid;gap:6px;align-content:start}
+.gc-body h4{margin:0;font-family:var(--f-display);font-size:20px;line-height:1.3}
+.gc-body p{margin:0;color:var(--muted);font-size:14px}
+.gc-tools{display:flex;gap:4px;flex-wrap:wrap}
 .tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
 .sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .sec-head h3{font-size:22px}
@@ -528,14 +549,6 @@ const adminBar=(label,fn)=>isAdmin()?`<button class="btn green sm" onclick="${fn
 const delBtn=(fn)=>isAdmin()?`<button class="btn sm ghost" onclick="${fn}" aria-label="حذف">🗑️</button>`:'';
 
 /* Games */
-function vGames(){
-  const tab=S.ui.gt||'play';
-  const list=D.games.map(g=>`<div class="card item"><span class="nav-ic" style="background:${g.color};width:64px;height:64px;font-size:34px;border-radius:20px">${esc(g.icon)}</span><h4>${esc(g.title)}</h4><p class="muted" style="margin:0">${esc(g.desc)}</p>
-    ${me()?`<small class="muted">أفضل نتيجة لي: ${Math.max(0,...D.scores.filter(x=>x.sid===me().id&&x.gid===g.id).map(x=>x.score))}</small>`:''}
-    <div class="row">${g.kind==='link'?`<a class="btn" href="${safeUrl(g.url)}" target="_blank" rel="noopener">العب ▶</a>`:g.kind==='file'?`<button class="btn" data-sfx onclick="sfx('open');openFileGame('${g.id}')">العب ▶</button>`:`<button class="btn" onclick="playGame('${g.id}')">العب ▶</button>`}${delBtn(`confirmBox('حذف اللعبة؟',()=>delGame('${g.id}'))`)}${isAdmin()&&g.kind==='file'?(g.scores?'<span class="pill ok">✓ تُسجَّل النتائج</span>':'<span class="pill warn">لا ترسل النتائج</span>'):''}${isAdmin()&&g.kind==='link'?'<span class="pill warn">رابط: النتائج لا تُسجَّل</span>':''}</div></div>`).join('');
-  return `<div class="tabs" style="max-width:420px"><button class="${tab==='play'?'on':''}" onclick="S.ui.gt='play';render()">🎮 الألعاب</button><button class="${tab==='lb'?'on':''}" onclick="S.ui.gt='lb';render()">🏆 المتصدرون</button></div>
-  ${tab==='play'?`<div class="sec-head"><p class="muted" style="margin:0">العب وتعلّم، كل إجابة صحيحة تعطيك نجمة ⭐</p>${adminBar('إضافة لعبة','addGame()')}</div><div class="grid">${list}</div>`:leaderboard()}`;
-}
 function leaderboard(){
   const rows=D.students.map(s=>({s,p:totalScore(s.id),n:D.scores.filter(x=>x.sid===s.id).length})).sort((a,b)=>b.p-a.p);
   const t=rows.slice(0,3);const pod=(r,c,medal)=>r?`<div class="pod ${c}">${ava(r.s)}<b style="font-family:var(--f-display)">${esc(r.s.name)}</b><span>${medal} ${r.p}</span></div>`:'';
@@ -543,15 +556,72 @@ function leaderboard(){
   <div class="card tbl-wrap"><table><thead><tr><th>الترتيب</th><th>البطل</th><th class="c">النقاط</th><th class="c">مرات اللعب</th></tr></thead><tbody>
   ${rows.map((r,i)=>`<tr ${me()&&r.s.id===me().id?'style="background:color-mix(in srgb,var(--sun) 20%,transparent)"':''}><td>${i+1}</td><td><div class="row">${ava(r.s)}${esc(r.s.name)}</div></td><td class="c"><b>${r.p}</b></td><td class="c">${r.n}</td></tr>`).join('')}</tbody></table></div>`;
 }
-function addGame(){form('إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'icon',label:'أيقونة (رمز تعبيري)',value:'🎮'},{k:'desc',label:'وصف قصير'},{k:'file',label:'📁 ملف اللعبة (HTML) — الطريقة المستحسنة',type:'file',accept:'.html,.htm,text/html'},{k:'url',label:'أو رابط اللعبة (لا تُسجَّل نتائجه)',type:'url',ph:'https://...'}],async v=>{
+/* ---------- الألعاب: أقسام يرتبها المعلم وأغلفة ---------- */
+const DEF_GCATS=[{id:'easy',name:'ألعاب سهلة',icon:'🌟',color:'var(--grass)'},{id:'smart',name:'ألعاب الذكاء',icon:'🧠',color:'var(--grape)'},{id:'math',name:'رياضيات',icon:'🔢',color:'var(--orange)'},{id:'lang',name:'حروف ولغة',icon:'🔤',color:'var(--sky)'}];
+const CNAMES=[['var(--sky)','أزرق'],['var(--grass)','أخضر'],['var(--sun)','أصفر'],['var(--coral)','أحمر'],['var(--grape)','بنفسجي'],['var(--orange)','برتقالي'],['var(--pink)','وردي'],['var(--teal)','فيروزي']];
+function gcats(){const c=D.custom&&D.custom._gamecats;return Array.isArray(c)?c:DEF_GCATS}
+function setGcats(a){D.custom=Object.assign({},D.custom||{},{_gamecats:a});save()}
+const gcatOf=g=>g.cat!==undefined?g.cat:(g.id==='g1'?'lang':g.id==='g2'?'math':'');
+const gcatById=id=>gcats().find(c=>c.id===id);
+function bestOf(g){const s=me();if(!s)return 0;return Math.max(0,...D.scores.filter(x=>x.sid===s.id&&x.gid===g.id).map(x=>x.score))}
+function playG(id){const g=D.games.find(x=>x.id===id);if(!g)return;sfx('open');
+  if(g.kind==='link'){const a=document.createElement('a');a.href=safeUrl(g.url);a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();return}
+  if(g.kind==='file')return openFileGame(id);playGame(id)}
+function gameCard(g,c){const col=g.color||(c&&c.color)||'var(--sky)',b=bestOf(g);
+  return `<div class="gcard" style="--gc:${col}">
+    <button class="gc-cover" onclick="playG('${g.id}')" aria-label="العب ${esc(g.title)}">${g.cover?`<img src="${g.cover}" alt="">`:`<span class="gc-emoji">${esc(g.icon||'🎮')}</span>`}<span class="gc-play">▶</span></button>
+    <div class="gc-body"><h4>${esc(g.title)}</h4>${g.desc?`<p>${esc(g.desc)}</p>`:''}
+    ${b?`<span class="pill ok">⭐ أفضل نتيجة لي: ${b}</span>`:''}
+    ${isAdmin()?`<div class="gc-tools"><button class="btn sm ghost" onclick="editGame('${g.id}')">✏️ تعديل</button><button class="btn sm ghost" onclick="moveGame('${g.id}',-1)" aria-label="تقديم">⬆️</button><button class="btn sm ghost" onclick="moveGame('${g.id}',1)" aria-label="تأخير">⬇️</button><button class="btn sm ghost" onclick="confirmBox('حذف اللعبة؟',()=>delGame('${g.id}'))" aria-label="حذف">🗑️</button></div>
+      ${g.kind==='file'?(g.scores?'<small class="muted">✓ تُسجَّل النتائج</small>':'<small style="color:var(--warn)">لا ترسل النتائج</small>'):g.kind==='link'?'<small style="color:var(--warn)">رابط: النتائج لا تُسجَّل</small>':''}`:''}</div></div>`}
+function vGames(){
+  const tab=S.ui.gt||'play';
+  const head=`<div class="tabs" style="max-width:420px"><button class="${tab==='play'?'on':''}" onclick="S.ui.gt='play';render()">🎮 الألعاب</button><button class="${tab==='lb'?'on':''}" onclick="S.ui.gt='lb';render()">🏆 المتصدرون</button></div>`;
+  if(tab!=='play')return head+leaderboard();
+  const cats=gcats(),f=S.ui.gc||'';const known=new Set(cats.map(c=>c.id));
+  const others=D.games.filter(g=>!known.has(gcatOf(g)));
+  const secs=[...cats.map(c=>({c,games:D.games.filter(g=>gcatOf(g)===c.id)})),...(others.length?[{c:{id:'_o',name:'ألعاب أخرى',icon:'🎲',color:'var(--teal)'},games:others}]:[])]
+    .filter(x=>(!f||x.c.id===f)&&(x.games.length||isAdmin()));
+  return head+`<div class="gm-hero pop"><span class="gm-joy">🎮</span><div><h1>هيا نلعب ونتعلم!</h1><p>كل إجابة صحيحة تعطيك نجمة ⭐</p></div></div>
+  ${isAdmin()?`<div class="row"><button class="btn green" data-sfx onclick="sfx('open');addGame()">＋ إضافة لعبة</button><button class="btn ghost" onclick="manageCats()">🗂️ ترتيب الأقسام</button></div>`:''}
+  <div class="chips gc-nav"><button class="chip ${!f?'on':''}" onclick="S.ui.gc='';render()">الكل</button>${cats.filter(c=>isAdmin()||D.games.some(g=>gcatOf(g)===c.id)).map(c=>`<button class="chip ${f===c.id?'on':''}" style="--cc:${c.color}" onclick="S.ui.gc='${c.id}';render()">${esc(c.icon)} ${esc(c.name)}</button>`).join('')}</div>
+  ${secs.map(({c,games})=>`<section class="gsec" style="--gc:${c.color}"><div class="gsec-h"><span class="gsec-i">${esc(c.icon)}</span><h3>${esc(c.name)}</h3><span class="lt-cnt">${games.length} ألعاب</span></div>
+    ${games.length?`<div class="ggrid">${games.map(g=>gameCard(g,c)).join('')}</div>`:`<p class="muted" style="margin:0">لا توجد ألعاب في هذا القسم بعد. أضف لعبة واختر هذا القسم.</p>`}</section>`).join('')||'<div class="card lock"><div class="emoji">🎮</div><p class="muted">لا توجد ألعاب بعد</p></div>'}`;
+}
+function moveGame(id,d){const g=D.games.find(x=>x.id===id);if(!g)return;const c=gcatOf(g);const same=D.games.map((x,i)=>[x,i]).filter(([x])=>gcatOf(x)===c);const k=same.findIndex(([x])=>x===g),t=same[k+d];if(!t)return;
+  const i=same[k][1],j=t[1];[D.games[i],D.games[j]]=[D.games[j],D.games[i]];save();render()}
+const catOpts=()=>[...gcats().map(c=>[c.id,`${c.icon} ${c.name}`]),['','🎲 بدون قسم']];
+function addGame(){form('🎮 إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:S.ui.gc||gcats()[0]?.id||''},{k:'icon',label:'أيقونة اللعبة (رمز تعبيري)',value:'🎮'},{k:'desc',label:'وصف قصير يشوّق الطفل'},{k:'cover',label:'🖼️ صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'file',label:'📁 ملف اللعبة (HTML) — الطريقة المستحسنة',type:'file',accept:'.html,.htm,text/html'},{k:'url',label:'أو رابط اللعبة (لا تُسجَّل نتائجه)',type:'url',ph:'https://...'}],async v=>{
   if(!v.title)return 'اكتب اسم اللعبة';if(!v.file&&!v.url)return 'اختر ملف اللعبة أو اكتب رابطها';
-  const id=uid(),color=COLORS[rnd(COLORS.length)];
-  if(v.file){if(v.file.size>(SYNC.mode==='db'?8e6:20e6))return 'الملف كبير جداً (الحد '+(SYNC.mode==='db'?8:20)+'MB)';let txt='';try{txt=await v.file.text()}catch(e){return 'تعذّرت قراءة الملف'}
+  const id=uid(),c=gcatById(v.cat),color=c?c.color:COLORS[rnd(COLORS.length)];let cover='';
+  if(v.cover){try{cover=await readImg(v.cover,640)}catch(e){return 'تعذّرت قراءة صورة الغلاف'}}
+  const base={id,title:v.title,icon:v.icon||'🎮',desc:v.desc,cat:v.cat,cover,color,t:Date.now()};
+  if(v.file){if(v.file.size>20e6)return 'الملف كبير جداً (الحد 20MB)';let txt='';try{txt=await v.file.text()}catch(e){return 'تعذّرت قراءة الملف'}
     if(!/<html|<!doctype|<script|<body/i.test(txt))return 'هذا ليس ملف لعبة HTML';
     try{await STORE.put('game_'+id,new Blob([txt],{type:'text/html'}))}catch(e){return 'تعذّر حفظ ملف اللعبة'}
-    const scores=/fasl-score/.test(txt);D.games.push({id,title:v.title,icon:v.icon||'🎮',desc:v.desc,kind:'file',size:v.file.size,scores,color,t:Date.now()});save();
+    const scores=/fasl-score/.test(txt);D.games.push(Object.assign(base,{kind:'file',size:v.file.size,scores}));save();
     setTimeout(()=>{sfx('ex');toast(scores?'✅ أُضيفت اللعبة، ونتائجها ستُسجَّل للطلاب':'⚠️ أُضيفت اللعبة، لكنها لا ترسل النتائج للمنصة')},50);return}
-  if(!/^https:\/\//.test(v.url))return 'الرابط يجب أن يبدأ بـ https://';D.games.push({id,title:v.title,icon:v.icon||'🎮',desc:v.desc,kind:'link',url:v.url,color});save();toast('تمت إضافة اللعبة')})}
+  if(!/^https:\/\//.test(v.url))return 'الرابط يجب أن يبدأ بـ https://';D.games.push(Object.assign(base,{kind:'link',url:v.url}));save();toast('تمت إضافة اللعبة')})}
+function editGame(id){const g=D.games.find(x=>x.id===id);if(!g)return;
+  form('✏️ تعديل اللعبة',[{k:'title',label:'اسم اللعبة',value:g.title},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:gcatOf(g)},{k:'icon',label:'أيقونة اللعبة',value:g.icon},{k:'desc',label:'وصف قصير',value:g.desc||''},{k:'cover',label:g.cover?'🖼️ تغيير صورة الغلاف':'🖼️ صورة الغلاف',type:'file',accept:'image/*'},...(g.cover?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة واستخدام الأيقونة']]}]:[]),{k:'color',label:'لون البطاقة',type:'select',options:CNAMES,value:g.color}],async v=>{
+    if(!v.title)return 'اكتب اسم اللعبة';let cover=g.cover||'';if(v.rm==='1')cover='';
+    if(v.cover){try{cover=await readImg(v.cover,640)}catch(e){return 'تعذّرت قراءة الصورة'}}
+    Object.assign(g,{title:v.title,cat:v.cat,icon:v.icon||'🎮',desc:v.desc,cover,color:v.color||g.color});save();toast('تم حفظ اللعبة ✅')})}
+function manageCats(){const cats=gcats();
+  modal(`<div class="modal-h"><h3>🗂️ أقسام الألعاب</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
+  <p class="muted" style="margin:0">رتّب الأقسام كما تحب، وغيّر أسماءها وألوانها.</p>
+  <div class="sec-list">${cats.map((c,i)=>`<div class="menu-row"><span class="nav-ic" style="background:${c.color}">${esc(c.icon)}</span><span class="nm">${esc(c.name)} <small class="muted">(${D.games.filter(g=>gcatOf(g)===c.id).length})</small></span>
+    <button class="btn sm ghost" onclick="moveCat(${i},-1)" ${i?'':'disabled'} aria-label="أعلى">⬆️</button><button class="btn sm ghost" onclick="moveCat(${i},1)" ${i<cats.length-1?'':'disabled'} aria-label="أسفل">⬇️</button>
+    <button class="btn sm" onclick="editCat('${c.id}')">✏️</button><button class="btn sm ghost" onclick="delCat('${c.id}')" aria-label="حذف">🗑️</button></div>`).join('')}</div>
+  <button class="btn green" onclick="editCat()">＋ قسم جديد</button>`)}
+function moveCat(i,d){const a=gcats().slice(),j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];setGcats(a);render();manageCats()}
+function delCat(id){const a=gcats().filter(c=>c.id!==id);D.games.forEach(g=>{if(gcatOf(g)===id)g.cat=''});setGcats(a);render();manageCats();toast('حُذف القسم، وانتقلت ألعابه إلى «ألعاب أخرى»')}
+function editCat(id){const c=id?gcatById(id):{name:'',icon:'🎯',color:'var(--pink)'};
+  form(id?'✏️ تعديل القسم':'＋ قسم جديد',[{k:'name',label:'اسم القسم',value:c.name,ph:'مثال: ألعاب الذاكرة'},{k:'icon',label:'أيقونة القسم',value:c.icon},{k:'color',label:'اللون',type:'select',options:CNAMES,value:c.color}],v=>{
+    if(!v.name)return 'اكتب اسم القسم';const a=gcats().map(x=>({...x}));
+    if(id){const x=a.find(x=>x.id===id);Object.assign(x,{name:v.name,icon:v.icon||'🎯',color:v.color})}else a.push({id:'c'+uid(),name:v.name,icon:v.icon||'🎯',color:v.color});
+    setGcats(a);setTimeout(manageCats,30)})}
+
 async function delGame(id){await STORE.del('game_'+id);D.games=D.games.filter(x=>x.id!==id);save();sfx('del');render()}
 let GF={frame:null,gid:null,last:0};
 async function openFileGame(id){const g=D.games.find(x=>x.id===id);if(!g)return;let html='';try{const b=await STORE.get('game_'+id);html=b?await b.text():''}catch(e){}
