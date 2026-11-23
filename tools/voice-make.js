@@ -11,7 +11,7 @@ const fs=require('fs'),path=require('path'),os=require('os'),{execFileSync,spawn
 const ROOT=path.join(__dirname,'..');
 eval(fs.readFileSync(path.join(__dirname,'voice-key.js'),'utf8'));
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i>0?process.argv[i+1]:d};
-const VOICE_NAME=arg('voice','Kore'),BATCH=+arg('batch',25),LBATCH=+arg('long-batch',4),LIMIT=+arg('limit',1e9);
+const VOICE_NAME=arg('voice','Kore'),BATCH=+arg('batch',15),LBATCH=+arg('long-batch',2),LIMIT=+arg('limit',1e9);
 const OUT=path.resolve(arg('out',path.join(ROOT,'voice'))),PHRASES=path.resolve(arg('in',path.join(ROOT,'voice','phrases.json')));
 const KEY=process.env.GEMINI_API_KEY||'proxy-injected'; // in a cloud session the network proxy adds the real key
 const API='https://generativelanguage.googleapis.com/v1beta';
@@ -102,9 +102,11 @@ async function check(list){
       const h=Math.ceil(group.length/2);await rec(group.slice(0,h));await rec(group.slice(h));
     };
     const short=p=>p.t.length<=32&&!/[،.:؟?!,]\s*\S/.test(p.t);
-    const groups=[];const S_=todo.filter(short),L_=todo.filter(p=>!short(p));
-    for(let i=0;i<S_.length;i+=BATCH)groups.push(S_.slice(i,i+BATCH));
-    for(let i=0;i<L_.length;i+=LBATCH)groups.push(L_.slice(i,i+LBATCH));
+    // keep the game's order (explanations, then stage 1, stage 2, …) so whole stages become clear first
+    const groups=[];const stages=[...new Set(todo.map(p=>p.st||0))];
+    for(const st of stages){const T=todo.filter(p=>(p.st||0)===st),S_=T.filter(short),L_=T.filter(p=>!short(p));
+      for(let i=0;i<L_.length;i+=LBATCH)groups.push(L_.slice(i,i+LBATCH));
+      for(let i=0;i<S_.length;i+=BATCH)groups.push(S_.slice(i,i+BATCH))}
     for(const g of groups){await rec(g);done+=g.length;console.log(`  ${done}/${todo.length}`);
       fs.writeFileSync(path.join(OUT,'list.json'),JSON.stringify(list.filter(p=>fs.existsSync(path.join(OUT,p.h+'.mp3'))).map(p=>p.h)))}
   }catch(e){console.log(e.daily?'Stopped: the daily free limit was reached. Run again tomorrow to continue.':'Stopped: '+e.message)}
