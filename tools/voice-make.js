@@ -72,7 +72,7 @@ const bare=t=>t.replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').r
 function lev(a,b){const d=Array.from({length:a.length+1},(_,i)=>[i]);for(let j=1;j<=b.length;j++)d[0][j]=j;
   for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length]}
 async function check(list){
-  const m=arg('check-model','gemini-3.8-flash');let bad=0,n=0;
+  const m=arg('check-model','gemini-flash-lite-latest');let bad=0,n=0;
   for(const p of list){const f=path.join(OUT,p.h+'.mp3');if(!fs.existsSync(f))continue;n++;
     let heard='';for(let a=0;a<6;a++){const r=curl(`${API}/models/${m}:generateContent`,{contents:[{parts:[{inlineData:{mimeType:'audio/mp3',data:fs.readFileSync(f).toString('base64')}},{text:'Transcribe this Arabic audio exactly. Output only the words you hear.'}]}]});
       if(r.error){if(r.error.code===429||r.error.code>=500){await sleep(15000*(a+1));continue}throw new Error(r.error.message)}
