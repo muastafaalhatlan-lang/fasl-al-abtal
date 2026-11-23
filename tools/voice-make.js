@@ -2,7 +2,7 @@
 // The game plays these files; any sentence without a file falls back to the device voice.
 //
 //   1) node tools/voice-collect.js          (list every sentence -> voice/phrases.json)
-//   2) GEMINI_API_KEY=... node tools/voice-make.js [--voice Kore] [--batch 10] [--limit 50]
+//   2) GEMINI_API_KEY=... node tools/voice-make.js [--voice Kore] [--batch 25] [--model name] [--limit 50]
 //   3) GEMINI_API_KEY=... node tools/voice-make.js --check   (Gemini listens to every clip; wrong ones are deleted, run step 2 again)
 //
 // Safe to re-run: sentences that already have a file are skipped, so a run stopped by the
@@ -11,7 +11,7 @@ const fs=require('fs'),path=require('path'),os=require('os'),{execFileSync,spawn
 const ROOT=path.join(__dirname,'..');
 eval(fs.readFileSync(path.join(__dirname,'voice-key.js'),'utf8'));
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i>0?process.argv[i+1]:d};
-const VOICE_NAME=arg('voice','Kore'),BATCH=+arg('batch',10),LIMIT=+arg('limit',1e9);
+const VOICE_NAME=arg('voice','Kore'),BATCH=+arg('batch',25),LBATCH=+arg('long-batch',4),LIMIT=+arg('limit',1e9);
 const OUT=path.resolve(arg('out',path.join(ROOT,'voice'))),PHRASES=path.resolve(arg('in',path.join(ROOT,'voice','phrases.json')));
 const KEY=process.env.GEMINI_API_KEY||'proxy-injected'; // in a cloud session the network proxy adds the real key
 const API='https://generativelanguage.googleapis.com/v1beta';
@@ -92,19 +92,21 @@ async function check(list){
   const model=todo.length?pickModel():'';if(model)console.log('model:',model,'voice:',VOICE_NAME);
   let done=0;
   try{
-    for(let i=0;i<todo.length;){
-      const short=p=>p.t.length<=32&&!/[،.:؟?!,]\s*\S/.test(p.t);
-      const group=short(todo[i])?todo.slice(i,i+BATCH).filter((p,k,a)=>a.slice(0,k+1).every(short)):[todo[i]];let ok=false;
-      if(group.length>1){ // several short sentences in one request; the model pauses between lines, then we cut them apart
-        const text=group.map(p=>p.t+' ...').join('\n\n');
-        const {pcm,rate}=await speak(model,text);const f=path.join(TMP,'b.pcm');fs.writeFileSync(f,pcm);
-        const segs=splitByPauses(f,rate,group.length);
-        if(segs){group.forEach((p,k)=>encode(f,rate,segs[k][0],segs[k][1],path.join(OUT,p.h+'.mp3')));ok=true}
-        else console.log(`  batch at ${i} did not split cleanly, recording one by one`);
-      }
-      if(!ok)for(const p of group){const {pcm,rate}=await speak(model,p.t);const f=path.join(TMP,'s.pcm');fs.writeFileSync(f,pcm);encode(f,rate,null,null,path.join(OUT,p.h+'.mp3'))}
-      i+=group.length;done+=group.length;console.log(`  ${done}/${todo.length}`);
-    }
+    // record a group in one request; if it does not cut cleanly into the right number of clips, try each half
+    const rec=async group=>{
+      if(group.length===1){const {pcm,rate}=await speak(model,group[0].t);const f=path.join(TMP,'s.pcm');fs.writeFileSync(f,pcm);encode(f,rate,null,null,path.join(OUT,group[0].h+'.mp3'));return}
+      const {pcm,rate}=await speak(model,group.map(p=>p.t+' ...').join('\n\n'));const f=path.join(TMP,'b.pcm');fs.writeFileSync(f,pcm);
+      const segs=splitByPauses(f,rate,group.length);
+      if(segs){group.forEach((p,k)=>encode(f,rate,segs[k][0],segs[k][1],path.join(OUT,p.h+'.mp3')));return}
+      console.log(`  a group of ${group.length} did not cut cleanly, trying halves`);
+      const h=Math.ceil(group.length/2);await rec(group.slice(0,h));await rec(group.slice(h));
+    };
+    const short=p=>p.t.length<=32&&!/[،.:؟?!,]\s*\S/.test(p.t);
+    const groups=[];const S_=todo.filter(short),L_=todo.filter(p=>!short(p));
+    for(let i=0;i<S_.length;i+=BATCH)groups.push(S_.slice(i,i+BATCH));
+    for(let i=0;i<L_.length;i+=LBATCH)groups.push(L_.slice(i,i+LBATCH));
+    for(const g of groups){await rec(g);done+=g.length;console.log(`  ${done}/${todo.length}`);
+      fs.writeFileSync(path.join(OUT,'list.json'),JSON.stringify(list.filter(p=>fs.existsSync(path.join(OUT,p.h+'.mp3'))).map(p=>p.h)))}
   }catch(e){console.log(e.daily?'Stopped: the daily free limit was reached. Run again tomorrow to continue.':'Stopped: '+e.message)}
   const have=list.filter(p=>fs.existsSync(path.join(OUT,p.h+'.mp3'))).map(p=>p.h);
   fs.writeFileSync(path.join(OUT,'list.json'),JSON.stringify(have));
