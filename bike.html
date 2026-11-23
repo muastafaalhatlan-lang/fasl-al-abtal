@@ -185,21 +185,21 @@ const slot='<span class="slot">؟</span>';
 /* ---- 1. أشكال الحرف ---- */
 const FORMS=[['بيت','ب'],['كلب','ب'],['جبل','ب'],['عنب','ب'],['سمك','م'],['قمر','م'],['موز','م'],['قلم','م'],['نحلة','ح'],['حصان','ح'],['تفاحة','ف'],['فيل','ف'],['عين','ع'],['ضفدع','ع'],['نمر','ن'],['لبن','ن'],['سفينة','ن'],['كرسي','ك'],['شمس','ش'],['جمل','ج'],['ثلج','ج'],['هدية','ه'],['ديك','ي'],['تاج','ت'],['كتاب','ت'],['غيمة','غ'],['قطة','ط'],['ساعة','ع'],['سيارة','ي'],['صاروخ','خ']];
 function qForms([word,ch]){const w=[...word],k=w.indexOf(ch),ans=formOf(w,k),all=[ch+'ـ','ـ'+ch+'ـ','ـ'+ch,ch];
- return {type:'forms',title:`ما شكل حرف ${ch} في هذه الكلمة؟`,big:`<span>${PIC[word]||''}</span><span>${word}</span>`,qsay:`ما شكلُ حرفِ ${nm(ch)} في كلمةِ ${word}؟`,
-  ans,pool:[ans,...shuffle(all.filter(f=>f!==ans)).slice(0,2)],full:word,note:`${ans} : في ${posName(w,k)}`,rsay:`أحسنت! حرفُ ${nm(ch)} في ${posName(w,k)}: ${word}`,learn:word}}
+ return {type:'forms',title:`ما شكل حرف ${ch} في هذه الكلمة؟`,big:`<span>${PIC[word]||''}</span><span>${word}</span>`,qsay:`ما شكلُ حرفِ|${nm(ch)}|في كلمةِ|${word}`,
+  ans,pool:[ans,...shuffle(all.filter(f=>f!==ans)).slice(0,2)],full:word,note:`${ans} : في ${posName(w,k)}`,rsay:`أحسنت!|${nm(ch)}|في ${posName(w,k)}|${word}`,learn:word}}
 
 /* ---- 2. المدود ---- */
 const MADDW=[['فيل',1],['باب',1],['حوت',1],['ديك',1],['نار',1],['موز',1],['تاج',1],['بيت',1],['ساعة',1],['قارب',1],['صاروخ',3],['خروف',2],['كتاب',2],['حصان',2],['عين',1],['سيارة',2],['سفينة',2]];
 const MADDN={'ا':'مدّ بالألف','و':'مدّ بالواو','ي':'مدّ بالياء'};
 function qMaddWord([word,p]){const w=[...word],ans=w[p];const shown=w.slice(0,p).join('')+slot+w.slice(p+1).join('');
- return {type:'madd',title:'أكمل الكلمة بحرف المدّ: ا أم و أم ي؟',big:`<span>${PIC[word]}</span><span>${shown}</span>`,qsay:`أكمل كلمةَ ${word}`,ans,pool:['ا','و','ي'],full:word,note:MADDN[ans],rsay:`أحسنت! ${word}، ${MADDN[ans]}`,learn:word}}
+ return {type:'madd',title:'أكمل الكلمة بحرف المدّ: ا أم و أم ي؟',big:`<span>${PIC[word]}</span><span>${shown}</span>`,qsay:`أكمل كلمةَ|${word}`,ans,pool:['ا','و','ي'],full:word,note:MADDN[ans],rsay:`أحسنت!|${word}|${MADDN[ans]}`,learn:word}}
 function qMaddSyl(){const c=pick([...'بتدرسفكلمنجح']),forms=[[c+'َ',c+'َا','الفتحة','مد بالألف'],[c+'ُ',c+'ُو','الضمة','مد بالواو'],[c+'ِ',c+'ِي','الكسرة','مد بالياء']];
  const v=pick(forms),long=Math.random()<.6,ans=long?v[1]:v[0],other=pick(forms.filter(f=>f!==v));const pool=[ans,long?v[0]:v[1],other[long?1:0]];
- return {type:'madd',title:'اسمع واختر: حركة قصيرة أم مدّ طويل؟',big:'<span>👂</span><span>🔊</span>',qsay:`اختر ${ans} ... ${ans}`,ans,pool,full:ans,note:long?v[3]:'حركة قصيرة: '+v[2],rsay:`أحسنت! ${ans}`,learn:ans}}
+ return {type:'madd',title:'اسمع واختر: حركة قصيرة أم مدّ طويل؟',big:'<span>👂</span><span>🔊</span>',qsay:`اختر|${ans}|${ans}`,ans,pool,full:ans,note:long?v[3]:'حركة قصيرة: '+v[2],rsay:`أحسنت!|${ans}`,learn:ans}}
 
 /* ---- 3. تركيب الكلمة ---- */
 const BUILDW=['قلم','باب','شمس','قمر','جمل','كلب','نمر','فيل','موز','عنب','تاج','ديك','بيت','ورد','كتاب','بطة','قطة','كرة','نحلة','شجرة'];
-function qBuild(word){const w=[...word];return {type:'build',w,word,step:0,ans:w[0],title:'ركّب الكلمة: اجمع حروفها بالترتيب',qsay:`ركّب كلمةَ ${word}`,full:word,note:w.join(' + ')+' = '+word,rsay:`أحسنت! ${word}`,learn:word}}
+function qBuild(word){const w=[...word];return {type:'build',w,word,step:0,ans:w[0],title:'ركّب الكلمة: اجمع حروفها بالترتيب',qsay:`ركّب كلمةَ|${word}`,full:word,note:w.join(' + ')+' = '+word,rsay:`أحسنت!|${word}`,learn:word}}
 function buildBig(q){const pic=q.emo||PIC[q.word]||'';const cells=q.w.map((c,i)=>i<q.step?`<b class="cell f">${c}</b>`:i===q.step?'<b class="cell on">؟</b>':'<b class="cell"></b>').join('');
  return `<span>${pic}</span><span class="cells">${cells}</span>`}
 
@@ -207,7 +207,7 @@ function buildBig(q){const pic=q.emo||PIC[q.word]||'';const cells=q.w.map((c,i)=
 function qAnal([word,emo],k){const w=[...word];const posT=k===0?'الأول':k===w.length-1?'الأخير':'الأوسط';const ans=w[k];const showText=Math.random()<.5;
  const others=w.filter(c=>c!==ans);const ds=[...new Set(shuffle(others))].slice(0,1).concat(lookAlikes(ans,3,others)).filter(x=>x!==ans).slice(0,2);
  return {type:'anal',title:`ما الحرف ${posT} في الكلمة؟`+(showText?'':' (اسمع)'),big:`<span>${emo}</span>`+(showText?`<span>${word}</span>`:'<span style="font-size:.6em">🔊</span>'),
-  qsay:`ما الحرفُ ${posT} في كلمةِ ${word}؟ ... ${word}`,ans,pool:[ans,...ds],full:word,note:`الحرف ${posT}: ${ans}`,rsay:`أحسنت! الحرفُ ${posT} في ${word} هو ${nm(ans)}`,learn:word}}
+  qsay:`ما الحرفُ ${posT} في كلمةِ|${word}`,ans,pool:[ans,...ds],full:word,note:`الحرف ${posT}: ${ans}`,rsay:`أحسنت!|الحرفُ ${posT} هو|${nm(ans)}`,learn:word}}
 
 /* ---- 5. اللام الشمسية والقمرية ---- */
 const SUNL='تثدذرزسشصضطظلن';
@@ -216,13 +216,13 @@ const MOONW=[['القمر','🌙'],['الباب','🚪'],['الكتاب','📖']
 const voc=(w,sun)=>sun?'ال'+w[2]+'ّ'+w.slice(3):'الْ'+w.slice(2);
 function qLam(sun){const a=pick(sun?SUNW:MOONW),ds=shuffle((sun?MOONW:SUNW).slice()).slice(0,2).map(x=>x[0]);const kind=sun?'شمسية ☀️':'قمرية 🌙';
  return {type:'lam',title:`اختر الكلمة التي فيها لام ${kind}`,big:`<span>${sun?'☀️':'🌙'}</span>`,qsay:`اختر الكلمةَ التي فيها لامٌ ${sun?'شمسية':'قمرية'}`,ans:a[0],pool:[a[0],...ds],
-  full:`${a[1]} ${voc(a[0],sun)}`,note:sun?'اللام شمسية: تُكتب ولا تُنطق، والحرف بعدها مشدّد':'اللام قمرية: تُكتب وتُنطق',rsay:`أحسنت! ${voc(a[0],sun)}، اللامُ ${sun?'شمسية لا تُنطق':'قمرية تُنطق'}`,learn:a[0]}}
+  full:`${a[1]} ${voc(a[0],sun)}`,note:sun?'اللام شمسية: تُكتب ولا تُنطق، والحرف بعدها مشدّد':'اللام قمرية: تُكتب وتُنطق',rsay:`أحسنت!|${voc(a[0],sun)}|اللامُ ${sun?'شمسية لا تُنطق':'قمرية تُنطق'}`,learn:a[0]}}
 
 /* ---- 6. التاء المربوطة والمفتوحة ---- */
 const TAW=[['مدرسة','🏫'],['شجرة','🌳'],['سمكة','🐟'],['وردة','🌹'],['نحلة','🐝'],['تفاحة','🍎'],['بطة','🦆'],['سيارة','🚗'],['طائرة','✈️'],['ساعة','⌚'],['قطة','🐱'],['كرة','⚽'],['بيت','🏠'],['بنت','👧'],['حوت','🐋'],['توت','🍓'],['زيت','🫒'],['صوت','🔊'],['نبات','🌱'],['كتكوت','🐥'],['وجه','🙂'],['مياه','💧'],['فواكه','🍉']];
 const TAN_NOTE={'ة':'تاء مربوطة: إذا وقفنا عليها نطقناها هاءً','ت':'تاء مفتوحة: تُنطق تاءً دائماً','ه':'هاء: تُنطق هاءً دائماً'};
 function qTa([word,emo]){const w=[...word],ans=w[w.length-1];
- return {type:'ta',title:'أكمل الكلمة: ة أم ت أم ه؟',big:`<span>${emo}</span><span>${w.slice(0,-1).join('')}${slot}</span>`,qsay:`أكمل كلمةَ ${word}`,ans,pool:['ة','ت','ه'],full:word,note:TAN_NOTE[ans],rsay:`أحسنت! ${word}`,learn:word}}
+ return {type:'ta',title:'أكمل الكلمة: ة أم ت أم ه؟',big:`<span>${emo}</span><span>${w.slice(0,-1).join('')}${slot}</span>`,qsay:`أكمل كلمةَ|${word}`,ans,pool:['ة','ت','ه'],full:word,note:TAN_NOTE[ans],rsay:`أحسنت!|${word}`,learn:word}}
 
 /* ---- 7. التنوين والسكون في الكلمة ---- */
 const TANB=[['باب','🚪'],['بيت','🏠'],['قلم','✏️'],['كلب','🐕'],['ولد','👦'],['قمر','🌙'],['نمر','🐯'],['جمل','🐫'],['فيل','🐘'],['ورد','🌹'],['كتاب','📖'],['أسد','🦁'],['حصان','🐴'],['ديك','🐓']];
@@ -230,7 +230,7 @@ const MKS=[{m:'ٌ',n:'تنوين الضم',s:'ُ'},{m:'ً',n:'تنوين الف�
 const withM=(w,m)=>w+m+(m==='ً'?'ا':'');
 function qTan([word,emo]){const k=Math.random()<.25?3:Math.random()*3|0,M=MKS[k],ans=withM(word,M.m);
  const pool=k===3?[ans,word+'ُ',withM(word,'ٌ')]:[ans,word+M.s,pick([word+'ْ',withM(word,MKS[(k+1)%3].m)])];
- return {type:'tan',title:'اسمع واختر الكلمة الصحيحة',big:`<span>${emo}</span><span>👂</span>`,qsay:`اختر ${ans} ... ${ans}`,ans,pool,full:ans,note:M.n+(k<3?': نسمع نوناً ساكنة في آخر الكلمة':': الحرف الأخير ساكن'),rsay:`أحسنت! ${ans}، ${M.n}`,learn:ans}}
+ return {type:'tan',title:'اسمع واختر الكلمة الصحيحة',big:`<span>${emo}</span><span>👂</span>`,qsay:`اختر|${ans}|${ans}`,ans,pool,full:ans,note:M.n+(k<3?': نسمع نوناً ساكنة في آخر الكلمة':': الحرف الأخير ساكن'),rsay:`أحسنت!|${ans}|${M.n}`,learn:ans}}
 
 /* ---- 8. قراءة الكلمات والجمل ---- */
 const SENT=[['القطةُ تشربُ الحليبَ','🐱🥛'],['الولدُ يقرأُ الكتابَ','👦📖'],['البنتُ تأكلُ التفاحةَ','👧🍎'],['الطائرةُ في السماءِ','✈️☁️'],['السمكةُ في الماءِ','🐟💧'],['أبي يقودُ السيارةَ','👨🚗'],['القمرُ في الليلِ','🌙⭐'],['الطفلُ يلعبُ بالكرةِ','🧒⚽'],['الأسدُ في الغابةِ','🦁🌳'],['أمي تسقي الوردةَ','👩🌹'],['المطرُ ينزلُ من الغيمةِ','🌧️☁️'],['الطالبُ يذهبُ إلى المدرسةِ','🎒🏫'],['النحلةُ على الزهرةِ','🐝🌸'],['الكلبُ في البيتِ','🐕🏠']];
@@ -240,11 +240,11 @@ function similarWords(word,n){const w=[...word];const c=WB.map(x=>x[0]).filter(x
  return c.map(x=>[score(x),x]).sort((a,b)=>b[0]-a[0]).slice(0,n).map(x=>x[1])}
 function qRead(kind){
  if(kind==='sent'){const s=pick(SENT),ds=shuffle(SENT.filter(x=>x!==s)).slice(0,2).map(x=>x[1]);
-  return {type:'read',title:'اقرأ الجملة واختر الصورة المناسبة',big:`<span style="font-size:.52em;line-height:1.5">${s[0]}</span>`,qsay:'اقرأ الجملةَ واختر الصورة',ans:s[1],pool:[s[1],...ds],full:s[0],note:s[1],rsay:`أحسنت! ${s[0]}`,learn:s[1]}}
+  return {type:'read',title:'اقرأ الجملة واختر الصورة المناسبة',big:`<span style="font-size:.52em;line-height:1.5">${s[0]}</span>`,qsay:'اقرأ الجملةَ واختر الصورة',ans:s[1],pool:[s[1],...ds],full:s[0],note:s[1],rsay:`أحسنت!|${s[0]}`,learn:s[1]}}
  const [word,emo]=pick(WB.filter(x=>[...x[0]].length>=3));
  if(kind==='w2p'){const ds=shuffle(WB.filter(x=>x[1]!==emo)).slice(0,2).map(x=>x[1]);
-  return {type:'read',title:'اقرأ الكلمة واختر صورتها',big:`<span>${word}</span>`,qsay:'اقرأ الكلمةَ واختر صورتها',ans:emo,pool:[emo,...ds],full:`${emo} ${word}`,note:'',rsay:`أحسنت! ${word}`,learn:word}}
- return {type:'read',title:'انظر إلى الصورة واقرأ: أي كلمة هي؟',big:`<span>${emo}</span>`,qsay:'انظر إلى الصورة واختر كلمتها',ans:word,pool:[word,...similarWords(word,2)],full:`${emo} ${word}`,note:'',rsay:`أحسنت! ${word}`,learn:word}}
+  return {type:'read',title:'اقرأ الكلمة واختر صورتها',big:`<span>${word}</span>`,qsay:'اقرأ الكلمةَ واختر صورتها',ans:emo,pool:[emo,...ds],full:`${emo} ${word}`,note:'',rsay:`أحسنت!|${word}`,learn:word}}
+ return {type:'read',title:'انظر إلى الصورة واقرأ: أي كلمة هي؟',big:`<span>${emo}</span>`,qsay:'انظر إلى الصورة واختر كلمتها',ans:word,pool:[word,...similarWords(word,2)],full:`${emo} ${word}`,note:'',rsay:`أحسنت!|${word}`,learn:word}}
 
 /* ---- 9. تحدي الأبطال: كلمات رباعية وخماسية فيها مد وسكون ---- */
 const HARD=[['مِفْتَاح','🔑'],['عُصْفُور','🐦'],['مِصْبَاح','💡'],['فِنْجَان','☕'],['دُلْفِين','🐬'],['ثُعْبَان','🐍'],['صُنْدُوق','📦'],['لَيْمُون','🍋'],['فُسْتَان','👗'],['بُرْكَان','🌋'],['تِمْسَاح','🐊'],['سِنْجَاب','🐿️'],['مِنْطَاد','🎈'],['قِنْدِيل','🏮'],['مِسْمَار','🔩'],['بُسْتَان','🌷'],['أَرْنَب','🐇'],['دَفْتَر','📒'],['نَخْلَة','🌴'],['ثَعْلَب','🦊'],['عَقْرَب','🦂'],['شَمْعَة','🕯️'],['بَيْضَة','🥚'],['كَعْكَة','🍰'],['صَارُوخ','🚀']];
@@ -254,16 +254,16 @@ function parseW(v){const u=[];for(const c of v){if(MARKS.test(c)){if(u.length)u[
  const madd=u.findIndex((x,i)=>i>0&&!x.m&&((x.c==='ا'&&u[i-1].m.includes('َ'))||(x.c==='و'&&u[i-1].m.includes('ُ'))||(x.c==='ي'&&u[i-1].m.includes('ِ'))));
  return {u,plain:u.map(x=>x.c).join(''),suk,madd}}
 const uStr=(u,skip=-1)=>u.map((x,i)=>i===skip?'':x.c+x.m).join('');
-function qHBuild([v,emo]){const P=parseW(v),q=qBuild(P.plain);q.emo=emo;q.full=v;q.rsay=`أحسنت! ${v}`;q.qsay=`ركّب كلمةَ ${v}`;q.learn=v;return q}
+function qHBuild([v,emo]){const P=parseW(v),q=qBuild(P.plain);q.emo=emo;q.full=v;q.rsay=`أحسنت!|${v}`;q.qsay=`ركّب كلمةَ|${v}`;q.learn=v;return q}
 function qHSuk([v,emo]){const P=parseW(v),k=P.suk,ans=P.u[k].c,others=[...new Set(P.u.map(x=>x.c).filter(c=>c!==ans&&!'اوي'.includes(c)))];
  const ds=shuffle(others).slice(0,2);while(ds.length<2)ds.push(lookAlikes(ans,1,[...ds,...others])[0]);
- return {type:'hsuk',title:'أي حرف عليه سكون؟ ( ـْ )',big:`<span>${emo}</span><span>${v}</span>`,qsay:`أيُّ حرفٍ عليه سكون في كلمةِ ${v}؟`,ans,pool:[ans,...ds],full:v,note:`الحرف الساكن: ${ans}ْ`,rsay:`أحسنت! ${nm(ans)} ساكنة في ${v}`,learn:v}}
+ return {type:'hsuk',title:'أي حرف عليه سكون؟ ( ـْ )',big:`<span>${emo}</span><span>${v}</span>`,qsay:`أيُّ حرفٍ عليه سكون في كلمةِ|${v}`,ans,pool:[ans,...ds],full:v,note:`الحرف الساكن: ${ans}ْ`,rsay:`أحسنت!|${nm(ans)}|ساكنة في|${v}`,learn:v}}
 function qHMadd([v,emo]){const P=parseW(v),k=P.madd,ans=P.u[k].c;const shown=uStr(P.u.slice(0,k))+slot+uStr(P.u.slice(k+1));
- return {type:'madd',title:'أكمل الكلمة بحرف المدّ: ا أم و أم ي؟',big:`<span>${emo}</span><span>${shown}</span>`,qsay:`أكمل كلمةَ ${v}`,ans,pool:['ا','و','ي'],full:v,note:MADDN[ans],rsay:`أحسنت! ${v}، ${MADDN[ans]}`,learn:v}}
+ return {type:'madd',title:'أكمل الكلمة بحرف المدّ: ا أم و أم ي؟',big:`<span>${emo}</span><span>${shown}</span>`,qsay:`أكمل كلمةَ|${v}`,ans,pool:['ا','و','ي'],full:v,note:MADDN[ans],rsay:`أحسنت!|${v}|${MADDN[ans]}`,learn:v}}
 function qHRead([v,emo]){const P=parseW(v);let bad;
  if(P.madd>=0)bad=uStr(P.u,P.madd);else{const u=P.u.map((x,i)=>i===P.suk?{c:x.c,m:'َ'}:x);bad=uStr(u)}
  const other=pick(HARD.filter(x=>x[0]!==v&&x[0][0]===v[0]))||pick(HARD.filter(x=>x[0]!==v));
- return {type:'read',title:'انظر إلى الصورة واقرأ: أي كلمة صحيحة؟',big:`<span>${emo}</span>`,qsay:'انظر إلى الصورة واقرأ، أيُّ كلمةٍ صحيحة؟',ans:v,pool:[v,bad,other[0]],full:`${emo} ${v}`,note:'',rsay:`أحسنت! ${v}`,learn:v}}
+ return {type:'read',title:'انظر إلى الصورة واقرأ: أي كلمة صحيحة؟',big:`<span>${emo}</span>`,qsay:'انظر إلى الصورة واقرأ، أيُّ كلمةٍ صحيحة؟',ans:v,pool:[v,bad,other[0]],full:`${emo} ${v}`,note:'',rsay:`أحسنت!|${v}`,learn:v}}
 
 /* ---- المراحل ---- */
 const take=(a,n)=>shuffle(a.slice()).slice(0,n);
@@ -321,7 +321,20 @@ const SFX={
 let arVoice=null;
 function pickVoice(){try{const vs=speechSynthesis.getVoices();arVoice=vs.find(v=>/^ar[-_]SA/i.test(v.lang))||vs.find(v=>/^ar/i.test(v.lang))||null}catch(e){}}
 try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
-function say(t,rate=.8){if(muted)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ar-SA';if(arVoice)u.voice=arVoice;u.rate=rate;u.pitch=1.15;speechSynthesis.speak(u)}catch(e){}}
+// Shared by the game and the voice tools: one stable file name per sentence.
+function normVoice(t){return String(t||'').replace(/\s+/g,' ').trim()}
+function voiceKey(t){t=normVoice(t);let h=0x811c9dc5;for(let i=0;i<t.length;i++){h^=t.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h.toString(16).padStart(8,'0')}
+// clear recorded voice (voice/*.mp3, made once with tools/voice-make.js); the device voice is the fallback
+const VOICE={has:new Set(),buf:{},src:[],run:0};
+fetch('voice/list.json').then(r=>r.ok?r.json():[]).then(a=>{if(Array.isArray(a))a.forEach(k=>VOICE.has.add(k))}).catch(()=>{});
+function stopVoice(){VOICE.run++;VOICE.src.forEach(n=>{try{n.stop()}catch(e){}});VOICE.src=[];try{speechSynthesis.cancel()}catch(e){}}
+async function clip(k){if(VOICE.buf[k])return VOICE.buf[k];const a=ac();const r=await fetch('voice/'+k+'.mp3');if(!r.ok)throw 0;const b=await a.decodeAudioData(await r.arrayBuffer());return VOICE.buf[k]=b}
+async function playClips(keys,fallback,rate){const run=++VOICE.run;try{const bufs=await Promise.all(keys.map(clip));if(run!==VOICE.run)return;
+  const a=ac();let t=a.currentTime+.03;for(const b of bufs){const n=a.createBufferSource();n.buffer=b;n.connect(a.destination);n.start(t);VOICE.src.push(n);t+=b.duration+.12}}
+ catch(e){if(run===VOICE.run)tts(fallback,rate)}}
+function say(t,rate=.8){if(muted)return;const parts=String(t).split('|').map(normVoice).filter(Boolean);stopVoice();
+ const keys=parts.map(voiceKey);if(keys.length&&keys.every(k=>VOICE.has.has(k))&&ac())return playClips(keys,parts.join(' '),rate);tts(parts.join(' '),rate)}
+function tts(t,rate=.8){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ar-SA';if(arVoice)u.voice=arVoice;u.rate=rate;u.pitch=1.15;speechSynthesis.speak(u)}catch(e){}}
 
 /* ---------------- Canvas & projection ---------------- */
 const cv=document.getElementById('cv'),cx=cv.getContext('2d');
@@ -365,7 +378,7 @@ function showQuestion(){
  $('qtext').textContent=q.title;$('qbig').innerHTML=q.type==='build'?buildBig(q):q.big;
  sayQ();
 }
-function sayQ(){const q=S.cur;if(!q)return;say(q.type==='build'&&q.step>0?`${q.word} ... الحرفُ التالي`:q.qsay,.75)}
+function sayQ(){const q=S.cur;if(!q)return;say(q.type==='build'&&q.step>0?`${q.word}|الحرفُ التالي`:q.qsay,.75)}
 function hint(){}
 function spawnGate(opts,gid){
  opts=opts||qOptions(S.cur);S.gidNow=gid;
@@ -408,7 +421,7 @@ function showRight(q){$('qcard').hidden=false;$('hintB').hidden=true;$('qtext').
  setTimeout(()=>{if(S.cur===q&&S.qi>S.queue.indexOf(q)){$('qcard').hidden=true;$('qnote2')?.remove()}},2200)}
 function sayWrong(pickd){const q=S.cur;if(!q)return;
  const tip={lam:'انظر إلى الحرف الذي بعد اللام',ta:'قف على آخر الكلمة: هل تسمع هاءً أم تاءً؟',forms:'هل الحرف متصل بما قبله وما بعده؟',madd:'اسمع الصوت: هل هو ممدود؟'}[q.type]||'';
- say(`حاول مرة أخرى. ${tip}`)}
+ say(`حاول مرة أخرى|${tip}`)}
 // one step forward: next letter of a word being built, or the next question
 function advanceQ(){const q=S.cur;
  if(q.type==='build'&&q.step<q.w.length-1){q.step++;q.ans=q.w[q.step];$('qbig').innerHTML=buildBig(q);tone(880,.12,'triangle',.1);
@@ -454,7 +467,7 @@ function later(fn,ms){const r=S.run;setTimeout(()=>{if(S.run===r&&S.mode==='play
 let toastT=0;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1300)}
 function burst(x,y,n,good){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=2+Math.random()*6;S.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-3,life:1,c:good?pick(['#ffd23f','#ff5c8a','#4fc3f7','#8bc34a','#b388ff']):'#9aa7b4',star:good&&Math.random()<.5,r:3+Math.random()*4})}}
 function hideAll(){['menu','endL','mpL'].forEach(i=>$(i).hidden=true)}
-function toMenu(){$('qnote')?.remove();syncMenu();S.mode='menu';S.run=(S.run||0)+1;S.cur=null;S.objs=[];S.light=null;S.pendingGate=false;S.target=4;try{speechSynthesis.cancel()}catch(e){}
+function toMenu(){$('qnote')?.remove();syncMenu();S.mode='menu';S.run=(S.run||0)+1;S.cur=null;S.objs=[];S.light=null;S.pendingGate=false;S.target=4;stopVoice();
  ['hud','prog','ctrl','qcard','stop','endL'].forEach(i=>$(i).hidden=true);$('menu').hidden=false;renderStages()}
 
 /* ---------------- Input ---------------- */
@@ -471,7 +484,7 @@ function doStop(){if(!S.light||S.stopReq)return;S.stopReq=true;$('stop').hidden=
 $('stop').addEventListener('pointerdown',e=>{e.preventDefault();doStop()});
 $('sayB').onclick=()=>{ac();sayQ()};$('hintB').onclick=hint;
 $('homeB').onclick=()=>{if(MP.on){if(!confirm('هل تريد الخروج من الغرفة؟'))return;leaveRoom()}toMenu()};
-$('muteB').onclick=()=>{muted=!muted;$('muteB').textContent=muted?'🔇':'🔊';try{localStorage.setItem('bike_mute',muted?'1':'0')}catch(e){}if(muted)try{speechSynthesis.cancel()}catch(e){}};
+$('muteB').onclick=()=>{muted=!muted;$('muteB').textContent=muted?'🔇':'🔊';try{localStorage.setItem('bike_mute',muted?'1':'0')}catch(e){}if(muted)stopVoice()};
 $('muteB').textContent=muted?'🔇':'🔊';
 function renderStages(){
  $('stages').innerHTML=STAGES.map((st,i)=>{const n=PROG[i]||0,op=unlocked(i);return `<button class="stg" data-i="${i}" ${op?'':'disabled'}><span class="n">${i+1}</span><div class="ic">${op?st.ic:'🔒'}</div><div class="t">${st.t}</div><div class="d">${st.d}</div><div class="st">${n?'⭐'.repeat(n)+'☆'.repeat(3-n):op?'☆☆☆':''}</div></button>`}).join('');
