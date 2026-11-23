@@ -419,6 +419,7 @@ function judge(g){
  const sx=px((S.lane-1)*LANE,0.5),sy=py(.5)-unit()*1.6;
  if(MP.on){ // team play: show my result, the host decides for the team
   if(ok){burst(sx,sy,30,true);SFX.ok();toast('صح ✔')}else{SFX.bad();burst(sx,sy,14,false);toast('✖')}
+  {const last=q.type!=='build'||q.step===q.w.length-1;if(!ok)q.miss=true;else if(last&&!q.miss)S.correct++}
   S.myMark={ok,t:S.t};send('ans',{gid:g.gid,ok});if(MP.host)gotAns(MP.pid,g.gid,ok);return}
  if(ok){
   burst(sx,sy,40,true);SFX.ok();
@@ -434,6 +435,8 @@ function judge(g){
 function finish(){
  S.mode='end';$('ctrl').hidden=true;$('stop').hidden=true;$('qcard').hidden=true;SFX.win();
  const total=S.queue.length;S.stage=Math.min(S.stage,STAGES.length-1);
+ // send my result to the platform (when opened inside it) so the teacher sees it
+ if(window.parent!==window){try{parent.postMessage({type:'fasl-score',score:Math.min(S.correct,total),max:total,detail:`المرحلة ${S.stage+1}: ${STAGES[S.stage].t}${MP.on?' · لعب جماعي':''}`},'*')}catch(e){}}
  const ratio=S.stars/Math.max(1,total*(MP.on?Math.max(1,Object.keys(MP.peers).length):1));const n=ratio>.85?3:ratio>.5?2:1;saveProg(S.stage,n);const hasNext=S.stage<STAGES.length-1;
  $('endStars').textContent='⭐'.repeat(n)+'☆'.repeat(3-n);
  const team=Object.values(MP.peers);
