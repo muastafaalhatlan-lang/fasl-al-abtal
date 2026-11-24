@@ -116,7 +116,7 @@ input.name{font:inherit;font-size:22px;font-weight:800;text-align:center;border:
 <div id="how" class="layer" hidden><div class="panel">
   <h2>كيف نلعب؟ 🤔</h2>
   <div class="how">
-    <div><span>🚶</span>حرّك بطلك بالإصبع (أو بالأسهم)</div>
+    <div><span>👆</span>المس الأرض فيمشي بطلك إليها، أو اسحب إصبعك لتحريكه</div>
     <div><span>📦</span>امشِ إلى المكعب فتحمله فوق رأسك</div>
     <div><span>🎯</span>قف عند مكانه الصحيح فيوضع وحده</div>
     <div><span>✋</span>زر اليد يُنزل ما تحمله</div>
@@ -323,52 +323,85 @@ let T=0; // seconds
 // so +x is the right of the screen: words are laid out from right to left like Arabic.
 const D_ISL=25, R_WALK=8.3;
 const PAL=['#ffc93c','#ff8fc0','#6cc3ff','#7be07b','#ffa45b','#b892ff','#4fd1c5'];
-function mkItem(key,lab,o={}){const t=lab.t||'',n=[...t].length;let kind=o.kind||'cube',w=1;
+// ---- الحركات: every word, letter and sentence the children see is fully vocalised.
+// Voice keys stay the plain words (they match the recorded clips); only what is shown changes.
+const VOC={'قلم':'قَلَمٌ','باب':'بَابٌ','بيت':'بَيْتٌ','شمس':'شَمْسٌ','قمر':'قَمَرٌ','سمك':'سَمَكٌ','جمل':'جَمَلٌ','ورد':'وَرْدٌ','كلب':'كَلْبٌ','نمر':'نَمِرٌ',
+ 'فيل':'فِيلٌ','موز':'مَوْزٌ','عنب':'عِنَبٌ','تاج':'تَاجٌ','ديك':'دِيكٌ','حوت':'حُوتٌ','دب':'دُبٌّ','كتاب':'كِتَابٌ','حصان':'حِصَانٌ','بطة':'بَطَّةٌ',
+ 'شجرة':'شَجَرَةٌ','سيارة':'سَيَّارَةٌ','وردة':'وَرْدَةٌ','تفاحة':'تُفَّاحَةٌ','نحلة':'نَحْلَةٌ','ساعة':'سَاعَةٌ','طائرة':'طَائِرَةٌ','مدرسة':'مَدْرَسَةٌ','قطة':'قِطَّةٌ','كرة':'كُرَةٌ',
+ 'أسد':'أَسَدٌ','بنت':'بِنْتٌ','ولد':'وَلَدٌ','نار':'نَارٌ','يد':'يَدٌ','عين':'عَيْنٌ','ثلج':'ثَلْجٌ','خروف':'خَرُوفٌ','زرافة':'زَرَافَةٌ','صاروخ':'صَارُوخٌ',
+ 'ضفدع':'ضِفْدَعٌ','غيمة':'غَيْمَةٌ','هدية':'هَدِيَّةٌ','جبل':'جَبَلٌ','لبن':'لَبَنٌ','سفينة':'سَفِينَةٌ','كرسي':'كُرْسِيٌّ','قارب':'قَارِبٌ','سمكة':'سَمَكَةٌ','توت':'تُوتٌ',
+ 'زيت':'زَيْتٌ','صوت':'صَوْتٌ','نبات':'نَبَاتٌ','كتكوت':'كَتْكُوتٌ','وجه':'وَجْهٌ','مياه':'مِيَاهٌ','فواكه':'فَوَاكِهُ',
+ 'الشمس':'الشَّمْسُ','النمر':'النَّمِرُ','السمك':'السَّمَكُ','الدب':'الدُّبُّ','الزرافة':'الزَّرَافَةُ','الطائرة':'الطَّائِرَةُ','التفاحة':'التُّفَّاحَةُ','الصاروخ':'الصَّارُوخُ',
+ 'النحلة':'النَّحْلَةُ','الذرة':'الذُّرَةُ','الضفدع':'الضِّفْدَعُ','الساعة':'السَّاعَةُ','الثلج':'الثَّلْجُ','الرمل':'الرَّمْلُ','الليمون':'اللَّيْمُونُ',
+ 'القمر':'الْقَمَرُ','الباب':'الْبَابُ','الكتاب':'الْكِتَابُ','الفيل':'الْفِيلُ','الجمل':'الْجَمَلُ','الحصان':'الْحِصَانُ','الخروف':'الْخَرُوفُ','العنب':'الْعِنَبُ',
+ 'الغيمة':'الْغَيْمَةُ','الموز':'الْمَوْزُ','الوردة':'الْوَرْدَةُ','اليد':'الْيَدُ','الهدية':'الْهَدِيَّةُ','الأسد':'الْأَسَدُ','الكلب':'الْكَلْبُ','البطة':'الْبَطَّةُ',
+ 'القطةُ تشربُ الحليبَ':'الْقِطَّةُ تَشْرَبُ الْحَلِيبَ','الولدُ يقرأُ الكتابَ':'الْوَلَدُ يَقْرَأُ الْكِتَابَ','البنتُ تأكلُ التفاحةَ':'الْبِنْتُ تَأْكُلُ التُّفَّاحَةَ',
+ 'الطائرةُ في السماءِ':'الطَّائِرَةُ فِي السَّمَاءِ','السمكةُ في الماءِ':'السَّمَكَةُ فِي الْمَاءِ','أبي يقودُ السيارةَ':'أَبِي يَقُودُ السَّيَّارَةَ','القمرُ في الليلِ':'الْقَمَرُ فِي اللَّيْلِ',
+ 'الطفلُ يلعبُ بالكرةِ':'الطِّفْلُ يَلْعَبُ بِالْكُرَةِ','الأسدُ في الغابةِ':'الْأَسَدُ فِي الْغَابَةِ','أمي تسقي الوردةَ':'أُمِّي تَسْقِي الْوَرْدَةَ',
+ 'المطرُ ينزلُ من الغيمةِ':'الْمَطَرُ يَنْزِلُ مِنَ الْغَيْمَةِ','الطالبُ يذهبُ إلى المدرسةِ':'الطَّالِبُ يَذْهَبُ إِلَى الْمَدْرَسَةِ','النحلةُ على الزهرةِ':'النَّحْلَةُ عَلَى الزَّهْرَةِ',
+ 'الكلبُ في البيتِ':'الْكَلْبُ فِي الْبَيْتِ'};
+const plainOf=v=>String(v).replace(/[ً-ْ]/g,'');
+function full(v){const u=parseW(v).u;const l=u[u.length-1];if(l&&!l.m&&!'اوي'.includes(l.c))l.m='ٌ';return uStr(u)} // adds the ending haraka
+const V=w=>VOC[w]||VOC[plainOf(w)]||full(w);
+const units=w=>parseW(V(w)).u;
+const uS=u=>u.c+u.m;
+
+function mkItem(key,lab,o={}){const t=lab.t||'',n=[...plainOf(t)].length;let kind=o.kind||'cube',w=1;
  if(kind==='cube'&&(n>2||(lab.e&&t)))kind='tile';
  if(kind==='tile')w=clamp(.7+n*.36+(lab.e?1:0),1.6,3.6);
  return {key,lab,kind,w,say:o.say||'',ok:o.ok||''}}
-const letterItem=c=>mkItem(c,{t:c},{say:NAME[c]?nm(c):''});
+// a letter cube shows the letter with its haraka; it says the letter's name when picked up
+const unitItem=u=>{const p=plainOf(u.c).replace(/ـ/g,'');return mkItem(uS(u),{t:uS(u)},{say:p.length===1&&NAME[p]?nm(p):''})};
+const optItem=v=>{const p=plainOf(v).replace(/ـ/g,'');return p.length===1?mkItem(v,{t:v},{say:NAME[p]?nm(p):''}):mkItem(v,{t:v})};
 const isl=(type,o)=>Object.assign({type,boards:[],slots:[],items:[]},o);
 function gapIsl(qs,o){const d=isl('gap',o),xs=qs.length===1?[0]:[3.3,-3.3];
  qs.forEach((q,i)=>{d.boards.push({x:xs[i],z:-5.5,w:qs.length===1?4.6:4.3,h:2.8,e:q.e,t:q.t,sub:q.sub||'',say:q.say});
   d.slots.push({x:xs[i],z:-3.2,acc:q.ans,kind:'ped',ok:q.ok});
-  shuffle(q.pool.slice()).forEach(v=>d.items.push([...v].length===1?letterItem(v):mkItem(v,{t:v})))});
+  shuffle(q.pool.slice()).forEach(v=>d.items.push(optItem(v)))});
  d.say=qs[0].say;return d}
-function buildIsl(word,emo,shown,showText,o){const w=[...word],d=isl('build',o),n=w.length,sp=1.9;
- const say=`ركّب كلمةَ|${shown}`;
+// u: the vocalised letters of the word; sayW: the recorded word for the voice
+function buildIsl(u,emo,sayW,showText,o){const d=isl('build',o),n=u.length,sp=1.9,shown=uStr(u);
+ const say=`ركّب كلمةَ|${sayW}`;
  d.boards.push({x:0,z:-5.7,w:4.6,h:2.8,e:emo,t:showText?shown:'',sub:showText?'':'🔊 اسمع الكلمة وركّبها',say});
- w.forEach((c,i)=>d.slots.push({x:(n-1)/2*sp-i*sp,z:-3.2,acc:c,kind:'ped',ok:nm(c),num:i+1}));
- w.forEach(c=>d.items.push(letterItem(c)));
- lookAlikes(w[0],1,w).concat(lookAlikes(w[n-1],1,w)).filter((c,i,a)=>a.indexOf(c)===i).forEach(c=>d.items.push(letterItem(c)));
- d.say=say;d.done=`أحسنت!|${shown}`;return d}
+ u.forEach((x,i)=>d.slots.push({x:(n-1)/2*sp-i*sp,z:-3.2,acc:uS(x),kind:'ped',ok:nm(x.c),num:i+1}));
+ u.forEach(x=>d.items.push(unitItem(x)));
+ const pl=u.map(x=>x.c);
+ [[u[0],lookAlikes(u[0].c,1,pl)[0]],[u[n-1],lookAlikes(u[n-1].c,2,pl)[1]]].forEach(([x,c])=>{if(c&&!d.items.some(it=>it.key===c+x.m))d.items.push(unitItem({c,m:x.m}))});
+ d.say=say;d.done=`أحسنت!|${sayW}`;return d}
 function posIsl(words,last,showText,o){const d=isl('pos',o),xs=[4.4,0,-4.4],posT=last?'الأخير':'الأول',used=[];
- words.forEach(([word,emo],i)=>{const w=[...word],c=last?w[w.length-1]:w[0];used.push(c);
-  d.slots.push({x:xs[i],z:-3.1,acc:c,kind:'pic',lab:{e:emo,t:showText?word:''},say:`ما الحرفُ ${posT} في كلمةِ|${word}`,ok:`الحرفُ ${posT} هو|${nm(c)}`});
-  d.items.push(letterItem(c))});
- lookAlikes(used[0],1,used).forEach(c=>d.items.push(letterItem(c)));
+ words.forEach(([word,emo],i)=>{const u=units(word),x=last?u[u.length-1]:u[0];used.push(x);
+  d.slots.push({x:xs[i],z:-3.1,acc:uS(x),kind:'pic',lab:{e:emo,t:showText?V(word):''},say:`ما الحرفُ ${posT} في كلمةِ|${word}`,ok:`الحرفُ ${posT} هو|${nm(x.c)}`});
+  d.items.push(unitItem(x))});
+ const c=lookAlikes(used[0].c,1,used.map(x=>x.c))[0];if(c)d.items.push(unitItem({c,m:used[0].m}));
  d.say=d.slots[0].say;return d}
 function sortIsl(sun,moon,o){const d=isl('sort',o);
- d.slots.push({x:3.7,z:-3.9,acc:'sun',kind:'house',cap:sun.length,lab:{e:'☀️',t:'شمسية'},col:'#ffb347',say:'اختر الكلمةَ التي فيها لامٌ شمسية'});
- d.slots.push({x:-3.7,z:-3.9,acc:'moon',kind:'house',cap:moon.length,lab:{e:'🌙',t:'قمرية'},col:'#7aa7ff',say:'اختر الكلمةَ التي فيها لامٌ قمرية'});
- sun.forEach(([w,e])=>d.items.push(mkItem('sun',{e,t:w},{kind:'tile',ok:`${voc(w,true)}|اللامُ شمسية لا تُنطق`})));
- moon.forEach(([w,e])=>d.items.push(mkItem('moon',{e,t:w},{kind:'tile',ok:`${voc(w,false)}|اللامُ قمرية تُنطق`})));
+ d.slots.push({x:3.7,z:-3.9,acc:'sun',kind:'house',cap:sun.length,lab:{e:'☀️',t:'شَمْسِيَّةٌ'},col:'#ffb347',say:'اختر الكلمةَ التي فيها لامٌ شمسية'});
+ d.slots.push({x:-3.7,z:-3.9,acc:'moon',kind:'house',cap:moon.length,lab:{e:'🌙',t:'قَمَرِيَّةٌ'},col:'#7aa7ff',say:'اختر الكلمةَ التي فيها لامٌ قمرية'});
+ sun.forEach(([w,e])=>d.items.push(mkItem('sun',{e,t:V(w)},{kind:'tile',ok:`${voc(w,true)}|اللامُ شمسية لا تُنطق`})));
+ moon.forEach(([w,e])=>d.items.push(mkItem('moon',{e,t:V(w)},{kind:'tile',ok:`${voc(w,false)}|اللامُ قمرية تُنطق`})));
  d.items=shuffle(d.items);d.say=d.slots[0].say;return d}
 function matchIsl(pairs,extra,slotLab,itemLab,o){const d=isl('match',o),n=pairs.length,xs=n===3?[4.4,0,-4.4]:[3.4,-3.4];
  pairs.forEach((p,i)=>{d.slots.push({x:xs[i],z:-3.1,acc:p.k,kind:'pic',lab:slotLab(p),wide:n===2,ok:p.ok});d.items.push(mkItem(p.k,itemLab(p)))});
  extra.forEach(p=>d.items.push(mkItem(p.k,itemLab(p))));d.items=shuffle(d.items);return d}
-// gap questions from the race game's question makers
-const qF=x=>{const q=qForms(x);return {e:PIC[x[0]]||'',t:x[0],sub:'شكل حرف '+x[1],say:q.qsay,ans:q.ans,pool:q.pool,ok:q.rsay}};
-const qM=x=>{const q=qMaddWord(x),w=[...x[0]];return {e:PIC[x[0]]||'',t:w.slice(0,x[1]).join('')+'؟'+w.slice(x[1]+1).join(''),sub:'ا  أم  و  أم  ي',say:q.qsay,ans:q.ans,pool:q.pool,ok:q.rsay}};
-const qT=x=>{const q=qTa(x),w=[...x[0]];return {e:x[1],t:w.slice(0,-1).join('')+'؟',sub:'ة  أم  ت  أم  ه',say:q.qsay,ans:q.ans,pool:q.pool,ok:q.rsay}};
-const qN=x=>{const q=qTan(x);return {e:x[1],t:'',sub:'👂 اسمع واختر الكلمة',say:q.qsay,ans:q.ans,pool:q.pool,ok:q.rsay}};
-const qHM=x=>{const q=qHMadd(x),P=parseW(x[0]),k=P.madd;return {e:x[1],t:uStr(P.u.slice(0,k))+'؟'+uStr(P.u.slice(k+1)),sub:'أكمل بحرف المدّ',say:q.qsay,ans:q.ans,pool:q.pool,ok:q.rsay}};
-const qHS=x=>{const q=qHSuk(x);return {e:x[1],t:x[0],sub:'أيّ حرف عليه سكون؟ ( ـْ )',say:q.qsay,ans:q.ans,pool:q.pool,ok:q.rsay}};
+// gap questions: the voice comes from the race game's question makers, the text is vocalised here
+const gapT=(u,k)=>uStr(u.slice(0,k))+'؟'+uStr(u.slice(k+1));
+const qF=x=>{const q=qForms(x),u=units(x[0]),k=u.findIndex(y=>y.c===x[1]),m=u[k].m,short={'ٌ':'ُ','ً':'َ','ٍ':'ِ'},add=f=>f.replace(x[1],x[1]+(f.endsWith('ـ')?m.replace(/[ٌٍَُِ]/g,y=>short[y]||y).replace(/[ًٌٍ]/g,y=>short[y]):m));
+ return {e:PIC[x[0]]||'',t:V(x[0]),sub:'شكل حرف '+x[1]+m,say:q.qsay,ans:add(q.ans),pool:q.pool.map(add),ok:q.rsay}};
+const qM=x=>{const q=qMaddWord(x),u=units(x[0]);return {e:PIC[x[0]]||'',t:gapT(u,x[1]),sub:'ا  أم  و  أم  ي',say:q.qsay,ans:q.ans,pool:q.pool,ok:q.rsay}};
+const qT=x=>{const q=qTa(x),u=units(x[0]),l=u[u.length-1];return {e:x[1],t:gapT(u,u.length-1),sub:'ة  أم  ت  أم  ه',say:q.qsay,ans:l.c+l.m,pool:['ة','ت','ه'].map(c=>c+l.m),ok:q.rsay}};
+const qN=x=>{const q=qTan(x),u=units(x[0]).map(y=>({c:y.c,m:y.m}));u[u.length-1].m=u[u.length-1].m.replace(/[ً-ْ]/g,y=>y==='ّ'?y:'');
+ const stem=uStr(u),vz=p=>stem+p.slice(x[0].length);
+ return {e:x[1],t:'',sub:'👂 اسمع واختر الكلمة',say:q.qsay,ans:vz(q.ans),pool:q.pool.map(vz),ok:q.rsay}};
+const qHM=x=>{const q=qHMadd(x),P=parseW(full(x[0])),k=P.madd;return {e:x[1],t:gapT(P.u,k),sub:'أكمل بحرف المدّ',say:q.qsay,ans:q.ans,pool:q.pool,ok:q.rsay}};
+const qHS=x=>{const q=qHSuk(x);return {e:x[1],t:full(x[0]),sub:'أيّ حرف عليه سكون؟ ( ـْ )',say:q.qsay,ans:q.ans+'ْ',pool:q.pool.map(c=>c+'ْ'),ok:q.rsay}};
 function distinctBy(list,f,n){const out=[],seen=new Set();for(const x of shuffle(list.slice())){const k=f(x);if(seen.has(k))continue;seen.add(k);out.push(x);if(out.length===n)break}return out}
-const T_={gap:'',build:'ركّب الكلمة: ضع الحروف بالترتيب من اليمين ◀',sort:'ضع كل كلمة في بيتها: ☀️ شمسية أم 🌙 قمرية؟'};
+const T_={build:'ركّب الكلمة: ضع الحروف بالترتيب من اليمين ◀',sort:'ضع كل كلمة في بيتها: ☀️ شمسية أم 🌙 قمرية؟'};
+// بيت/موز/عين: the letter after the fatha has a sukun (لين), it is not a madd, so they stay out of the madd stage
+const NOT_MADD=['بيت','موز','عين'];
 const MAKE=[
  ()=>{const f=take(FORMS,5).map(qF),tx='ما شكل الحرف في الكلمة؟ ضع الشكل الصحيح';return [gapIsl([f[0]],{txt:tx,ic:'🔤'}),gapIsl([f[1],f[2]],{txt:tx,ic:'🔤'}),gapIsl([f[3],f[4]],{txt:tx,ic:'🔤'})]},
- ()=>{const f=distinctBy(MADDW,x=>x[0],5).map(qM),tx='أكمل الكلمة بحرف المدّ: ا أم و أم ي؟';return [gapIsl([f[0]],{txt:tx,ic:'🎵'}),gapIsl([f[1],f[2]],{txt:tx,ic:'🎵'}),gapIsl([f[3],f[4]],{txt:tx,ic:'🎵'})]},
- ()=>{const w=take(BUILDW.filter(x=>[...x].length<=4),3);return w.map((x,i)=>buildIsl(x,PIC[x],x,i===0,{txt:i===0?T_.build:'انظر إلى الصورة واسمع، ثم ركّب الكلمة ◀',ic:'🧩'}))},
+ ()=>{const f=distinctBy(MADDW.filter(x=>!NOT_MADD.includes(x[0])),x=>x[0],5).map(qM),tx='أكمل الكلمة بحرف المدّ: ا أم و أم ي؟';return [gapIsl([f[0]],{txt:tx,ic:'🎵'}),gapIsl([f[1],f[2]],{txt:tx,ic:'🎵'}),gapIsl([f[3],f[4]],{txt:tx,ic:'🎵'})]},
+ ()=>{const w=take(BUILDW.filter(x=>[...x].length<=4),3);return w.map((x,i)=>buildIsl(units(x),PIC[x],x,i===0,{txt:i===0?T_.build:'انظر إلى الصورة واسمع، ثم ركّب الكلمة ◀',ic:'🧩'}))},
  ()=>{const pool=WB.filter(x=>[...x[0]].length>=3&&!x[0].startsWith('أ'));
   const a=distinctBy(pool,x=>x[0][0],3),b=distinctBy(pool.filter(x=>!a.includes(x)),x=>x[0][0],3),c=distinctBy(pool,x=>x[0].slice(-1),3);
   return [posIsl(a,false,true,{txt:'ضع أمام كل صورة حرفها الأول',ic:'🔍'}),posIsl(b,false,false,{txt:'اقترب من الصورة واسمع، ثم ضع حرفها الأول',ic:'👂'}),posIsl(c,true,true,{txt:'ضع أمام كل صورة حرفها الأخير',ic:'🔍'})]},
@@ -376,13 +409,13 @@ const MAKE=[
  ()=>{const r=take(TAW.filter(x=>x[0].endsWith('ة')),3).map(qT),t=take(TAW.filter(x=>!x[0].endsWith('ة')),2).map(qT),tx='أكمل الكلمة: ة أم ت أم ه؟';return [gapIsl([r[0]],{txt:tx,ic:'ة'}),gapIsl([r[1],t[0]],{txt:tx,ic:'ة'}),gapIsl([t[1],r[2]],{txt:tx,ic:'ة'})]},
  ()=>{const f=take(TANB,5).map(qN),tx='اسمع جيداً وضع الكلمة الصحيحة تحت الصورة';return [gapIsl([f[0]],{txt:tx,ic:'👂'}),gapIsl([f[1],f[2]],{txt:tx,ic:'👂'}),gapIsl([f[3],f[4]],{txt:tx,ic:'👂'})]},
  ()=>{const pics=distinctBy(WB.filter(x=>[...x[0]].length>=3),x=>x[1],8),s=take(SENT,3);
-  const P=x=>({k:x[0],e:x[1],t:x[0],ok:x[0]});
+  const P=x=>({k:x[0],e:x[1],t:V(x[0]),ok:x[0]});
   return [matchIsl(pics.slice(0,3).map(P),pics.slice(3,4).map(P),p=>({e:p.e}),p=>({t:p.t}),{txt:'اقرأ الكلمة وضعها أمام صورتها',ic:'📖',say:'اقرأ الكلمةَ واختر صورتها'}),
    matchIsl(pics.slice(4,7).map(P),pics.slice(7,8).map(P),p=>({t:p.t}),p=>({e:p.e}),{txt:'اقرأ الكلمة وضع صورتها أمامها',ic:'📖',say:'انظر إلى الصورة واختر كلمتها'}),
-   matchIsl(s.slice(0,2).map(x=>({k:x[1],e:x[1],t:x[0],ok:x[0]})),s.slice(2,3).map(x=>({k:x[1],e:x[1]})),p=>({t:p.t}),p=>({e:p.e}),{txt:'اقرأ الجملة وضع الصورة المناسبة أمامها',ic:'📖',say:'اقرأ الجملةَ واختر الصورة'})]},
+   matchIsl(s.slice(0,2).map(x=>({k:x[1],e:x[1],t:V(x[0]),ok:x[0]})),s.slice(2,3).map(x=>({k:x[1],e:x[1]})),p=>({t:p.t}),p=>({e:p.e}),{txt:'اقرأ الجملة وضع الصورة المناسبة أمامها',ic:'📖',say:'اقرأ الجملةَ واختر الصورة'})]},
  ()=>{const five=take(HARD.filter(x=>[...parseW(x[0]).plain].length<=5),2),wm=HARD.filter(x=>parseW(x[0]).madd>=0&&!five.includes(x)),ws=HARD.filter(x=>parseW(x[0]).suk>=0&&!five.includes(x));
-  const a=pick(wm),b=pick(ws.filter(x=>x!==a))||pick(ws);
-  return [buildIsl(parseW(five[0][0]).plain,five[0][1],five[0][0],true,{txt:T_.build,ic:'🏆'}),gapIsl([qHM(a),qHS(b)],{txt:'أكمل الكلمة، وابحث عن الحرف الساكن',ic:'🏆'}),buildIsl(parseW(five[1][0]).plain,five[1][1],five[1][0],false,{txt:'انظر واسمع، ثم ركّب الكلمة الطويلة ◀',ic:'🏆'})]}
+  const a=pick(wm),b=pick(ws.filter(x=>x!==a))||pick(ws),U=x=>parseW(full(x[0])).u;
+  return [buildIsl(U(five[0]),five[0][1],five[0][0],true,{txt:T_.build,ic:'🏆'}),gapIsl([qHM(a),qHS(b)],{txt:'أكمل الكلمة، وابحث عن الحرف الساكن',ic:'🏆'}),buildIsl(U(five[1]),five[1][1],five[1][0],false,{txt:'انظر واسمع، ثم ركّب الكلمة الطويلة ◀',ic:'🏆'})]}
 ];
 // positions: cage + plate for teamwork, scattered items, a stone for solo play
 function layout(defs,solo){
@@ -765,10 +798,17 @@ function dropReq(slotI){const pid=localPids()[slotI];if(!pid)return;ac();if(isHo
 const tl=$('tl');
 tl.addEventListener('pointerdown',e=>{if(!GAME)return;ac();const si=MODE==='duo'?(e.clientX>innerWidth/2?0:1):0;if(STK[si])return;
  const el=document.createElement('div');el.className='stick';el.innerHTML='<i></i>';el.style.left=e.clientX+'px';el.style.top=e.clientY+'px';
- const C=COLORS[(P[localPids()[si]]||{ci:0}).ci];el.style.borderColor=C.c;document.body.appendChild(el);STK[si]={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:0,y:0,el};
+ const C=COLORS[(P[localPids()[si]]||{ci:0}).ci];el.style.borderColor=C.c;el.style.opacity='0';document.body.appendChild(el);STK[si]={id:e.pointerId,ox:e.clientX,oy:e.clientY,x:0,y:0,el,t0:performance.now(),moved:false};
  try{tl.setPointerCapture(e.pointerId)}catch(_){}});
-tl.addEventListener('pointermove',e=>{for(const k in STK){const s=STK[k];if(s.id!==e.pointerId)continue;let dx=e.clientX-s.ox,dy=e.clientY-s.oy;const L=Math.hypot(dx,dy),R=55;if(L>R){dx*=R/L;dy*=R/L}s.x=dx/R;s.y=dy/R;s.el.firstChild.style.transform=`translate(${dx}px,${dy}px)`}});
-const endStick=e=>{for(const k in STK){if(STK[k].id===e.pointerId){STK[k].el.remove();delete STK[k]}}};
+tl.addEventListener('pointermove',e=>{for(const k in STK){const s=STK[k];if(s.id!==e.pointerId)continue;let dx=e.clientX-s.ox,dy=e.clientY-s.oy;if(!s.moved){if(Math.hypot(dx,dy)<12)continue;s.moved=true;s.el.style.opacity='1'}const L=Math.hypot(dx,dy),R=55;if(L>R){dx*=R/L;dy*=R/L}s.x=dx/R;s.y=dy/R;s.el.firstChild.style.transform=`translate(${dx}px,${dy}px)`}});
+const endStick=e=>{for(const k in STK){const s=STK[k];if(s.id===e.pointerId){if(!s.moved&&e.type==='pointerup'&&performance.now()-s.t0<450)tapGoal(+k,e.clientX,e.clientY);s.el.remove();delete STK[k]}}};
+// tap on the ground: the hero walks there by itself (easier for small hands than a joystick)
+const RAY=new THREE.Raycaster(),GROUND=new THREE.Plane(new THREE.Vector3(0,1,0),0),HIT=new THREE.Vector3();
+const goalMark=new THREE.Mesh(new THREE.RingGeometry(.35,.55,28),new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:0,depthWrite:false}));goalMark.rotation.x=-Math.PI/2;goalMark.position.y=.05;scene.add(goalMark);
+function tapGoal(si,cx,cy){const pid=localPids()[si];if(!pid||W.win)return;RAY.setFromCamera(new THREE.Vector2(cx/innerWidth*2-1,-(cy/innerHeight)*2+1),camera);
+ if(!RAY.ray.intersectPlane(GROUND,HIT))return;const p=P[pid];p.goal={x:HIT.x,z:HIT.z,t:T+Math.hypot(HIT.x-p.x,HIT.z-p.z)/3+2};
+ goalMark.position.set(HIT.x,.05,HIT.z);goalMark.material.color.set(COLORS[p.ci].c);goalMark.material.opacity=.9;goalMark.userData.t=T}
+document.addEventListener('gesturestart',e=>e.preventDefault());
 tl.addEventListener('pointerup',endStick);tl.addEventListener('pointercancel',endStick);
 function clearSticks(){for(const k in STK){STK[k].el.remove();delete STK[k]}}
 function inputFor(si){let x=0,z=0;const k=c=>KEYS.has(c);
@@ -784,7 +824,7 @@ function setupControls(){$('zones').innerHTML='';$('drops').innerHTML='';const l
  lp.forEach((pid,si)=>{const p=P[pid],C=COLORS[p.ci],side=si===0?'r':'l';
   const b=document.createElement('button');b.className='drop '+side;b.style.background=C.c;b.innerHTML='✋<small>اترك</small>';b.setAttribute('aria-label','اترك ما تحمله');
   b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();dropReq(si)});$('drops').appendChild(b);
-  if(MODE==='duo'){const z=document.createElement('div');z.className='zone '+side;z.textContent=`حرّك ${p.name} هنا`;z.style.color=C.c;z.style.textShadow='0 0 4px #fff,0 0 8px #fff';$('zones').appendChild(z)}});
+  if(MODE==='duo'){const z=document.createElement('div');z.className='zone '+side;z.textContent=`👆 المس أو اسحب لتحريك ${p.name}`;z.style.color=C.c;z.style.textShadow='0 0 4px #fff,0 0 8px #fff';$('zones').appendChild(z)}});
  const kd=$('keys');kd.hidden=false;kd.textContent=MODE==='duo'?'الأزرق: الأسهم + Enter  •  البرتقالي: W A S D + المسافة':'التحريك: الأسهم  •  الترك: المسافة'}
 
 /* ================= camera & render loop ================= */
@@ -808,7 +848,10 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-last
  BOATS.forEach((b,i)=>{b.position.y=-.32+Math.sin(T*1.3+i)*.08;b.rotation.z=Math.sin(T*1.1+i)*.06;b.position.x+=Math.sin(T*.05+i)*.01});
  if(W.on&&GAME){
   // local movement
-  localPids().forEach((pid,si)=>{const p=P[pid];const [ix,iz]=W.win?[0,0]:inputFor(si);movePlayer(p,ix,iz,dt)});
+  localPids().forEach((pid,si)=>{const p=P[pid];let [ix,iz]=W.win?[0,0]:inputFor(si);
+   if(Math.hypot(ix,iz)>.1)p.goal=null;else if(p.goal){const dx=p.goal.x-p.x,dz=p.goal.z-p.z,L=Math.hypot(dx,dz);if(L<.3||T>p.goal.t)p.goal=null;else{const k=Math.min(1,L/.8);ix=dx/L*k;iz=dz/L*k}}
+   movePlayer(p,ix,iz,dt)});
+  if(goalMark.material.opacity>0){goalMark.material.opacity=Math.max(0,.9-(T-goalMark.userData.t)*.6);goalMark.scale.setScalar(1+(T-goalMark.userData.t)*.4)}
   // remote players glide to their last known spot
   Object.values(P).forEach(p=>{if(p.local)return;const k=Math.min(1,dt*10);const ox=p.x,oz=p.z;p.x+=(p.tx-p.x)*k;p.z+=(p.tz-p.z)*k;p.vx=(p.x-ox)/dt;p.vz=(p.z-oz)/dt;let d=p.try-p.ry;d=Math.atan2(Math.sin(d),Math.cos(d));p.ry+=d*k});
   if(isHost())hostStep(dt);
@@ -877,7 +920,7 @@ function showMap(){hideAll();$('hud').hidden=true;$('keys').hidden=true;$('map')
  $('topics').innerHTML=STAGES.map((s,i)=>`<button class="topic" data-i="${i}"><div class="ic">${esc(s.ic)}</div><div class="t">${i+1}. ${esc(s.t)}</div><div class="d">${esc(s.d)}</div><div class="st">${PROG[i]?'⭐'.repeat(PROG[i])+'☆'.repeat(3-PROG[i]):'☆☆☆'}</div></button>`).join('');
  $('topics').querySelectorAll('.topic').forEach(b=>b.onclick=()=>{ac();SFX.click();const i=+b.dataset.i;if(MODE==='online'){MP.stage=i;showMp()}else startLocal(i)})}
 let CUR=0;
-function startLocal(stage){CUR=stage;clearPlayers();const solo=MODE==='solo';
+function startLocal(stage){clearInterval(AUTO);CUR=stage;clearPlayers();const solo=MODE==='solo';
  const defs=layout(MAKE[stage](),solo);
  const names=solo?['أنا']:['الأزرق','البرتقالي'];names.forEach((n,i)=>{const s=spawnPos(i,names.length);addPlayer('p'+(i+1),n,i,true,s.x,s.z)});
  buildWorld(stage,defs);beginPlay(stage)}
@@ -887,10 +930,10 @@ function beginPlay(stage){hideAll();GAME=true;$('hud').hidden=false;setupControl
  $('intro').hidden=false;say(st.intro[3],.85);
  if(MODE==='online'){$('inGo').textContent='هيا نبدأ ◀';setTimeout(()=>{if(!$('intro').hidden)closeIntro()},7000)}}
 const MAKE_IC=['🔤','🎵','🧩','🔍','☀️🌙','📝','👂','📖','🏆'];
-function closeIntro(){$('intro').hidden=true;stopVoice();if(!W.tut){W.tut=1;toast(MODE==='duo'?'🚶 حرّكا البطلين معاً • امشِ إلى المكعب لتحمله ثم قف عند مكانه':'🚶 امشِ إلى المكعب لتحمله، ثم قف عند مكانه الصحيح',5000)}
+function closeIntro(){$('intro').hidden=true;stopVoice();if(!W.tut){W.tut=1;toast(MODE==='duo'?'👆 كل واحد يلمس نصفه من الشاشة • امشِ إلى المكعب لتحمله ثم قف عند مكانه':'👆 المس الأرض ليمشي بطلك • امشِ إلى المكعب لتحمله، ثم قف عند مكانه الصحيح',5500)}
  if(W.entered>=0){const d=W.isl[W.entered]&&W.isl[W.entered].d;if(d)say(d.say)}}
 $('inGo').onclick=()=>{ac();SFX.click();closeIntro()};
-function stopGame(){GAME=false;W.on=false;clearSticks();stopVoice();$('zones').innerHTML='';$('drops').innerHTML='';$('hud').hidden=true;$('keys').hidden=true}
+function stopGame(){clearInterval(AUTO);GAME=false;W.on=false;clearSticks();stopVoice();$('zones').innerHTML='';$('drops').innerHTML='';$('hud').hidden=true;$('keys').hidden=true}
 function finish(){if(W.ended)return;W.ended=true;const st=W.isl.map(I=>I.stars||1),tot=st.reduce((a,b)=>a+b,0),max=st.length*3,n=tot>=max-1?3:tot>=max*.6?2:1;
  saveProg(W.stage,n);
  if(window.parent!==window){try{parent.postMessage({type:'fasl-score',score:tot,max,detail:`جزيرة الحروف ${W.stage+1}: ${STAGES[W.stage].t}${MODE!=='solo'?' · لعب جماعي':''}`},'*')}catch(e){}}
@@ -898,10 +941,15 @@ function finish(){if(W.ended)return;W.ended=true;const st=W.isl.map(I=>I.stars||
  const many=Object.keys(P).length>1;$('enT').textContent=many?'أحسنتم يا أبطال! 🎉':'أحسنت يا بطل! 🎉';$('enS').textContent='⭐'.repeat(n)+'☆'.repeat(3-n);
  $('enD').textContent=`${many?'جمعتم':'جمعت'} ${tot} نجمة من ${max} في «${STAGES[W.stage].t}»`+(many?` • فريق: ${Object.values(P).map(p=>p.name).join(' و ')}`:'');
  const hasNext=W.stage<STAGES.length-1;$('enNext').hidden=!hasNext||(MODE==='online'&&!MP.host);$('enAgain').hidden=MODE==='online'&&!MP.host;
- hideAll();$('end').hidden=false}
+ hideAll();$('end').hidden=false;
+ const nb=$('enNext'),lab='المرحلة التالية ◀';nb.textContent=lab;clearInterval(AUTO);
+ if(hasNext&&(MODE!=='online'||MP.host)){let n=8;nb.textContent=`${lab} (${n})`;AUTO=setInterval(()=>{n--;nb.textContent=`${lab} (${n})`;if(n<=0){clearInterval(AUTO);nb.click()}},1000)}
+ else if(hasNext)$('enD').textContent+=' • ننتقل معاً إلى المرحلة التالية بعد لحظات…';
+ else $('enD').textContent+=' • أكملتم كل المراحل! أنتم أبطال الحروف 🏆'}
+let AUTO=0;
 $('enNext').onclick=()=>{ac();if(MODE==='online')hostStart(W.stage+1);else startLocal(W.stage+1)};
-$('enAgain').onclick=()=>{ac();if(MODE==='online')hostStart(W.stage);else startLocal(W.stage)};
-$('enMap').onclick=()=>{ac();if(MODE==='online')leaveRoom();stopGame();showMap()};
+$('enAgain').onclick=()=>{clearInterval(AUTO);ac();if(MODE==='online')hostStart(W.stage);else startLocal(W.stage)};
+$('enMap').onclick=()=>{clearInterval(AUTO);ac();if(MODE==='online')leaveRoom();stopGame();showMap()};
 $('m1').onclick=()=>{ac();SFX.click();MODE='solo';showMap()};
 $('m2').onclick=()=>{ac();SFX.click();MODE='duo';showMap()};
 $('m3').onclick=()=>{ac();SFX.click();MODE='online';showMap()};
@@ -961,7 +1009,7 @@ function onPresence(){if(!MP.ch)return;const list=presList(MP.ch).slice(0,MAXP);
  else{for(const pid in P){if(pid!==MP.pid&&!MP.peers[pid]){toast(`👋 خرج ${P[pid].name} من اللعبة`);if(MP.host){const p=P[pid];if(p.hold!=null){const it=W.items[p.hold];if(it)release(it,p)}}scene.remove(P[pid].m);delete P[pid]}}
   if(Object.keys(P).length<2&&!W.ended){backToMp('خرج أصدقاؤك من اللعبة. ابحث عن فريق جديد 🔎')}}}
 function backToMp(t){leaveRoom();stopGame();showMp();mpErr(t)}
-function hostStart(stage){if(!MP.on||!MP.host)return;const order=presList(MP.ch).slice(0,MAXP).map(p=>({pid:p.pid,name:p.name}));if(order.length<2){backToMp('لا يوجد أصدقاء في الفريق الآن 🔎');return}
+function hostStart(stage){clearInterval(AUTO);if(!MP.on||!MP.host)return;const order=presList(MP.ch).slice(0,MAXP).map(p=>({pid:p.pid,name:p.name}));if(order.length<2){backToMp('لا يوجد أصدقاء في الفريق الآن 🔎');return}
  MP.started=true;MP.gid++;const defs=layout(MAKE[stage](),false);MP.lastStart={stage,defs,order,gid:MP.gid};send('start',MP.lastStart);startOnline(MP.lastStart)}
 function startOnline(m){MP.started=true;MP.curGid=m.gid;CUR=m.stage;clearPlayers();
  m.order.forEach((o,i)=>{const s=spawnPos(i,m.order.length);addPlayer(o.pid,o.name,i,o.pid===MP.pid,s.x,s.z)});
