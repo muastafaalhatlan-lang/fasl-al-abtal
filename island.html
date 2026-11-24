@@ -377,8 +377,8 @@ function posIsl(words,last,showText,o){const d=isl('pos',o),xs=[4.4,0,-4.4],posT
 function sortIsl(sun,moon,o){const d=isl('sort',o);
  d.slots.push({x:3.7,z:-3.9,acc:'sun',kind:'house',cap:sun.length,lab:{e:'☀️',t:'شَمْسِيَّةٌ'},col:'#ffb347',say:'اختر الكلمةَ التي فيها لامٌ شمسية'});
  d.slots.push({x:-3.7,z:-3.9,acc:'moon',kind:'house',cap:moon.length,lab:{e:'🌙',t:'قَمَرِيَّةٌ'},col:'#7aa7ff',say:'اختر الكلمةَ التي فيها لامٌ قمرية'});
- sun.forEach(([w,e])=>d.items.push(mkItem('sun',{e,t:V(w)},{kind:'tile',ok:`${voc(w,true)}|اللامُ شمسية لا تُنطق`})));
- moon.forEach(([w,e])=>d.items.push(mkItem('moon',{e,t:V(w)},{kind:'tile',ok:`${voc(w,false)}|اللامُ قمرية تُنطق`})));
+ sun.forEach(([w,e])=>d.items.push(mkItem('sun',{e,t:V(w)},{kind:'tile',say:voc(w,true),ok:`${voc(w,true)}|اللامُ شمسية لا تُنطق`})));
+ moon.forEach(([w,e])=>d.items.push(mkItem('moon',{e,t:V(w)},{kind:'tile',say:voc(w,false),ok:`${voc(w,false)}|اللامُ قمرية تُنطق`})));
  d.items=shuffle(d.items);d.say=d.slots[0].say;return d}
 function matchIsl(pairs,extra,slotLab,itemLab,o){const d=isl('match',o),n=pairs.length,xs=n===3?[4.4,0,-4.4]:[3.4,-3.4];
  pairs.forEach((p,i)=>{d.slots.push({x:xs[i],z:-3.1,acc:p.k,kind:'pic',lab:slotLab(p),wide:n===2,ok:p.ok});d.items.push(mkItem(p.k,itemLab(p)))});
@@ -417,6 +417,16 @@ const MAKE=[
   const a=pick(wm),b=pick(ws.filter(x=>x!==a))||pick(ws),U=x=>parseW(full(x[0])).u;
   return [buildIsl(U(five[0]),five[0][1],five[0][0],true,{txt:T_.build,ic:'🏆'}),gapIsl([qHM(a),qHS(b)],{txt:'أكمل الكلمة، وابحث عن الحرف الساكن',ic:'🏆'}),buildIsl(U(five[1]),five[1][1],five[1][0],false,{txt:'انظر واسمع، ثم ركّب الكلمة الطويلة ◀',ic:'🏆'})]}
 ];
+// everything the game says besides the puzzle words (recorded with tools/voice-eleven.js)
+const SAY={praise:['ممتاز!','رائع!','أحسنت!','صحيح!','عملٌ رائع!'],team:['أنتم فريقٌ رائع!','تعاونٌ ممتاز!'],
+ tryAgain:['حاول مرة أخرى','لا بأس، فكّر جيداً وحاول مرة أخرى','قريب! انظر جيداً وحاول مرة أخرى'],
+ bridge:'ظهر الجسر! هيا إلى الجزيرة التالية',bridgeLast:'ظهر الجسر! هيا إلى الكنز',
+ cageTeam:'القفص مغلق. واحدٌ منكم يقف على الزرّ الأصفر، والآخرُ يأخذُ ما في القفص',cageSolo:'القفص مغلق. احمل الحجرَ وضعه على الزرّ الأصفر',
+ cageOpen:'انفتح القفص! خذ ما فيه',stone:'احمل الحجرَ إلى الزرّ الأصفر',
+ padsTeam:'قفوا معاً على النجوم لتفتحوا الكنز',padsSolo:'قف على النجمة لتفتح الكنز',
+ tutSolo:'المس الأرض ليمشيَ بطلُك. امشِ إلى المكعب لتحمله، ثم قف عند مكانه الصحيح',tutDuo:'كلُّ واحدٍ يلمس نصفَه من الشاشة. امشيا إلى المكعب لتحملاه، ثم قفا عند مكانه الصحيح',
+ leash:'ابقَ قريباً من صديقك!',next:'هيا إلى المرحلة التالية!',allDone:'أكملتم كل المراحل! أنتم أبطالُ الحروف',
+ winTeam:'أحسنتم يا أبطال! أكملتم الطريق معاً',winSolo:'أحسنت يا بطل! أكملت الطريق'};
 // positions: cage + plate for teamwork, scattered items, a stone for solo play
 function layout(defs,solo){
  defs.forEach((d,k)=>{
@@ -426,7 +436,7 @@ function layout(defs,solo){
   const need=d.items.filter(it=>d.slots.some(s=>s.acc===it.key));
   if(k>0&&need.length){const c=pick(need);c.caged=true;d.cage={x:-4.9,z:3.7};d.plate={x:4.7,z:4.6};c.x=d.cage.x;c.z=d.cage.z;
    avoid.push({x:d.cage.x,z:d.cage.z,r:2.2},{x:d.plate.x,z:d.plate.z,r:2});
-   if(solo)d.items.push(Object.assign(mkItem('stone',{},{kind:'stone'}),{}))}
+   if(solo)d.items.push(mkItem('stone',{},{kind:'stone',say:SAY.stone}))}
   for(const it of d.items){if(it.caged)continue;let ok=false;
    for(let a=0;a<600&&!ok;a++){const x=rand(-6.7,6.7),z=rand(-1.4,6.8),r=1.05+it.w/2;
     if(x*x+z*z>7.3*7.3)continue;if(avoid.some(p=>d2(p.x,p.z,x,z)<(p.r+it.w/2-.4)**2))continue;
@@ -706,7 +716,7 @@ function movePlayer(p,ix,iz,dt){const sp=4.4;p.vx+=(ix*sp-p.vx)*Math.min(1,dt*11
  if(!walkable(nx,nz)){if(walkable(nx,p.z))nz=p.z;else if(walkable(p.x,nz))nx=p.x;else{nx=p.x;nz=p.z}}
  [nx,nz]=pushOut(nx,nz,.36);
  for(const q of Object.values(P)){if(q===p)continue;const dd=d2(nx,nz,q.x,q.z);if(dd<.64&&dd>0){const d=Math.sqrt(dd);nx=q.x+(nx-q.x)/d*.8;nz=q.z+(nz-q.z)/d*.8}
-  if(q.local&&MODE==='duo'&&dd>MAXD*MAXD&&dd>d2(p.x,p.z,q.x,q.z)){nx=p.x;nz=p.z;if(T-(W.leashT||0)>4){W.leashT=T;toast('ابقَ قريباً من صديقك! 🤝')}}}
+  if(q.local&&MODE==='duo'&&dd>MAXD*MAXD&&dd>d2(p.x,p.z,q.x,q.z)){nx=p.x;nz=p.z;if(T-(W.leashT||0)>4){W.leashT=T;toast('ابقَ قريباً من صديقك! 🤝');say(SAY.leash)}}}
  if(walkable(nx,nz)){p.x=nx;p.z=nz}else{p.vx*=.5;p.vz*=.5}
  const s=Math.hypot(ix,iz);if(s>.15){const a=Math.atan2(ix,iz);let d=a-p.ry;d=Math.atan2(Math.sin(d),Math.cos(d));p.ry+=d*Math.min(1,dt*12)}}
 
@@ -727,7 +737,7 @@ function hostStep(dt){
   if(p.hold==null){let best=null,bd=1.2*1.2;
    for(const it of W.items){if(it.holder||it.slot!=null||it.gone)continue;if((it.cool[p.pid]||0)>T||it.coolAll>T)continue;
     if(it.caged&&!W.isl[it.k].cageOpen)continue;const dd=d2(it.x,it.z,p.x,p.z);if(dd<bd){bd=dd;best=it}}
-   if(best){best.holder=p.pid;best.caged=false;p.hold=best.id;ev({e:'pick',p:p.pid,i:best.id})}
+   if(best){const cg=best.caged?1:0;best.holder=p.pid;best.caged=false;p.hold=best.id;ev({e:'pick',p:p.pid,i:best.id,cg})}
   }else{const it=W.items[p.hold];it.x=p.x;it.z=p.z;
    if(it.kind==='stone'){const I=W.isl[it.k];if(I&&I.plate&&!I.plateOn&&d2(p.x,p.z,I.cx+I.d.plate.x,I.d.plate.z)<1.6*1.6){release(it,p,{x:I.cx+I.d.plate.x,z:I.d.plate.z});ev({e:'drop',p:p.pid})}continue}
    const I=W.isl[islandOf(p.x)];let best=null,bd=1e9;
@@ -757,20 +767,20 @@ const CONF=['#ff5d8f','#ffd23f','#2f8ff7','#2fbf71','#ff8a3d','#a56cf5'];
 function isLocal(pid){return P[pid]&&P[pid].local}
 function fx(e){const I=W.isl&&W.isl[e.k];
  switch(e.e){
-  case 'pick':{SFX.pick();const it=W.items[e.i];if(it&&isLocal(e.p)&&it.def.say)say(it.def.say);break}
+  case 'pick':{SFX.pick();const it=W.items[e.i];if(e.cg&&Object.keys(P).length>1){say(pick(SAY.team)+(it&&it.def.say?'|'+it.def.say:''));break}if(it&&isLocal(e.p)&&it.def.say)say(it.def.say);break}
   case 'drop':SFX.drop();break;
   case 'ok':{SFX.ok();const S=I.slots[e.s],it=W.items[e.i];burst(S.x,1.4,S.z+(S.def.kind==='house'?1:0),18,['#ffd23f','#fff3a0','#ffffff'],4,starGeo);
-   if(e.done){I.solved=true;I.stars=e.stars;const okS=(it&&it.def.ok)||S.def.ok||'';const last=I.d.done||(okS.startsWith('أحسنت')?okS:'أحسنت!|'+okS);say(last);
+   if(e.done){I.solved=true;I.stars=e.stars;const okS=(it&&it.def.ok)||S.def.ok||'';const last=I.d.done||(okS.startsWith('أحسنت')?okS:'أحسنت!|'+okS);say(last+'|'+(e.k===W.isl.length-1?SAY.bridgeLast:SAY.bridge));
     setTimeout(()=>{SFX.solve();burst(I.cx-6,2.5,0,60,CONF,7);toast(`🌉 رائع! ظهر الجسر ${'⭐'.repeat(e.stars)}`);I.bridgeT=0;SFX.bridge()},900);renderStars()}
-   else say((it&&it.def.ok)||S.def.ok);break}
-  case 'bad':{SFX.bad();const S=I.slots[e.s];burst(S.x,1.2,S.z+.6,10,['#ff6b6b','#ffb3b3'],3);say('حاول مرة أخرى');if(S.m)S.m.userData.shake=T;break}
-  case 'plate':SFX.plate(e.on);if(e.on&&I&&I.cage)burst(I.cx+I.d.cage.x,1.5,I.d.cage.z,12,['#ffd23f','#ffffff'],3,starGeo);break;
-  case 'enter':{if(e.k>=W.isl.length){setPrompt('🏆',W.final.pads.length>1?'قفوا معاً على النجوم لفتح الكنز!':'قف على النجمة لتفتح الكنز!','الجزيرة الأخيرة');say(W.final.pads.length>1?'قفوا معاً على النجوم لتفتحوا الكنز':'قف على النجمة لتفتح الكنز');}
+   else say(pick(SAY.praise)+'|'+((it&&it.def.ok)||S.def.ok));break}
+  case 'bad':{SFX.bad();const S=I.slots[e.s];burst(S.x,1.2,S.z+.6,10,['#ff6b6b','#ffb3b3'],3);say(pick(SAY.tryAgain));if(S.m)S.m.userData.shake=T;break}
+  case 'plate':SFX.plate(e.on);if(e.on&&I&&I.cage&&W.items.some(it=>it.caged&&it.k===I.k))say(SAY.cageOpen);if(e.on&&I&&I.cage)burst(I.cx+I.d.cage.x,1.5,I.d.cage.z,12,['#ffd23f','#ffffff'],3,starGeo);break;
+  case 'enter':{if(e.k>=W.isl.length){setPrompt('🏆',W.final.pads.length>1?'قفوا معاً على النجوم لفتح الكنز!':'قف على النجمة لتفتح الكنز!','الجزيرة الأخيرة');say(W.final.pads.length>1?SAY.padsTeam:SAY.padsSolo);}
    else{const d=W.isl[e.k].d;setPrompt(d.ic||'🧩',d.txt||'',`الجزيرة ${e.k+1} من ${W.isl.length}`);if($('intro').hidden)setTimeout(()=>say(d.say),300);W.prox={};W.proxT=T+6}
    renderDots();break}
   case 'win':{W.win=true;W.winT=T;if(e.st)e.st.forEach((s,k)=>{if(W.isl[k])W.isl[k].stars=s});SFX.win();const F=W.final;burst(F.cx,2,-2.2,90,CONF,8);
    setTimeout(()=>burst(F.cx,2.5,-2.2,70,['#ffd23f','#ffe58a','#fff'],9,starGeo),600);
-   say(Object.keys(P).length>1?'أحسنتم يا أبطال! أكملتم الطريق معاً':'أحسنت يا بطل! أكملت الطريق');setTimeout(finish,3800);break}
+   say(Object.keys(P).length>1?SAY.winTeam:SAY.winSolo);setTimeout(finish,3800);break}
  }}
 
 /* ================= HUD ================= */
@@ -868,7 +878,7 @@ function proximity(){if(!W.isl||T<(W.proxT||0))return;const I=W.isl[W.entered];i
   I.slots.forEach((S,j)=>{if(!S.def.say||S.fill.length>=S.cap||I.d.type==='gap')return;const key='s'+j;if(d2(p.x,p.z,S.dx,S.dz+.9)<2*2&&T-(W.prox[key]||-99)>9){W.prox[key]=T;W.proxT=T+2.5;say(S.def.say)}});
   if(I.cage&&!I.cageOpen&&W.items.some(it=>it.caged&&it.k===I.k)&&d2(p.x,p.z,I.cx+I.d.cage.x,I.d.cage.z)<2.6*2.6&&T-W.saidCage>14){W.saidCage=T;
    const many=Object.keys(P).length>1;toast(many?'🔒 القفص مغلق! واحد منكم يقف على الزر الأصفر 👣 والآخر يأخذ ما في القفص':'🔒 القفص مغلق! احمل الحجر وضعه على الزر الأصفر 👣',5200);
-   tts(many?'القفص مغلق. واحدٌ منكم يقف على الزرّ الأصفر، والآخرُ يأخذُ ما في القفص':'القفص مغلق. احمل الحجرَ وضعه على الزرّ الأصفر',.85)}}}
+   say(many?SAY.cageTeam:SAY.cageSolo)}}}
 function animateWorld(dt){
  if(W.on){
   for(const I of W.isl){
@@ -931,7 +941,7 @@ function beginPlay(stage){hideAll();GAME=true;$('hud').hidden=false;setupControl
  if(MODE==='online'){$('inGo').textContent='هيا نبدأ ◀';setTimeout(()=>{if(!$('intro').hidden)closeIntro()},7000)}}
 const MAKE_IC=['🔤','🎵','🧩','🔍','☀️🌙','📝','👂','📖','🏆'];
 function closeIntro(){$('intro').hidden=true;stopVoice();if(!W.tut){W.tut=1;toast(MODE==='duo'?'👆 كل واحد يلمس نصفه من الشاشة • امشِ إلى المكعب لتحمله ثم قف عند مكانه':'👆 المس الأرض ليمشي بطلك • امشِ إلى المكعب لتحمله، ثم قف عند مكانه الصحيح',5500)}
- if(W.entered>=0){const d=W.isl[W.entered]&&W.isl[W.entered].d;if(d)say(d.say)}}
+ const d=W.entered>=0&&W.isl[W.entered]&&W.isl[W.entered].d;const tut=W.tut===1?(MODE==='duo'?SAY.tutDuo:SAY.tutSolo)+'|':'';W.tut=2;if(d)say(tut+d.say);else if(tut)say(tut)}
 $('inGo').onclick=()=>{ac();SFX.click();closeIntro()};
 function stopGame(){clearInterval(AUTO);GAME=false;W.on=false;clearSticks();stopVoice();$('zones').innerHTML='';$('drops').innerHTML='';$('hud').hidden=true;$('keys').hidden=true}
 function finish(){if(W.ended)return;W.ended=true;const st=W.isl.map(I=>I.stars||1),tot=st.reduce((a,b)=>a+b,0),max=st.length*3,n=tot>=max-1?3:tot>=max*.6?2:1;
@@ -945,7 +955,8 @@ function finish(){if(W.ended)return;W.ended=true;const st=W.isl.map(I=>I.stars||
  const nb=$('enNext'),lab='المرحلة التالية ◀';nb.textContent=lab;clearInterval(AUTO);
  if(hasNext&&(MODE!=='online'||MP.host)){let n=8;nb.textContent=`${lab} (${n})`;AUTO=setInterval(()=>{n--;nb.textContent=`${lab} (${n})`;if(n<=0){clearInterval(AUTO);nb.click()}},1000)}
  else if(hasNext)$('enD').textContent+=' • ننتقل معاً إلى المرحلة التالية بعد لحظات…';
- else $('enD').textContent+=' • أكملتم كل المراحل! أنتم أبطال الحروف 🏆'}
+ else $('enD').textContent+=' • أكملتم كل المراحل! أنتم أبطال الحروف 🏆';
+ setTimeout(()=>{if(!$('end').hidden)say(hasNext?SAY.next:SAY.allDone)},1200)}
 let AUTO=0;
 $('enNext').onclick=()=>{ac();if(MODE==='online')hostStart(W.stage+1);else startLocal(W.stage+1)};
 $('enAgain').onclick=()=>{clearInterval(AUTO);ac();if(MODE==='online')hostStart(W.stage);else startLocal(W.stage)};
