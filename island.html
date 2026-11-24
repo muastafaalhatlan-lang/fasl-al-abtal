@@ -946,7 +946,7 @@ $('inGo').onclick=()=>{ac();SFX.click();closeIntro()};
 function stopGame(){clearInterval(AUTO);GAME=false;W.on=false;clearSticks();stopVoice();$('zones').innerHTML='';$('drops').innerHTML='';$('hud').hidden=true;$('keys').hidden=true}
 function finish(){if(W.ended)return;W.ended=true;const st=W.isl.map(I=>I.stars||1),tot=st.reduce((a,b)=>a+b,0),max=st.length*3,n=tot>=max-1?3:tot>=max*.6?2:1;
  saveProg(W.stage,n);
- if(window.parent!==window){try{parent.postMessage({type:'fasl-score',score:tot,max,detail:`جزيرة الحروف ${W.stage+1}: ${STAGES[W.stage].t}${MODE!=='solo'?' · لعب جماعي':''}`},'*')}catch(e){}}
+ if(window.parent!==window){try{const mates=Object.values(P).filter(p=>!p.local).map(p=>p.name);parent.postMessage({type:'fasl-score',score:tot,max,detail:`المرحلة ${W.stage+1}: ${STAGES[W.stage].t}${mates.length?' · مع '+mates.join('، '):MODE==='duo'?' · بطلان على جهاز واحد':''}`},'*')}catch(e){}}
  GAME=false;clearSticks();$('drops').innerHTML='';$('zones').innerHTML='';
  const many=Object.keys(P).length>1;$('enT').textContent=many?'أحسنتم يا أبطال! 🎉':'أحسنت يا بطل! 🎉';$('enS').textContent='⭐'.repeat(n)+'☆'.repeat(3-n);
  $('enD').textContent=`${many?'جمعتم':'جمعت'} ${tot} نجمة من ${max} في «${STAGES[W.stage].t}»`+(many?` • فريق: ${Object.values(P).map(p=>p.name).join(' و ')}`:'');
@@ -977,6 +977,8 @@ function loadSB(){if(window.supabase)return Promise.resolve();return sbLoading||
 function client(){return MP.sb||(MP.sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:'fasl-island'},realtime:{params:{eventsPerSecond:30}}}))}
 function send(t,data){if(!MP.ch)return;try{MP.ch.send({type:'broadcast',event:'m',payload:Object.assign({t,from:MP.pid},data)})}catch(e){}}
 try{MP.name=localStorage.getItem('island_name')||''}catch(e){}
+// opened from «فصل الأبطال»: the student's name comes from their account
+const FROM_NAME=(()=>{try{return (new URLSearchParams(location.search).get('n')||'').trim().slice(0,14)}catch(e){return ''}})();if(FROM_NAME)MP.name=FROM_NAME;
 function showMp(){hideAll();$('mp').hidden=false;$('mpForm').hidden=false;$('mpWait').hidden=true;$('mpErr').textContent='';$('mpName').value=MP.name;setTimeout(()=>$('mpName').focus(),100)}
 $('mpX').onclick=()=>{leaveLobby();leaveRoom();showMap()};
 $('mpCancel').onclick=()=>{leaveLobby();leaveRoom();showMp()};
