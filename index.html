@@ -407,7 +407,8 @@ async function seed(){
       {id:'g1',title:'صيد الحروف',icon:'🔤',desc:'اختر الصورة التي تبدأ بالحرف',kind:'letters',color:'var(--grape)'},
       {id:'g2',title:'عدّ واختر',icon:'🧮',desc:'عُدّ الأشكال واختر الرقم الصحيح',kind:'count',color:'var(--orange)'},
       {id:'g3',title:'تحليل الكلمات',icon:'🧩',desc:'لعبة من تصميم المعلم عبر Claude (رابط خارجي)',kind:'link',url:'game.html',color:'var(--teal)'},
-      {id:'g4',title:'سباق الكلمات',icon:'🚲',desc:'للصف الأول: اقرأ وركّب وحلّل الكلمات وأنت تقود، وحدك أو مع أصدقائك',kind:'page',url:'bike.html',color:'var(--coral)',cat:'action'}
+      {id:'g4',title:'سباق الكلمات',icon:'🚲',desc:'للصف الأول: اقرأ وركّب وحلّل الكلمات وأنت تقود، وحدك أو مع أصدقائك',kind:'page',url:'bike.html',color:'var(--coral)',cat:'action'},
+      {id:'island',title:'جزيرة الحروف',icon:'🏝️',desc:'ثلاثية الأبعاد: احملوا الحروف وركّبوا الكلمات وافتحوا الجسور معاً، على جهاز واحد أو كل واحد بجهازه',kind:'page',url:'island.html',color:'var(--teal)',cat:'smart'}
     ],
     scores:[], recs:[], notifs:[],
     sheets:[
@@ -682,7 +683,7 @@ Object.defineProperty(st,'length',{get:function(){return Object.keys(d).length}}
 // built-in game pages from this site (e.g. bike.html): open inside the platform so results are saved
 function openPageGame(g){if(!/^[a-z0-9_-]+\.html$/i.test(g.url||''))return;
   modal('');const bg=$('#layer .modal-bg');bg.className='game-full';bg.onclick=null;
-  bg.innerHTML=`<div class="gf-bar"><b>${esc(g.icon)} ${esc(g.title)}</b><span id="gfMsg" class="muted">${me()?'نتيجتك تُرسل للمعلم عند نهاية كل مرحلة':'وضع المعلم: للتجربة فقط'}</span><button class="btn coral sm" onclick="closeLayer()">✖ خروج</button></div><iframe id="gfFrame" title="${esc(g.title)}" src="${esc(g.url)}" allow="autoplay; fullscreen"></iframe>`;
+  bg.innerHTML=`<div class="gf-bar"><b>${esc(g.icon)} ${esc(g.title)}</b><span id="gfMsg" class="muted">${me()?'نتيجتك تُرسل للمعلم عند نهاية كل مرحلة':'وضع المعلم: للتجربة فقط'}</span><button class="btn coral sm" onclick="closeLayer()">✖ خروج</button></div><iframe id="gfFrame" title="${esc(g.title)}" src="${esc(g.url+(me()?'?n='+encodeURIComponent(me().name):''))}" allow="autoplay; fullscreen"></iframe>`;
   const f=$('#gfFrame');GF={frame:f,gid:g.id,last:0,sk:null};setTimeout(()=>{try{f.focus()}catch(e){}},400)}
 window.addEventListener('message',e=>{
   const d=e.data;if(d&&d.type==='fasl-storage'&&GF.frame&&GF.frame.isConnected&&e.source===GF.frame.contentWindow&&GF.sk){try{const j=JSON.stringify(d.data||{});if(j.length<300000&&typeof d.data==='object'){D.gstore=D.gstore||{};D.gstore[GF.sk]=JSON.parse(j);save()}}catch(_){}return}
@@ -1074,6 +1075,7 @@ function migrate(d){
   d.menus=d.menus.filter(m=>m.type!=='portal');d.notifs.forEach(n=>{if(n.go==='portal')n.go='quran'});
   if(!d._v3){d._v3=1;d.recs=d.recs.filter(r=>r.status!=='new');d.notifs=d.notifs.filter(n=>!/^🎙️ تسجيل جديد/.test(n.text))}
   if(!d._bike4){d._bike4=1;let b=d.games.find(g=>g.url==='bike.html');if(!b){b={id:'g4',title:'سباق الكلمات',icon:'🚲',kind:'link',url:'bike.html',color:'var(--coral)'};d.games.push(b)}b.cat='action';b.kind='page';b.title='سباق الكلمات';b.icon='🚲';b.desc='للصف الأول: اقرأ وركّب وحلّل الكلمات وأنت تقود، وحدك أو مع أصدقائك'}
+  if(!d._island1){d._island1=1;if(!d.games.find(g=>g.url==='island.html'))d.games.push({id:'island',title:'جزيرة الحروف',icon:'🏝️',desc:'ثلاثية الأبعاد: احملوا الحروف وركّبوا الكلمات وافتحوا الجسور معاً، على جهاز واحد أو كل واحد بجهازه',kind:'page',url:'island.html',color:'var(--teal)',cat:'smart'})}
   if(!d.menus.some(m=>m.type==='suggest'))d.menus.push({id:'suggest',type:'suggest',title:'الاقتراحات والرسائل',icon:'💌',color:'var(--pink)',on:true});
   if(!d._v2&&d.students.length){d._v2=1;const now=Date.now(),day=864e5,ds=n=>new Date(now+n*day).toISOString().slice(0,10),S_=d.students;
     const a1={id:uid(),title:'واجب الأسبوع: سورة الفيل',surah:'الفيل',range:'الآيات 1 إلى 5',note:'رتّل بصوت واضح وهدوء',due:ds(3),open:true,t:now-2*day};
