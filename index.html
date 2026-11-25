@@ -417,7 +417,9 @@ async function seed(){
     games:[
       {id:'g1',title:'صيد الحروف',icon:'🔤',desc:'اختر الصورة التي تبدأ بالحرف',kind:'letters',color:'var(--grape)'},
       {id:'g2',title:'عدّ واختر',icon:'🧮',desc:'عُدّ الأشكال واختر الرقم الصحيح',kind:'count',color:'var(--orange)'},
-      {id:'g3',title:'تحليل الكلمات',icon:'🧩',desc:'لعبة من تصميم المعلم عبر Claude (رابط خارجي)',kind:'link',url:'game.html',color:'var(--teal)'}
+      {id:'g3',title:'تحليل الكلمات',icon:'🧩',desc:'لعبة من تصميم المعلم عبر Claude (رابط خارجي)',kind:'link',url:'game.html',color:'var(--teal)'},
+      {id:'g4',title:'سباق الكلمات',icon:'🚲',desc:'للصف الأول: اقرأ وركّب وحلّل الكلمات وأنت تقود، وحدك أو مع أصدقائك',kind:'page',url:'bike.html',color:'var(--coral)',cat:'action'},
+      {id:'island',title:'جزيرة الحروف',icon:'🏝️',desc:'ثلاثية الأبعاد: احملوا الحروف وركّبوا الكلمات وافتحوا الجسور معاً، على جهاز واحد أو كل واحد بجهازه',kind:'page',url:'island.html',color:'var(--teal)',cat:'smart'}
     ],
     scores:[], recs:[], notifs:[],
     sheets:[
@@ -592,7 +594,7 @@ function leaderboard(){
   ${rows.map((r,i)=>`<tr ${me()&&r.s.id===me().id?'style="background:color-mix(in srgb,var(--sun) 20%,transparent)"':''}><td>${i+1}</td><td><div class="row">${ava(r.s)}${esc(r.s.name)}</div></td><td class="c"><b>${r.p}</b></td><td class="c">${r.n}</td></tr>`).join('')}</tbody></table></div>`;
 }
 /* ---------- الألعاب: أقسام يرتبها المعلم وأغلفة ---------- */
-const DEF_GCATS=[{id:'easy',name:'ألعاب سهلة',icon:'🌟',color:'var(--grass)'},{id:'smart',name:'ألعاب الذكاء',icon:'🧠',color:'var(--grape)'},{id:'math',name:'رياضيات',icon:'🔢',color:'var(--orange)'},{id:'lang',name:'حروف ولغة',icon:'🔤',color:'var(--sky)'},{id:'other',name:'ألعاب أخرى',icon:'🎲',color:'var(--teal)'}];
+const DEF_GCATS=[{id:'easy',name:'ألعاب سهلة',icon:'🌟',color:'var(--grass)'},{id:'smart',name:'ألعاب الذكاء',icon:'🧠',color:'var(--grape)'},{id:'math',name:'رياضيات',icon:'🔢',color:'var(--orange)'},{id:'lang',name:'حروف ولغة',icon:'🔤',color:'var(--sky)'},{id:'action',name:'ألعاب الأكشن',icon:'⚡',color:'var(--coral)'},{id:'other',name:'ألعاب أخرى',icon:'🎲',color:'var(--teal)'}];
 const CNAMES=[['var(--sky)','أزرق'],['var(--grass)','أخضر'],['var(--sun)','أصفر'],['var(--coral)','أحمر'],['var(--grape)','بنفسجي'],['var(--orange)','برتقالي'],['var(--pink)','وردي'],['var(--teal)','فيروزي']];
 function gcats(){const c=D.custom&&D.custom._gamecats;return Array.isArray(c)?c:DEF_GCATS}
 function setGcats(a){D.custom=Object.assign({},D.custom||{},{_gamecats:a});save()}
@@ -610,14 +612,14 @@ const gcatById=id=>gcats().find(c=>c.id===id);
 function bestOf(g){const s=me();if(!s)return 0;return Math.max(0,...D.scores.filter(x=>x.sid===s.id&&x.gid===g.id).map(x=>x.score))}
 function playG(id){const g=D.games.find(x=>x.id===id);if(!g)return;sfx('open');
   if(g.kind==='link'){const a=document.createElement('a');a.href=safeUrl(g.url);a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();return}
-  if(g.kind==='embed')return openEmbed(g);if(g.kind==='file')return openFileGame(id);playGame(id)}
+  if(g.kind==='embed')return openEmbed(g);if(g.kind==='file')return openFileGame(id);if(g.kind==='page')return openPageGame(g);playGame(id)}
 function gameCard(g,c){const col=g.color||(c&&c.color)||'var(--sky)',b=bestOf(g);
   return `<div class="gcard" style="--gc:${col}">
     <button class="gc-cover ${g.cover?'has-img':''}" onclick="playG('${g.id}')" aria-label="العب ${esc(g.title)}">${g.cover?`<img src="${g.cover}" alt="">`:`<span class="gc-rays"></span><span class="gc-spark s1">✨</span><span class="gc-spark s2">⭐</span><span class="gc-spark s3">✨</span><span class="gc-scene"><span class="gc-floor"></span><span class="gc-emoji">${esc(g.icon||'🎮')}</span><span class="gc-title">${esc(g.title)}</span></span>`}<span class="gc-play">▶</span></button>
     <div class="gc-body">${g.cover?`<h4>${esc(g.title)}</h4>`:''}${g.desc?`<p>${esc(g.desc)}</p>`:''}
     ${b?`<span class="pill ok">⭐ أفضل نتيجة لي: ${b}</span>`:''}
     ${isAdmin()?`<div class="gc-tools"><button class="btn sm ghost" onclick="editGame('${g.id}')">✏️ تعديل</button><button class="btn sm ghost" onclick="sortGames('${gcatOf(g)}','${g.id}')">↕️ نقل</button><button class="btn sm ghost" onclick="confirmBox('حذف اللعبة؟',()=>delGame('${g.id}'))" aria-label="حذف">🗑️</button></div>
-      ${g.kind==='file'?(g.scores?'<small class="muted">✓ تُسجَّل النتائج</small>':'<small style="color:var(--warn)">لا ترسل النتائج</small>'):g.kind==='link'?'<small style="color:var(--warn)">رابط: النتائج لا تُسجَّل</small>':g.kind==='embed'?'<small class="muted">🟣 Wordwall (النتائج لا تُسجَّل)</small>':''}`:''}</div></div>`}
+      ${g.kind==='file'?(g.scores?'<small class="muted">✓ تُسجَّل النتائج</small>':'<small style="color:var(--warn)">لا ترسل النتائج</small>'):g.kind==='page'?'<small class="muted">✓ تُسجَّل النتائج</small>':g.kind==='link'?'<small style="color:var(--warn)">رابط: النتائج لا تُسجَّل</small>':g.kind==='embed'?'<small class="muted">🟣 Wordwall (النتائج لا تُسجَّل)</small>':''}`:''}</div></div>`}
 function vGames(){
   const tab=S.ui.gt||'play';
   const head=`<div class="tabs" style="max-width:420px"><button class="${tab==='play'?'on':''}" onclick="S.ui.gt='play';render()">🎮 الألعاب</button><button class="${tab==='lb'?'on':''}" onclick="S.ui.gt='lb';render()">🏆 المتصدرون</button></div>`;
@@ -689,6 +691,11 @@ var st={getItem:function(k){k=String(k);return Object.prototype.hasOwnProperty.c
 Object.defineProperty(st,'length',{get:function(){return Object.keys(d).length}});try{Object.defineProperty(window,'localStorage',{value:st,configurable:true})}catch(e){}})();<\/script>`;
   html=/<head[^>]*>/i.test(html)?html.replace(/<head[^>]*>/i,m=>m+shim):shim+html;
   GF.sk=sk;f.srcdoc=html;setTimeout(()=>{try{f.focus()}catch(e){}},300)}
+// built-in game pages from this site (e.g. bike.html): open inside the platform so results are saved
+function openPageGame(g){if(!/^[a-z0-9_-]+\.html$/i.test(g.url||''))return;
+  modal('');const bg=$('#layer .modal-bg');bg.className='game-full';bg.onclick=null;
+  bg.innerHTML=`<div class="gf-bar"><b>${esc(g.icon)} ${esc(g.title)}</b><span id="gfMsg" class="muted">${me()?'نتيجتك تُرسل للمعلم عند نهاية كل مرحلة':'وضع المعلم: للتجربة فقط'}</span><button class="btn coral sm" onclick="closeLayer()">✖ خروج</button></div><iframe id="gfFrame" title="${esc(g.title)}" src="${esc(g.url+(me()?'?n='+encodeURIComponent(me().name):''))}" allow="autoplay; fullscreen"></iframe>`;
+  const f=$('#gfFrame');GF={frame:f,gid:g.id,last:0,sk:null};setTimeout(()=>{try{f.focus()}catch(e){}},400)}
 window.addEventListener('message',e=>{
   const d=e.data;if(d&&d.type==='fasl-storage'&&GF.frame&&GF.frame.isConnected&&e.source===GF.frame.contentWindow&&GF.sk){try{const j=JSON.stringify(d.data||{});if(j.length<300000&&typeof d.data==='object'){D.gstore=D.gstore||{};D.gstore[GF.sk]=JSON.parse(j);save()}}catch(_){}return}
   if(!d||d.type!=='fasl-score'||!GF.frame||!GF.frame.isConnected||e.source!==GF.frame.contentWindow)return;
@@ -696,7 +703,8 @@ window.addEventListener('message',e=>{
   if(Date.now()-GF.last<1500)return;GF.last=Date.now();
   const g=D.games.find(x=>x.id===GF.gid)||D.sheets.find(x=>x.id===GF.gid);const s=me();const m=$('#gfMsg');
   if(!s){if(m)m.textContent=`وضع المعلم: النتيجة ${sc}/${mx} (لا تُحفظ)`;return}
-  D.scores.push({id:uid(),sid:s.id,gid:GF.gid,score:sc,max:mx,t:Date.now()});notify(`🎮 ${s.name} أنهى «${g?g.title:'لعبة'}» بنتيجة ${sc}/${mx}`,'results');save();
+  const det=typeof d.detail==='string'?d.detail.replace(/[<>]/g,'').slice(0,80):'';
+  D.scores.push(Object.assign({id:uid(),sid:s.id,gid:GF.gid,score:sc,max:mx,t:Date.now()},det?{detail:det}:{}));notify(`🎮 ${s.name} أنهى «${g?g.title:'لعبة'}»${det?' ('+det+')':''} بنتيجة ${sc}/${mx}`,'results');save();
   if(m){m.textContent=`🌟 سُجّلت نتيجتك: ${sc} من ${mx}`;m.classList.remove('pop');void m.offsetWidth;m.classList.add('pop')}sfx('good')});
 /* mini games */
 const WORDS=[['ب','بطة','🦆'],['ت','تفاحة','🍎'],['س','سمكة','🐟'],['ق','قطة','🐱'],['ش','شمس','☀️'],['ف','فيل','🐘'],['ج','جمل','🐫'],['م','موز','🍌'],['ن','نحلة','🐝'],['ك','كرة','⚽'],['ز','زرافة','🦒'],['ح','حصان','🐴']];
@@ -899,7 +907,7 @@ function vResults(){
   const sc=[...D.scores].sort((a,b)=>b.t-a.t);
   return `<div class="card"><h3>📊 نتائج الألعاب</h3><p class="muted" style="margin:4px 0 0">كل محاولة لعب يقوم بها الطالب تظهر هنا مباشرة.</p></div>
   <div class="card tbl-wrap"><table><thead><tr><th>الطالب</th><th>اللعبة</th><th class="c">النتيجة</th><th>الوقت</th></tr></thead><tbody>
-  ${sc.map(x=>{const g=D.games.find(g=>g.id===x.gid)||D.sheets.find(g=>g.id===x.gid)||{title:'—'};const p=x.score/x.max;return `<tr><td>${esc(stu(x.sid).name)}</td><td>${esc(g.title)}</td><td class="c"><span class="pill ${p>=.8?'ok':p>=.5?'warn':'bad'}">${x.score}/${x.max}</span></td><td>${fmt(x.t)}</td></tr>`}).join('')}</tbody></table></div>
+  ${sc.map(x=>{const g=D.games.find(g=>g.id===x.gid)||D.sheets.find(g=>g.id===x.gid)||{title:'—'};const p=x.score/x.max;return `<tr><td>${esc(stu(x.sid).name)}</td><td>${esc(g.title)}${x.detail?`<br><small class="muted">${esc(x.detail)}</small>`:''}</td><td class="c"><span class="pill ${p>=.8?'ok':p>=.5?'warn':'bad'}">${x.score}/${x.max}</span></td><td>${fmt(x.t)}</td></tr>`}).join('')}</tbody></table></div>
   <div class="card"><h3>🏆 المتصدرون</h3></div>${leaderboard()}`;
 }
 
@@ -1090,6 +1098,8 @@ function migrate(d){
   d.assign=d.assign||[];d.subs=d.subs||[];d.threads=d.threads||[];
   d.menus=d.menus.filter(m=>m.type!=='portal');d.notifs.forEach(n=>{if(n.go==='portal')n.go='quran'});
   if(!d._v3){d._v3=1;d.recs=d.recs.filter(r=>r.status!=='new');d.notifs=d.notifs.filter(n=>!/^🎙️ تسجيل جديد/.test(n.text))}
+  if(!d._bike4){d._bike4=1;let b=d.games.find(g=>g.url==='bike.html');if(!b){b={id:'g4',title:'سباق الكلمات',icon:'🚲',kind:'link',url:'bike.html',color:'var(--coral)'};d.games.push(b)}b.cat='action';b.kind='page';b.title='سباق الكلمات';b.icon='🚲';b.desc='للصف الأول: اقرأ وركّب وحلّل الكلمات وأنت تقود، وحدك أو مع أصدقائك'}
+  if(!d._island1){d._island1=1;if(!d.games.find(g=>g.url==='island.html'))d.games.push({id:'island',title:'جزيرة الحروف',icon:'🏝️',desc:'ثلاثية الأبعاد: احملوا الحروف وركّبوا الكلمات وافتحوا الجسور معاً، على جهاز واحد أو كل واحد بجهازه',kind:'page',url:'island.html',color:'var(--teal)',cat:'smart'})}
   if(!d.menus.some(m=>m.type==='suggest'))d.menus.push({id:'suggest',type:'suggest',title:'الاقتراحات والرسائل',icon:'💌',color:'var(--pink)',on:true});
   if(!d._v2&&d.students.length){d._v2=1;const now=Date.now(),day=864e5,ds=n=>new Date(now+n*day).toISOString().slice(0,10),S_=d.students;
     const a1={id:uid(),title:'واجب الأسبوع: سورة الفيل',surah:'الفيل',range:'الآيات 1 إلى 5',note:'رتّل بصوت واضح وهدوء',due:ds(3),open:true,t:now-2*day};
