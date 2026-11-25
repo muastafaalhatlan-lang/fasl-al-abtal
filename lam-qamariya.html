@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ورقة عمل اللام القمرية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: warm, encouraging, a teacher's worksheet for a 6-8 year old
+   IDEA: a night-sky exam sheet where every right answer lights the moon
+   PICTURE: a large drawn crescent moon with stars; baskets drawn as moon and sun
+   COLOUR and TYPE: deep night blue, moon yellow, coral accent; Baloo Bhaijaan 2
+   LAYOUT: one calm column of question cards, big tap targets, score at the end */
+:root{color-scheme:dark;--sky:#18235c;--sky2:#243386;--moon:#ffd54a;--card:#ffffff;--ink:#18235c;--soft:#eef1ff;--ok:#1fae6b;--bad:#ff5a5f;--sun:#ff9a3c}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:radial-gradient(circle at 80% 0,#2f3fa0 0,var(--sky) 55%) fixed;color:#fff;font:18px/1.6 "Baloo Bhaijaan 2",Tahoma,sans-serif;overflow-x:clip}
+.wrap{max-width:760px;margin:auto;padding:18px max(4vw,14px) 60px}
+header{display:grid;grid-template-columns:1fr 150px;gap:12px;align-items:center;margin-bottom:10px}
+h1{font-size:clamp(32px,7vw,48px);line-height:1.05;margin:0;color:var(--moon);text-wrap:balance}
+header p{margin:6px 0 0;font-size:17px}
+.moonart{width:150px;height:150px}
+.who{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 18px}
+.who label{display:flex;align-items:center;gap:8px;background:var(--sky2);padding:6px 12px;border-radius:14px;flex:1 1 220px}
+.who input{flex:1;background:#fff;color:var(--ink);font:inherit;font-size:17px;border:0;border-radius:10px;padding:6px 10px;min-height:44px}
+.rule{background:var(--moon);color:var(--ink);border-radius:20px;padding:14px 18px;margin-bottom:18px}
+.lt{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.lt span{background:var(--sky);color:var(--moon);font-size:22px;font-weight:800;width:42px;height:42px;border-radius:12px;display:grid;place-items:center}
+.card{background:var(--card);color:var(--ink);border-radius:24px;padding:18px;margin-bottom:18px;box-shadow:0 8px 0 #0e1640}
+.card h2{margin:0 0 4px;font-size:24px;line-height:1.2;display:flex;gap:10px;align-items:center}
+.num{background:var(--sky);color:var(--moon);width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;font-size:20px}
+.hint{margin:0 0 12px;font-size:16px;color:#4a5490}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.w{font:inherit;font-size:26px;font-weight:700;min-height:64px;border-radius:18px;border:3px solid #d5dbff;background:var(--soft);color:var(--ink);cursor:pointer;position:relative;touch-action:manipulation}
+.w:focus-visible,.opt:focus-visible,.btn:focus-visible{outline:4px solid var(--sun);outline-offset:2px}
+.w.on{background:var(--moon);border-color:#e0b100}
+.w.sel{border-color:var(--sun);box-shadow:0 0 0 4px #ffd3a8}
+.w.ok,.opt.ok{border-color:var(--ok)!important;box-shadow:0 0 0 3px #bdf0d6}
+.w.no,.opt.no{border-color:var(--bad)!important;box-shadow:0 0 0 3px #ffd0d1}
+.w.ok::after,.w.no::after,.opt.ok::after,.opt.no::after{position:absolute;top:-10px;left:-8px;width:28px;height:28px;border-radius:50%;color:#fff;font-size:16px;display:grid;place-items:center}
+.w.ok::after,.opt.ok::after{content:"✓";background:var(--ok)}
+.w.no::after,.opt.no::after{content:"✗";background:var(--bad)}
+.baskets{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.bk{border:3px dashed #c3caf5;border-radius:20px;padding:10px;min-height:150px;background:#f8f9ff;cursor:pointer}
+.bk.moonb{background:#fff8d9;border-color:#e8c440}.bk.sunb{background:#fff0e3;border-color:#f3a86a}
+.bk h3{margin:0 0 6px;font-size:20px;display:flex;align-items:center;gap:8px}
+.bk h3 svg{width:34px;height:34px;flex:none}
+.bk .in{display:flex;flex-wrap:wrap;gap:6px}
+.bk .w{font-size:20px;min-height:48px;padding:0 12px}
+.pool{display:flex;flex-wrap:wrap;gap:8px;min-height:20px}
+.pool .w{padding:0 16px}
+.q{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;padding:10px 0;border-top:2px dotted #d5dbff}
+.q:first-of-type{border-top:0}
+.q .base{font-size:26px;font-weight:800;background:var(--sky);color:var(--moon);border-radius:14px;padding:2px 16px;min-width:90px;text-align:center}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{font:inherit;font-size:24px;font-weight:700;min-height:56px;min-width:90px;padding:0 16px;border-radius:16px;border:3px solid #d5dbff;background:var(--soft);color:var(--ink);cursor:pointer;position:relative}
+.opt.pick{background:var(--moon);border-color:#e0b100}
+.padbox{position:relative;height:220px;border-radius:18px;background:#fbfcff;border:3px solid #d5dbff;overflow:hidden}
+.padbox canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
+.say{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px;font-size:20px;font-weight:700}
+.spk{display:inline-flex;align-items:center;gap:8px;background:var(--sun)}.spk svg{width:24px;height:24px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{font:inherit;font-size:18px;font-weight:700;min-height:48px;padding:0 20px;border-radius:16px;border:0;background:var(--sky);color:#fff;cursor:pointer}
+.btn.alt{background:var(--soft);color:var(--ink)}
+.btn.big{font-size:24px;min-height:64px;width:100%;background:var(--moon);color:var(--ink);box-shadow:0 6px 0 #c99a00}
+.btn.big:active{transform:translateY(4px);box-shadow:0 2px 0 #c99a00}
+#result{display:none;text-align:center}
+#result.show{display:block;animation:pop .5s ease}
+#result .score{font-size:clamp(44px,12vw,72px);line-height:1;font-weight:800;color:var(--ink)}
+.stars{display:flex;justify-content:center;gap:6px;margin:8px 0}
+.stars svg{width:54px;height:54px}
+.part{font-size:16px;color:#4a5490}
+@keyframes pop{from{transform:scale(.8);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){#result.show{animation:none}}
+@media(max-width:600px){header{grid-template-columns:1fr 96px}.moonart{width:96px;height:96px}.w{font-size:22px}.q{grid-template-columns:1fr}.q .base{justify-self:start}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <h1>اِخْتِبَارُ اللَّامِ الْقَمَرِيَّةِ</h1>
+    <p>حُلَّ الْأَسْئِلَةَ بِيَدِكَ، ثُمَّ اضْغَطْ «صَحِّحْ إِجَابَاتِي» لِتَرَى نُجُومَكَ.</p>
+  </div>
+  <svg class="moonart" viewBox="0 0 120 120" aria-hidden="true">
+    <defs><radialGradient id="mg" cx=".35" cy=".35"><stop offset="0" stop-color="#fff3b0"/><stop offset="1" stop-color="#ffc928"/></radialGradient></defs>
+    <circle cx="62" cy="60" r="44" fill="#ffd54a" opacity=".18"/>
+    <path d="M78 18a44 44 0 1 0 22 70A36 36 0 1 1 78 18z" fill="url(#mg)"/>
+    <circle cx="52" cy="58" r="5" fill="#f0b400" opacity=".5"/><circle cx="44" cy="80" r="3.5" fill="#f0b400" opacity=".5"/>
+    <g fill="#fff"><path id="st" d="M0-7l2 5 5 .5-4 3.5 1.3 5L0 4.3-4.3 7l1.3-5-4-3.5 5-.5z"/>
+    <use href="#st" transform="translate(100 22)"/><use href="#st" transform="translate(108 60) scale(.7)"/><use href="#st" transform="translate(16 20) scale(.6)"/></g>
+  </svg>
+</header>
+
+<div class="who">
+  <label>اِسْمِي: <input id="nm" autocomplete="off"></label>
+  <label>صَفِّي: <input id="cls" autocomplete="off"></label>
+</div>
+
+<div class="rule">
+  تَذَكَّرْ: اللَّامُ الْقَمَرِيَّةُ <strong>تُكْتَبُ وَتُنْطَقُ</strong>، وَعَلَيْهَا سُكُونٌ (الْـ)، وَتَأْتِي قَبْلَ الْحُرُوفِ الْقَمَرِيَّةِ، وَعَدَدُهَا <strong>١٤ حَرْفًا</strong>:<br>
+  <div class="lt"><span>أ</span><span>ب</span><span>غ</span><span>ح</span><span>ج</span><span>ك</span><span>و</span><span>خ</span><span>ف</span><span>ع</span><span>ق</span><span>ي</span><span>م</span><span>هـ</span></div>
+</div>
+
+<section class="card">
+  <h2><span class="num">١</span>لَوِّنِ الْكَلِمَاتِ الْقَمَرِيَّةَ</h2>
+  <p class="hint">اِضْغَطْ عَلَى كُلِّ كَلِمَةٍ فِيهَا لَامٌ قَمَرِيَّةٌ لِتُصْبِحَ صَفْرَاءَ مِثْلَ الْقَمَرِ.</p>
+  <div class="grid" id="p1"></div>
+</section>
+
+<section class="card">
+  <h2><span class="num">٢</span>ضَعْ كُلَّ كَلِمَةٍ فِي سَلَّتِهَا</h2>
+  <p class="hint">اِضْغَطْ عَلَى الْكَلِمَةِ، ثُمَّ اضْغَطْ عَلَى السَّلَّةِ الْمُنَاسِبَةِ.</p>
+  <div class="pool" id="pool"></div>
+  <div class="baskets">
+    <div class="bk moonb" data-b="m" role="button" tabindex="0"><h3><svg viewBox="0 0 40 40"><path d="M26 4a17 17 0 1 0 10 26A14 14 0 1 1 26 4z" fill="#ffc928"/></svg>لَامٌ قَمَرِيَّةٌ</h3><div class="in"></div></div>
+    <div class="bk sunb" data-b="s" role="button" tabindex="0"><h3><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="9" fill="#ff9a3c"/><g stroke="#ff9a3c" stroke-width="3" stroke-linecap="round"><path d="M20 3v5M20 32v5M3 20h5M32 20h5M8 8l3.5 3.5M28.5 28.5L32 32M8 32l3.5-3.5M28.5 11.5L32 8"/></g></svg>لَامٌ شَمْسِيَّةٌ</h3><div class="in"></div></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="num">٣</span>أَدْخِلْ «الْ» وَاخْتَرِ الْكِتَابَةَ الصَّحِيحَةَ</h2>
+  <p class="hint">اِخْتَرِ الطَّرِيقَةَ الصَّحِيحَةَ لِكِتَابَةِ الْكَلِمَةِ بَعْدَ إِضَافَةِ «الْ».</p>
+  <div id="p3"></div>
+</section>
+
+<section class="card">
+  <h2><span class="num">٤</span>اِخْتَرِ الْحُرُوفَ الْقَمَرِيَّةَ</h2>
+  <p class="hint">فِي كُلِّ سَطْرٍ حَرْفٌ قَمَرِيٌّ وَاحِدٌ، اضْغَطْ عَلَيْهِ.</p>
+  <div id="p4"></div>
+</section>
+
+<section class="card">
+  <h2><span class="num">٥</span>اُكْتُبْ «الْ» بِإِصْبَعِكَ وَاقْرَأْ</h2>
+  <p class="hint">اُكْتُبْ «الْ» فَوْقَ النِّقَاطِ قَبْلَ الْكَلِمَةِ، ثُمَّ اقْرَأِ الْكَلِمَةَ بِصَوْتٍ عَالٍ.</p>
+  <div class="say"><button class="btn spk" id="spk"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>اِسْمَعِ الْمَطْلُوبَ</button><span id="task"></span></div>
+  <div class="padbox"><canvas id="pad"></canvas></div>
+  <div class="tools">
+    <button class="btn alt" id="clr">اِمْسَحْ</button>
+    <button class="btn alt" id="hear">اِسْمَعِ الْكَلِمَةَ الصَّحِيحَةَ</button>
+    <button class="btn" id="nxt">كَلِمَةٌ أُخْرَى</button>
+  </div>
+  <p class="hint" id="nosnd" hidden>الصوت غير متاح على هذا الجهاز، ليقرأ المعلّم أو وليّ الأمر التعليمات للطفل.</p>
+</section>
+
+<button class="btn big" id="check">صَحِّحْ إِجَابَاتِي</button>
+
+<section class="card" id="result" style="margin-top:18px">
+  <div class="stars" id="stars"></div>
+  <div class="score" id="score"></div>
+  <h2 style="justify-content:center" id="msg"></h2>
+  <p class="part" id="parts"></p>
+  <button class="btn" id="again">أَعِدِ الِاخْتِبَارَ</button>
+</section>
+</div>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const P1=[["الْقَمَرُ",1],["الثَّعْلَبُ",0],["الْكِتَابُ",1],["النَّجْمُ",0],["الْفِيلُ",1],["الْوَلَدُ",1],["السَّمَكَةُ",0],["الْعَيْنُ",1],["الدُّبُّ",0]];
+const P2=[["الْبَابُ",1],["الْجَمَلُ",1],["الْهِلَالُ",1],["الْأَرْنَبُ",1],["التُّفَّاحَةُ",0],["الزَّرَافَةُ",0],["الرَّمْلُ",0],["الصَّقْرُ",0]];
+const P3=[["قَمَرٌ",["الْقَمَرُ","القَّمَرُ"],0],["وَرْدٌ",["الوَّرْدُ","الْوَرْدُ"],1],["كَلْبٌ",["الْكَلْبُ","الكَّلْبُ"],0],["حِصَانٌ",["الحِّصَانُ","الْحِصَانُ"],1],["بَيْتٌ",["الْبَيْتُ","البَّيْتُ"],0],["غَزَالٌ",["الْغَزَالُ","الغَّزَالُ"],0]];
+const P4=[["ش","ق","ت"],["س","ر","م"],["ص","ب","ز"],["ن","د","ع"]];
+const P4ans=["ق","م","ب","ع"];
+const TRACE=[["قَمَرُ","الْقَمَرُ"],["بَابُ","الْبَابُ"],["كِتَابُ","الْكِتَابُ"],["فِيلُ","الْفِيلُ"],["جَمَلُ","الْجَمَلُ"],["هِلَالُ","الْهِلَالُ"],["عَيْنُ","الْعَيْنُ"],["خُبْزُ","الْخُبْزُ"]];
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+let checked=false,sel=null,place={};
+
+function build(){
+  checked=false;sel=null;place={};
+  $('#p1').innerHTML=shuffle(P1).map(([w,k])=>`<button class="w" data-k="${k}">${w}</button>`).join('');
+  $('#pool').innerHTML=shuffle(P2).map(([w,k])=>`<button class="w" data-k="${k}" data-w="${w}">${w}</button>`).join('');
+  document.querySelectorAll('.bk .in').forEach(e=>e.innerHTML='');
+  $('#p3').innerHTML=P3.map(([b,o,a],i)=>`<div class="q"><span class="base">الْ + ${b}</span><div class="opts" data-a="${a}">${o.map((t,j)=>`<button class="opt" data-j="${j}">${t}</button>`).join('')}</div></div>`).join('');
+  $('#p4').innerHTML=P4.map((r,i)=>`<div class="q"><span class="base">${i+1}</span><div class="opts" data-a="${r.indexOf(P4ans[i])}">${r.map((t,j)=>`<button class="opt" data-j="${j}">${t}</button>`).join('')}</div></div>`).join('');
+  $('#result').classList.remove('show');
+}
+
+$('#p1').addEventListener('click',e=>{const b=e.target.closest('.w');if(!b||checked)return;b.classList.toggle('on')});
+
+function moveTo(btn,bk){bk.querySelector('.in').appendChild(btn);btn.classList.remove('sel');place[btn.dataset.w]=bk.dataset.b;sel=null}
+document.addEventListener('click',e=>{
+  if(checked)return;
+  const w=e.target.closest('#pool .w, .bk .w');
+  if(w){e.stopPropagation();
+    if(sel===w){w.classList.remove('sel');sel=null;return}
+    if(sel)sel.classList.remove('sel');
+    sel=w;w.classList.add('sel');return}
+  const bk=e.target.closest('.bk');
+  if(bk&&sel)moveTo(sel,bk);
+});
+document.querySelectorAll('.bk').forEach(bk=>bk.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&sel&&!checked){e.preventDefault();moveTo(sel,bk)}}));
+
+document.querySelectorAll('#p3,#p4').forEach(c=>c.addEventListener('click',e=>{
+  const o=e.target.closest('.opt');if(!o||checked)return;
+  o.parentNode.querySelectorAll('.opt').forEach(x=>x.classList.remove('pick'));o.classList.add('pick');
+}));
+
+/* drawing pad */
+const cv=$('#pad'),ctx=cv.getContext('2d');let ti=0,drawing=false,last=null;
+function sizePad(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;ctx.setTransform(d,0,0,d,0,0);guide()}
+function guide(){
+  const r=cv.getBoundingClientRect(),W=r.width,H=r.height;ctx.clearRect(0,0,W,H);
+  const base=H*.7,fs=Math.min(H*.5,W/4.6);
+  ctx.setLineDash([]);ctx.strokeStyle='#e3e7ff';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(10,base);ctx.lineTo(W-10,base);ctx.stroke();
+  ctx.font=`700 ${fs}px "Baloo Bhaijaan 2",Tahoma,sans-serif`;ctx.direction='rtl';ctx.textBaseline='alphabetic';ctx.textAlign='right';
+  const word='ـ'+TRACE[ti][0],ww=ctx.measureText(word).width,g=fs*.75;
+  const right=W/2+(g+ww)/2,xr=right-g,ax=right-fs*.1,lx=right-fs*.42,top=base-fs*.8;
+  ctx.fillStyle='#18235c';ctx.fillText(word,xr+fs*.04,base);
+  /* single dotted line for alef and lam */
+  ctx.strokeStyle='#7f8ad4';ctx.lineWidth=Math.max(4,fs*.06);ctx.lineCap='round';ctx.setLineDash([.1,fs*.1]);
+  ctx.beginPath();ctx.moveTo(ax,top);ctx.lineTo(ax,base);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(lx,top);ctx.lineTo(lx,base-fs*.1);ctx.quadraticCurveTo(lx,base,lx-fs*.12,base);ctx.lineTo(xr,base);ctx.stroke();
+  ctx.setLineDash([]);
+  [[ax,'١'],[lx,'٢']].forEach(([x,n])=>{ctx.fillStyle='#1fae6b';ctx.beginPath();ctx.arc(x,top-fs*.16,fs*.11,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.font=`700 ${fs*.15}px sans-serif`;ctx.textAlign='center';ctx.fillText(n,x,top-fs*.11)});
+  $('#task').textContent=`الْ + ${TRACE[ti][0]}`;
+  ctx.strokeStyle='#7f8ad4';ctx.lineWidth=Math.max(2,fs*.03);ctx.beginPath();ctx.arc(lx-fs*.16,top-fs*.04,fs*.06,0,7);ctx.stroke();
+}
+const canTalk='speechSynthesis' in window;
+if(!canTalk)$('#nosnd').hidden=false;
+function talk(t){if(!canTalk)return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='ar-SA';u.rate=.85;const v=speechSynthesis.getVoices().find(v=>v.lang&&v.lang.startsWith('ar'));if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){$('#nosnd').hidden=false}}
+$('#spk').onclick=()=>talk(`اُكْتُبِ الْ قَبْلَ كَلِمَةِ ${TRACE[ti][0]}، ثُمَّ اقْرَأِ الْكَلِمَةَ بِصَوْتٍ عَالٍ`);
+$('#hear').onclick=()=>talk(TRACE[ti][1]);
+const pt=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+cv.addEventListener('pointerdown',e=>{drawing=true;last=pt(e);cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!drawing)return;const p=pt(e);ctx.strokeStyle='#18235c';ctx.lineWidth=7;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(...last);ctx.lineTo(...p);ctx.stroke();last=p});
+['pointerup','pointercancel','pointerleave'].forEach(t=>cv.addEventListener(t,()=>drawing=false));
+$('#clr').onclick=guide;
+$('#nxt').onclick=()=>{ti=(ti+1)%TRACE.length;guide()};
+const padRO=new ResizeObserver(sizePad);padRO.observe(cv);
+if(document.fonts)document.fonts.ready.then(guide);
+
+function star(on){return `<svg viewBox="-12 -12 24 24"><path d="M0-10l3 6.5 7 .8-5.3 4.8 1.5 7L0 5.6-6.2 9.1l1.5-7L-10-2.7l7-.8z" fill="${on?'#ffd54a':'#e3e7ff'}" stroke="${on?'#e0a800':'#c7cdf0'}" stroke-width="1"/></svg>`}
+
+$('#check').onclick=()=>{
+  checked=true;let s1=0,s2=0,s3=0,s4=0;
+  document.querySelectorAll('#p1 .w').forEach(b=>{const r=(b.classList.contains('on')?1:0)==+b.dataset.k;b.classList.add(r?'ok':'no');s1+=r});
+  P2.forEach(([w,k])=>{const b=document.querySelector(`.w[data-w="${w}"]`);const r=place[w]===(k?'m':'s');b.classList.remove('sel');b.classList.add(r?'ok':'no');s2+=r});
+  document.querySelectorAll('#p3 .opts,#p4 .opts').forEach(o=>{
+    const a=+o.dataset.a,p=o.querySelector('.pick');const right=o.querySelectorAll('.opt')[a];
+    if(p&&+p.dataset.j===a){p.classList.add('ok');o.closest('#p3')?s3++:s4++}
+    else{if(p)p.classList.add('no');right.classList.add('ok')}
+  });
+  const tot=s1+s2+s3+s4,max=P1.length+P2.length+P3.length+P4.length,pc=tot/max;
+  const n=pc>=.9?5:pc>=.75?4:pc>=.55?3:pc>=.35?2:1;
+  $('#stars').innerHTML=[1,2,3,4,5].map(i=>star(i<=n)).join('');
+  $('#score').textContent=`${tot} / ${max}`;
+  const nm=$('#nm').value.trim();
+  const m=pc>=.9?'مُمْتَازٌ! أَنْتَ نَجْمُ اللَّامِ الْقَمَرِيَّةِ':pc>=.75?'أَحْسَنْتَ! عَمَلٌ رَائِعٌ':pc>=.55?'جَيِّدٌ، وَاصِلِ التَّدْرِيبَ':'لَا بَأْسَ، لِنُحَاوِلْ مَرَّةً أُخْرَى';
+  $('#msg').textContent=nm?`${m} يَا ${nm}`:m;
+  $('#parts').textContent=`التَّلْوِينُ ${s1}/${P1.length} · السِّلَالُ ${s2}/${P2.length} · الْكِتَابَةُ ${s3}/${P3.length} · الْحُرُوفُ ${s4}/${P4.length}`;
+  if(window.parent!==window){try{parent.postMessage({type:'fasl-score',score:tot,max:max,detail:'ورقة عمل اللام القمرية'},'*')}catch(e){}}
+  $('#result').classList.add('show');$('#result').scrollIntoView({behavior:'smooth',block:'center'});
+};
+$('#again').onclick=()=>{build();window.scrollTo({top:0,behavior:'smooth'})};
+build();
+}
+</script>
+</body>
+</html>
