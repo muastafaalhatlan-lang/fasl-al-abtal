@@ -234,6 +234,18 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .qz-opts{display:grid;gap:10px}
 .qz-opt{font-size:24px;padding:14px}.qz-opt span{font-size:24px}
 .st-q{font-size:26px;line-height:1.9}
+.dl-card{border-radius:28px;padding:18px;background:linear-gradient(150deg,color-mix(in srgb,var(--coral) 22%,var(--surface)),color-mix(in srgb,var(--sun) 25%,var(--surface)));box-shadow:var(--shadow);display:grid;gap:10px;border:3px solid color-mix(in srgb,var(--coral) 35%,transparent)}
+.dl-admin{display:flex;align-items:center;gap:14px}.dl-admin small{color:var(--muted);font-weight:800;display:block}.dl-admin b{font-family:var(--f-display);font-size:22px}
+.dl-admin .dl-big{font-size:64px}
+.dl-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.dl-tag{background:var(--coral);color:#fff;border-radius:999px;padding:4px 14px;font-weight:800}
+.dl-main{display:flex;align-items:center;justify-content:space-around;gap:10px}
+.dl-big{font-family:var(--f-display);font-size:clamp(100px,30vw,140px);line-height:1.1;color:var(--coral);font-weight:800;text-shadow:0 6px 0 color-mix(in srgb,var(--coral) 30%,transparent);animation:bob 3s ease-in-out infinite}
+.dl-ex{display:grid;justify-items:center;background:var(--surface);border-radius:20px;padding:10px 18px;box-shadow:var(--shadow)}.dl-ex span{font-size:54px;line-height:1.1}.dl-ex b{font-family:var(--f-display);font-size:24px}
+.dl-name{text-align:center;font-family:var(--f-display);font-size:24px;font-weight:800}
+.dl-msg{text-align:center;background:var(--surface);border-radius:14px;padding:8px 12px;font-weight:700}
+.dl-forms{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.dl-forms span{font-family:var(--f-display);font-size:34px;background:var(--surface);border-radius:14px;min-width:64px;text-align:center;padding:2px 8px}
+.dl-optl{font-family:var(--f-display);font-size:52px;line-height:1.2}
 .tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
 .sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .sec-head h3{font-size:22px}
@@ -629,6 +641,7 @@ function vHome(){
     <div class="stats">
       ${[['👥',D.students.length,'طالب في الفصل','var(--sky)'],['🎙️',pend,'تسجيل جديد','var(--grass)'],['🎮',today,'محاولة لعب اليوم','var(--grape)'],['🌟',D.heroes.length,'بطل في اللوحة','var(--sun)']].map(x=>`<div class="card stat"><span class="nav-ic" style="background:${x[3]}">${x[0]}</span><div><div class="n">${x[1]}</div><small class="muted">${x[2]}</small></div></div>`).join('')}
     </div>
+    ${dayLetterCard()}
     <div class="grid tiles">${tiles()}</div>
     <div class="card"><div class="sec-head"><h3>آخر الإشعارات</h3><button class="btn sm ghost" onclick="toggleNotif()">عرض الكل</button></div>
     <div class="sec-list" style="margin-top:10px">${D.notifs.slice(0,4).map(n=>`<div class="sec-li"><span class="k">🔔</span><div>${esc(n.text)}<br><small class="muted">${fmt(n.t)}</small></div></div>`).join('')||'<p class="muted">لا شيء جديد</p>'}</div></div>`;
@@ -636,6 +649,7 @@ function vHome(){
   const s=me();const done=SL().filter(x=>status(s.id,x)==='ok').length;
   return `<div class="hero" style="background:linear-gradient(135deg,var(--grass),var(--teal))"><span class="big">${esc(s.ava)}</span><div><h1>أهلاً يا بطل ${esc(s.name)}!</h1><p style="margin:4px 0 0;opacity:.95">جمعت ⭐ ${totalScore(s.id)} نقطة وسمّعت ${done} سورة</p></div></div>
   <div class="card"><b>رحلتي في التسميع</b><div class="progress" style="margin-top:8px"><i style="width:${done/SL().length*100}%"></i></div><small class="muted">${done} من ${SL().length} سورة</small></div>
+  ${dayLetterCard()}
   <div class="grid tiles">${tiles()}<button class="tile" onclick="go('report')"><span class="nav-ic" style="background:var(--orange)">👨‍👩‍👦</span>تقرير ولي الأمر</button></div>`;
 }
 function tiles(){return visibleMenus().filter(m=>m.type!=='home').map(m=>`<button class="tile" onclick="go('${m.id}')"><span class="nav-ic" style="background:${m.color}">${esc(m.icon)}</span>${esc(m.title)}</button>`).join('')}
@@ -865,6 +879,41 @@ function vLetters(){
       <span class="lt-n">${i+1}</span><span class="lt-big">${l}</span><span class="lt-w">${LWORD[l][1]}</span>${n?`<span class="lt-v">▶ ${n}</span>`:''}</button>`}).join('')}</div>
   </section>`}).join('')}`;
 }
+/* ---------- حرف اليوم (يختاره المعلم) ---------- */
+const dayLetter=()=>{const d=D.custom&&D.custom._dayletter;return d&&LNAME[d.l]?d:null};
+const dlDone=(sid,l)=>(D.scores||[]).filter(x=>x.sid===sid&&x.gid==='dl_'+l).sort((a,b)=>b.score-a.score)[0];
+const dlCount=sid=>new Set((D.scores||[]).filter(x=>x.sid===sid&&String(x.gid).startsWith('dl_')).map(x=>x.gid)).size;
+function dayLetterCard(){const d=dayLetter(),s=me();
+  if(isAdmin())return `<div class="dl-card dl-admin pop">${d?`<span class="dl-big">${d.l}</span>`:'<span class="dl-big">🔤</span>'}<div style="flex:1;min-width:0"><small>حرف اليوم</small><b>${d?'حرف '+LNAME[d.l]:'لم تختر حرف اليوم بعد'}</b>${d&&d.msg?`<div class="muted">💬 ${esc(d.msg)}</div>`:''}
+    ${d?`<div class="muted">أنهى التحدي: ${D.students.filter(x=>dlDone(x.id,d.l)).length} من ${D.students.length}</div>`:''}</div><button class="btn sun" data-sfx onclick="sfx('open');pickDayLetter()">${d?'✏️ تغيير':'🔤 اختر الحرف'}</button></div>`;
+  if(!s||!d)return '';const w=LWORD[d.l],f=lForms(d.l),done=dlDone(s.id,d.l);
+  return `<div class="dl-card pop"><div class="dl-top"><span class="dl-tag">🔤 حرف اليوم</span>${done?`<span class="pill ok">✅ أنجزت التحدي · ⭐ ${done.score}/${done.max}</span>`:''}</div>
+    <div class="dl-main"><span class="dl-big">${d.l}</span><div class="dl-ex"><span>${w[1]}</span><b>${w[0]}</b></div></div>
+    <div class="dl-name">حرف ${LNAME[d.l]}</div>${d.msg?`<div class="dl-msg">💬 ${esc(d.msg)}</div>`:''}
+    <div class="dl-forms">${f.map(x=>`<span>${x}</span>`).join('')}</div>
+    <div class="row" style="justify-content:center"><button class="btn coral" data-sfx onclick="sfx('open');S.view=(D.menus.find(m=>m.type==='letters')||{}).id||'home';S.ui={lt:'${d.l}'};render();scrollTo(0,0)">🎬 كيف أكتبه؟</button><button class="btn green" data-sfx onclick="sfx('open');dlPlay()">🎮 ${done?'العب مرة أخرى':'تحدي الحرف'}</button></div>
+    <small class="muted" style="text-align:center">أتقنت ${dlCount(s.id)} من 28 حرفاً 🌟</small></div>`}
+function pickDayLetter(){const d=dayLetter();
+  form('🔤 اختر حرف اليوم',[{k:'l',label:'الحرف الذي ندرسه اليوم',type:'select',options:ALL_L.map(x=>[x.l,`${x.l} — حرف ${LNAME[x.l]} (${x.u.name})`]),value:d?d.l:'م'},{k:'msg',label:'رسالة قصيرة للطلاب (اختياري)',value:d&&d.msg||'',ph:'مثال: اكتب الحرف في دفترك ثلاث مرات ✏️'}],
+  v=>{D.custom=Object.assign({},D.custom||{},{_dayletter:{l:v.l,msg:v.msg,t:Date.now()}});save();sfx('ex');toast('🔤 حرف اليوم: '+LNAME[v.l])})}
+let DLG=null;
+function dlPlay(){const d=dayLetter();if(!d)return;const l=d.l,others=ALL_L.map(x=>x.l).filter(x=>x!==l).sort(()=>Math.random()-.5);
+  const opts=(right,wrong)=>[{t:right,ok:true},...wrong.map(t=>({t,ok:false}))].sort(()=>Math.random()-.5);
+  DLG={l,i:0,score:0,qs:[
+    {q:`أيّ صورة تبدأ بحرف ${l} ؟`,o:opts(`${LWORD[l][1]}<small>${LWORD[l][0]}</small>`,others.slice(0,3).map(x=>`${LWORD[x][1]}<small>${LWORD[x][0]}</small>`))},
+    {q:`أين حرف ${LNAME[l]} ؟`,o:opts(l,others.slice(3,6))},
+    {q:`حرف ${l} في أول الكلمة يُكتب هكذا:`,o:opts(lForms(l)[1],others.slice(6,9).map(x=>lForms(x)[1]))}]};dlStep()}
+function dlStep(){const q=DLG.qs[DLG.i];DLG.lock=false;
+  modal(`<div class="modal-h"><h3>🔤 تحدي حرف ${LNAME[DLG.l]}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
+  <div class="progress"><i style="width:${DLG.i/3*100}%"></i></div><div class="row" style="justify-content:space-between"><small class="muted">سؤال ${DLG.i+1} من 3</small><b>⭐ ${DLG.score}</b></div>
+  <div class="game-q">${q.q}</div><div class="game-opts">${q.o.map((o,k)=>`<button class="game-opt dl-opt" onclick="dlPick(${k},this)">${o.t.includes('<small>')?o.t.replace('<small>','<span>').replace('</small>','</span>'):`<b class="dl-optl">${o.t}</b>`}</button>`).join('')}</div>`)}
+function dlPick(k,el){if(DLG.lock)return;DLG.lock=true;const q=DLG.qs[DLG.i];const r=q.o.findIndex(o=>o.ok);document.querySelectorAll('.dl-opt')[r].classList.add('good');
+  if(q.o[k].ok){DLG.score++;sfx('good')}else{el.classList.add('wrong');sfx('weak')}DLG.i++;
+  setTimeout(()=>{if(DLG.i<3)return dlStep();const s=me();if(s){D.scores.push({id:uid(),sid:s.id,gid:'dl_'+DLG.l,score:DLG.score,max:3,kind:'letter',t:Date.now()});save()}
+    if(DLG.score===3)confetti(70);sfx(DLG.score===3?'ex':'good');
+    modal(`<div class="story"><div class="scene">${DLG.score===3?'🏆🔤':DLG.score?'⭐👏':'💪🙂'}</div><h2>${DLG.score===3?'ممتاز! أتقنت حرف '+LNAME[DLG.l]:DLG.score?'أحسنت!':'حاول مرة أخرى'}</h2><p>${DLG.score} من 3</p>${s?'':'<small class="muted">(وضع المعلم: لا تُحفظ النتيجة)</small>'}
+    <div class="row" style="justify-content:center"><button class="btn green" onclick="dlPlay()">العب مرة أخرى</button><button class="btn ghost" onclick="closeLayer();render()">إغلاق</button></div></div>`)},900)}
+
 function unitCover(name){const key='_ucover_'+name,cv=D.custom&&D.custom[key];
   window._genUnit=name;form('🖼️ غلاف وحدة '+name,[genBox('unit'),{k:'img',label:'📁 ارفع صورة الغلاف',type:'file',accept:'image/*',paste:true},...(cv?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الغلاف'],['1','حذف الغلاف']]}]:[])],async v=>{
     if(v.rm==='1'){const c=Object.assign({},D.custom);delete c[key];D.custom=c;save();toast('حُذف الغلاف');return}
@@ -1036,7 +1085,7 @@ function vResults(){
   const sc=[...D.scores].sort((a,b)=>b.t-a.t);
   return `<div class="card"><h3>📊 نتائج الألعاب</h3><p class="muted" style="margin:4px 0 0">كل محاولة لعب يقوم بها الطالب تظهر هنا مباشرة.</p></div>
   <div class="card tbl-wrap"><table><thead><tr><th>الطالب</th><th>اللعبة</th><th class="c">النتيجة</th><th>الوقت</th></tr></thead><tbody>
-  ${sc.map(x=>{const g=D.games.find(g=>g.id===x.gid)||D.sheets.find(g=>g.id===x.gid)||(D.stories||[]).find(g=>g.id===x.gid)||{title:'—'};const p=x.score/x.max;return `<tr><td>${esc(stu(x.sid).name)}</td><td>${esc(g.title)}${x.detail?`<br><small class="muted">${esc(x.detail)}</small>`:''}</td><td class="c"><span class="pill ${p>=.8?'ok':p>=.5?'warn':'bad'}">${x.score}/${x.max}</span></td><td>${fmt(x.t)}</td></tr>`}).join('')}</tbody></table></div>
+  ${sc.map(x=>{const g=D.games.find(g=>g.id===x.gid)||D.sheets.find(g=>g.id===x.gid)||(D.stories||[]).find(g=>g.id===x.gid)||(String(x.gid).startsWith('dl_')?{title:'🔤 تحدي حرف '+String(x.gid).slice(3)}:{title:'—'});const p=x.score/x.max;return `<tr><td>${esc(stu(x.sid).name)}</td><td>${esc(g.title)}${x.detail?`<br><small class="muted">${esc(x.detail)}</small>`:''}</td><td class="c"><span class="pill ${p>=.8?'ok':p>=.5?'warn':'bad'}">${x.score}/${x.max}</span></td><td>${fmt(x.t)}</td></tr>`}).join('')}</tbody></table></div>
   <div class="card"><h3>🏆 المتصدرون</h3></div>${leaderboard()}`;
 }
 
