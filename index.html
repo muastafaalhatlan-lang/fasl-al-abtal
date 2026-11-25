@@ -222,6 +222,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .lt-cover{margin:-14px -14px 0;aspect-ratio:16/7;max-width:none;overflow:hidden;border-radius:16px 16px 0 0}
 .lt-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .st-card .gc-cover{aspect-ratio:4/3}
+.gen-box{display:grid;gap:8px;padding:12px;border-radius:16px;background:color-mix(in srgb,var(--grape) 10%,var(--surface));border:2px dashed color-mix(in srgb,var(--grape) 40%,transparent)}
+.gen-prev img{width:100%;border-radius:12px;display:block;margin-bottom:6px}
 .tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
 .sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .sec-head h3{font-size:22px}
@@ -390,6 +392,42 @@ function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}
 function saveSess(){try{sessionStorage.setItem(KEY+'_s',JSON.stringify(S.session))}catch(e){}}
 function loadSess(){try{return JSON.parse(sessionStorage.getItem(KEY+'_s'))}catch(e){return null}}
 
+/* ---------- توليد صورة الغلاف (Pollinations المجاني) ---------- */
+const EMO_EN={'🐰':'rabbit','🐇':'rabbit','🦊':'fox','🥕':'carrots','🧺':'basket','🐢':'turtle','🌳':'trees','🌲':'forest','🐘':'elephant','🦁':'lion','🐯':'tiger','🐻':'bear','🐼':'panda','🐱':'cat','🐈':'cat','🐶':'dog','🐕':'dog','🐭':'mouse','🐸':'frog','🐵':'monkey','🦒':'giraffe','🐫':'camel','🐪':'camel','🐴':'horse','🐎':'horse','🐑':'sheep','🐄':'cow','🐔':'chicken','🐤':'chick','🐣':'hatching chick','🦆':'duck','🦉':'owl','🦅':'eagle','🐦':'bird','🐟':'fish','🐠':'tropical fish','🐬':'dolphin','🐳':'whale','🐙':'octopus','🦋':'butterfly','🐝':'bee','🐞':'ladybug','🐜':'ant','🐌':'snail','🦀':'crab','🐧':'penguin','🦌':'deer','🦓':'zebra','🐊':'crocodile','🦈':'shark','🐿️':'squirrel','🦔':'hedgehog','🐉':'friendly dragon','🦄':'unicorn','⭐':'star','🌟':'shining star','✨':'sparkles','🌙':'moon','☀️':'sun','☁️':'clouds','🌈':'rainbow','🌧️':'rain','❄️':'snow','🌊':'sea waves','🏖️':'beach','⛰️':'mountains','🏜️':'desert','🌴':'palm trees','🌸':'flowers','🌹':'rose','🌻':'sunflower','🍎':'apple','🍌':'banana','🍇':'grapes','🍉':'watermelon','🍓':'strawberry','🍊':'orange','🍋':'lemon','🌽':'corn','🥚':'egg','🍞':'bread','🥛':'milk','🍰':'cake','🎁':'gift box','🎈':'balloons','⚽':'football','🪁':'kite','🚲':'bicycle','🚗':'car','🚌':'school bus','✈️':'airplane','🚀':'rocket','⛵':'sailboat','🏠':'house','🏡':'house with garden','🏫':'school','🕌':'mosque','🏥':'hospital','🏙️':'city','📚':'books','📖':'open book','✏️':'pencil','🎒':'school bag','👦':'boy','👧':'girl','👨':'father','👩':'mother','👴':'grandfather','👵':'grandmother','👶':'baby','🧒':'child','🤝':'friends helping each other','💛':'love','❤️':'love','😊':'happy','😢':'sad','🔑':'key','💎':'treasure','🏆':'trophy','👑':'crown','🤖':'robot','🌍':'earth','🪐':'planet','🌋':'volcano','🔥':'campfire','💧':'water','🍃':'leaves','🌱':'small plant','🦷':'teeth','🧼':'soap','🩺':'doctor','🎨':'painting','🧩':'puzzle','🎮':'video game','🔤':'alphabet letters','🔢':'numbers','🧠':'smart thinking','⚡':'action adventure','🎯':'target'};
+const AR_EN={'أرنب':'rabbit','ارنب':'rabbit','ثعلب':'fox','سلحفاة':'turtle','سلحفاه':'turtle','غابة':'forest','غابه':'forest','شجرة':'tree','شجره':'tree','أشجار':'trees','فيل':'elephant','أسد':'lion','اسد':'lion','نمر':'tiger','دب':'bear','قطة':'cat','قطه':'cat','قط':'cat','كلب':'dog','فأر':'mouse','فار':'mouse','ضفدع':'frog','قرد':'monkey','زرافة':'giraffe','جمل':'camel','حصان':'horse','خروف':'sheep','بقرة':'cow','دجاجة':'chicken','بطة':'duck','بومة':'owl','صقر':'falcon','عصفور':'little bird','طائر':'bird','سمكة':'fish','دلفين':'dolphin','حوت':'whale','فراشة':'butterfly','نحلة':'bee','نملة':'ant','نجمة':'star','نجمه':'star','نجوم':'stars','قمر':'moon','شمس':'sun','غيمة':'cloud','سحابة':'cloud','مطر':'rain','بحر':'sea','شاطئ':'beach','جبل':'mountain','صحراء':'desert','نخلة':'palm tree','وردة':'rose','زهرة':'flower','زهور':'flowers','تفاحة':'apple','موز':'banana','عنب':'grapes','جزر':'carrots','خبز':'bread','حليب':'milk','كعكة':'cake','هدية':'gift','بالون':'balloon','كرة':'ball','طائرة':'airplane','صاروخ':'rocket','سفينة':'ship','قارب':'boat','سيارة':'car','دراجة':'bicycle','بيت':'house','منزل':'house','مدرسة':'school','مدرستي':'school','مسجد':'mosque','كتاب':'book','قلم':'pencil','ولد':'boy','بنت':'girl','طفل':'child','أطفال':'children','اطفال':'children','أب':'father','أم':'mother','جد':'grandfather','جدة':'grandmother','أسرة':'family','اسرة':'family','أسرتي':'family at home','عائلة':'family','صديق':'friend','أصدقاء':'friends','معلم':'teacher','كنز':'treasure','مفتاح':'key','قصر':'palace','ملك':'king','أمير':'prince','أميرة':'princess','تنين':'dragon','سلة':'basket','حديقة':'garden','مزرعة':'farm','نهر':'river','ليل':'night','صباح':'morning','شتاء':'winter','صيف':'summer','ثلج':'snow','فضاء':'outer space','مجرة':'galaxy','كوكب':'planet','روبوت':'robot','صادق':'honest','شجاع':'brave','سعيد':'happy','حزين':'sad','وحيد':'lonely','مدينة':'city','مدينتي':'modern city','صحة':'health','صحتي':'healthy habits','سلامة':'safety','سلامتي':'safety','ألعاب':'games','ألعابي':'toys and games','هوايات':'hobbies','هواياتي':'hobbies','حروف':'letters','رياضيات':'math numbers','أكشن':'action adventure','ذكاء':'smart puzzle','مغامرة':'adventure'};
+const GSTYLE={anime:'anime style illustration, studio ghibli inspired, soft lighting',real:'realistic photo, natural lighting, high detail, cinematic',toon:'3D cartoon render, pixar style, cute characters, glossy'};
+function genWords(...texts){const out=[];const add=w=>{if(w&&!out.includes(w))out.push(w)};
+  texts.join(' ').replace(/[ً-ْٰـ]/g,'').split(/[\s،,.!?؟:؛"'()\-|]+/).forEach(w=>{if(!w)return;let k=w;
+    for(const t of [k,k.replace(/^(و|ف|ب|ل|ك)/,''),k.replace(/^ال/,''),k.replace(/^(و|ف|ب|ل|ك)ال/,''),k.replace(/^لل/,'')]){if(AR_EN[t]){add(AR_EN[t]);break}}});
+  for(const ch of Array.from(texts.join(' ')))if(EMO_EN[ch])add(EMO_EN[ch]);
+  for(const e in EMO_EN)if(e.length>1&&texts.join(' ').includes(e))add(EMO_EN[e]);
+  return out.slice(0,8)}
+function genBox(kind){window._genImg=null;window._genKind=kind;return {type:'html',html:`<div class="gen-box"><b>🎨 صمّم الغلاف بالذكاء الاصطناعي</b>
+  <div class="row"><select class="input" id="gen_style" style="flex:1;min-width:120px"><option value="anime">✨ أنمي</option><option value="real">📷 واقعية</option><option value="toon">🧸 كرتون ثلاثي الأبعاد</option></select></div>
+  <input class="input" id="gen_desc" placeholder="وصف إضافي (اختياري)، مثال: أرنب وثعلب في الغابة">
+  <div class="row"><a class="btn grape" href="https://chatgpt.com/" target="_blank" rel="noopener" onclick="this.href='https://chatgpt.com/?q='+encodeURIComponent(aiPrompt())">🎨 افتح ChatGPT بالوصف الجاهز</a><button type="button" class="btn ghost sm" onclick="copyPrompt()">📋 نسخ الوصف</button></div>
+  <small class="muted">بعد ما يرسم الصورة: احفظها في جوالك، ثم ارفعها من الخانة تحت 👇</small>
+  <label class="f" style="font-weight:700">المكتوب أسفل الغلاف<select class="input" id="gen_brand"><option value="both">⭐ فصل الأبطال · أ. مصطفى الهتلان</option><option value="class">⭐ فصل الأبطال</option><option value="teacher">⭐ أ. مصطفى الهتلان</option><option value="none">بدون كتابة</option></select></label></div>`}}
+function aiPrompt(){const val=id=>{const e=$('#'+id);return e?e.value:''};const kind=window._genKind;
+  const words=genWords(val('fm_title'),val('fm_pages'),val('fm_desc'),val('fm_icon'),val('fm_cover'),val('gen_desc'),kind==='unit'?(window._genUnit||''):'');
+  const st=GSTYLE[val('gen_style')]||GSTYLE.anime;
+  const subj=words.length?words.join(', '):(kind==='story'?'children reading a magical storybook':kind==='game'?'colorful fun educational game for kids':'happy kids learning');
+  const what=kind==='story'?"children's storybook cover":kind==='game'?'video game cover art for kids':'wide banner illustration for a first grade classroom unit';
+  const ratio=kind==='unit'?'wide 16:7 landscape':'4:3 landscape';const extra=val('gen_desc');
+  return `Generate an image: ${st}, ${what}, ${subj}${extra?`, scene idea (Arabic): ${extra}`:''}, cheerful, bright soft colors, kid friendly, ${ratio}, no text, no letters, no words.`}
+function copyPrompt(){const t=aiPrompt();const ok=()=>toast('📋 نُسخ الوصف، الصقه في ChatGPT أو Gemini');
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,()=>prompt('انسخ الوصف:',t));else prompt('انسخ الوصف:',t)}
+function brandText(){const b=($('#gen_brand')||{}).value||'both';return b==='both'?'فصل الأبطال · أ. مصطفى الهتلان':b==='class'?'فصل الأبطال':b==='teacher'?'أ. مصطفى الهتلان':''}
+async function brandStamp(src,txt){if(!txt)return src;const im=new Image();im.src=src;await im.decode();
+  const c=document.createElement('canvas');c.width=im.width;c.height=im.height;const g=c.getContext('2d');g.drawImage(im,0,0);
+  const H=c.height,bh=Math.max(34,Math.round(Math.min(H,c.width*.75)*.13));
+  const gr=g.createLinearGradient(0,H-bh*1.7,0,H);gr.addColorStop(0,'rgba(10,16,40,0)');gr.addColorStop(.45,'rgba(10,16,40,.55)');gr.addColorStop(1,'rgba(10,16,40,.88)');g.fillStyle=gr;g.fillRect(0,H-bh*1.7,c.width,bh*1.7);
+  let fs=Math.round(bh*.5);try{await document.fonts.load(`800 ${fs}px "Baloo Bhaijaan 2"`)}catch(e){}
+  const t='⭐ '+txt+' ⭐';g.direction='rtl';g.textAlign='center';g.textBaseline='middle';
+  do{g.font=`800 ${fs}px "Baloo Bhaijaan 2","Tajawal",sans-serif`;if(g.measureText(t).width<c.width*.92)break;fs-=2}while(fs>10);
+  g.lineWidth=Math.max(2,fs*.12);g.strokeStyle='rgba(0,0,0,.55)';g.strokeText(t,c.width/2,H-bh*.55);g.fillStyle='#FFD45E';g.fillText(t,c.width/2,H-bh*.55);
+  return c.toDataURL('image/jpeg',.86)}
+async function coverFrom(file,max){const d=await readImg(file,max);return brandStamp(d,brandText())}
 const STORY_TXT={
   rabbit:[['🐰🥕','كَانَ أَرْنَبٌ صَغِيرٌ يُحِبُّ الْجَزَرَ.'],['🐰🧺🦊','وَجَدَ الْأَرْنَبُ سَلَّةً فِيهَا جَزَرٌ لِلثَّعْلَبِ.'],['🐰🤝🦊','أَعَادَ الْأَرْنَبُ السَّلَّةَ إِلَى الثَّعْلَبِ.'],['🦊💛🐰','فَرِحَ الثَّعْلَبُ وَقَالَ: شُكْرًا يَا صَادِقُ!']],
   star:[['⭐🌙','فِي السَّمَاءِ نَجْمَةٌ وَحِيدَةٌ.'],['⭐☁️','سَأَلَتِ النَّجْمَةُ الْغَيْمَةَ: هَلْ تَلْعَبِينَ مَعِي؟'],['⭐🌙✨','فَجَاءَ الْقَمَرُ، وَصَارَا صَدِيقَيْنِ.']]};
@@ -469,6 +507,7 @@ function confirmBox(msg,fn){window._cf=fn;modal(`<h3>${esc(msg)}</h3><div class=
 function form(title,fields,onSubmit){
   window._fs=onSubmit;
   const f=fields.map(x=>{
+    if(x.type==='html')return x.html;
     const id='fm_'+x.k;
     if(x.type==='select')return `<label class="f">${x.label}<select class="input" id="${id}">${x.options.map(o=>`<option value="${esc(o[0])}" ${o[0]==x.value?'selected':''}>${esc(o[1])}</option>`).join('')}</select></label>`;
     if(x.type==='textarea')return `<label class="f">${x.label}<textarea class="input" id="${id}" rows="${x.rows||4}" placeholder="${esc(x.ph||'')}">${esc(x.value||'')}</textarea></label>`;
@@ -477,7 +516,7 @@ function form(title,fields,onSubmit){
   }).join('');
   modal(`<div class="modal-h"><h3>${title}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
   <form id="fm" style="display:grid;gap:12px">${f}<div class="err" id="fm_err"></div><button class="btn green" type="submit">حفظ</button></form>`);
-  $('#fm').onsubmit=async e=>{e.preventDefault();const v={};for(const x of fields){const el=$('#fm_'+x.k);v[x.k]=x.type==='file'?el.files[0]:el.value.trim()}
+  $('#fm').onsubmit=async e=>{e.preventDefault();const v={};for(const x of fields){if(x.type==='html')continue;const el=$('#fm_'+x.k);v[x.k]=x.type==='file'?el.files[0]:el.value.trim()}
     const r=await window._fs(v);if(typeof r==='string'){$('#fm_err').textContent=r;return}closeLayer();render()};
 }
 function safeUrl(u){try{const x=new URL(u,location.href);return ['http:','https:'].includes(x.protocol)?x.href:'#'}catch(e){return '#'}}
@@ -646,10 +685,10 @@ function sortGames(cat,focus){if(!gcatById(cat)){const g=D.games.find(x=>x.id===
 function moveGame(id,d){const g=D.games.find(x=>x.id===id);if(!g)return;const c=gcatOf(g);const same=D.games.map((x,i)=>[x,i]).filter(([x])=>gcatOf(x)===c);const k=same.findIndex(([x])=>x===g),t=same[k+d];if(!t)return;
   const i=same[k][1],j=t[1];[D.games[i],D.games[j]]=[D.games[j],D.games[i]];save();render()}
 const catOpts=()=>[...gcats().map(c=>[c.id,`${c.icon} ${c.name}`]),['','🎲 بدون قسم']];
-function addGame(){form('🎮 إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:S.ui.gc||gcats()[0]?.id||''},{k:'icon',label:'أيقونة اللعبة (رمز تعبيري)',value:'🎮'},{k:'desc',label:'وصف قصير يشوّق الطفل'},{k:'cover',label:'🖼️ صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'file',label:'📁 ملف اللعبة (HTML) — الطريقة المستحسنة',type:'file',accept:'.html,.htm,text/html'},{k:'ww',label:'🟣 أو لعبة من Wordwall: الصق كود التضمين أو الرابط',type:'textarea',rows:3,ph:'<iframe src="https://wordwall.net/embed/..."'},{k:'url',label:'أو رابط لعبة أخرى (لا تُسجَّل نتائجه)',type:'url',ph:'https://...'}],async v=>{
+function addGame(){form('🎮 إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:S.ui.gc||gcats()[0]?.id||''},{k:'icon',label:'أيقونة اللعبة (رمز تعبيري)',value:'🎮'},{k:'desc',label:'وصف قصير يشوّق الطفل'},genBox('game'),{k:'cover',label:'📁 ارفع صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'file',label:'📁 ملف اللعبة (HTML) — الطريقة المستحسنة',type:'file',accept:'.html,.htm,text/html'},{k:'ww',label:'🟣 أو لعبة من Wordwall: الصق كود التضمين أو الرابط',type:'textarea',rows:3,ph:'<iframe src="https://wordwall.net/embed/..."'},{k:'url',label:'أو رابط لعبة أخرى (لا تُسجَّل نتائجه)',type:'url',ph:'https://...'}],async v=>{
   if(!v.title)return 'اكتب اسم اللعبة';if(!v.file&&!v.url&&!v.ww)return 'اختر ملف اللعبة أو الصق رابطها';
   const id=uid(),c=gcatById(v.cat),color=c?c.color:COLORS[rnd(COLORS.length)];let cover='';
-  if(v.cover){try{cover=await readImg(v.cover,640)}catch(e){return 'تعذّرت قراءة صورة الغلاف'}}
+  if(v.cover){try{cover=await coverFrom(v.cover,640)}catch(e){return 'تعذّرت قراءة صورة الغلاف'}}
   const base={id,title:v.title,icon:v.icon||'🎮',desc:v.desc,cat:v.cat,cover,color,t:Date.now()};
   if(v.file){if(v.file.size>20e6)return 'الملف كبير جداً (الحد 20MB)';let txt='';try{txt=await v.file.text()}catch(e){return 'تعذّرت قراءة الملف'}
     if(!/<html|<!doctype|<script|<body/i.test(txt))return 'هذا ليس ملف لعبة HTML';
@@ -659,9 +698,9 @@ function addGame(){form('🎮 إضافة لعبة جديدة',[{k:'title',label:
   if(v.ww){const w=wwEmbed(v.ww);if(!w)return 'هذا ليس رابط Wordwall صحيحاً';if(base.icon==='🎮')base.icon='🟣';D.games.push(Object.assign(base,w));save();toast(w.kind==='embed'?'✅ أُضيفت لعبة Wordwall وتفتح داخل المنصة':'أُضيفت. للعب داخل المنصة استخدم «كود التضمين» من Wordwall');return}
   if(!/^https:\/\//.test(v.url))return 'الرابط يجب أن يبدأ بـ https://';const w2=wwEmbed(v.url);D.games.push(Object.assign(base,w2||{kind:'link',url:v.url}));save();toast('تمت إضافة اللعبة')})}
 function editGame(id){const g=D.games.find(x=>x.id===id);if(!g)return;
-  form('✏️ تعديل اللعبة',[{k:'title',label:'اسم اللعبة',value:g.title},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:gcatOf(g)},{k:'icon',label:'أيقونة اللعبة',value:g.icon},{k:'desc',label:'وصف قصير',value:g.desc||''},{k:'cover',label:g.cover?'🖼️ تغيير صورة الغلاف':'🖼️ صورة الغلاف',type:'file',accept:'image/*'},...(g.cover?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة واستخدام الأيقونة']]}]:[]),{k:'color',label:'لون البطاقة',type:'select',options:CNAMES,value:g.color}],async v=>{
+  form('✏️ تعديل اللعبة',[{k:'title',label:'اسم اللعبة',value:g.title},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:gcatOf(g)},{k:'icon',label:'أيقونة اللعبة',value:g.icon},{k:'desc',label:'وصف قصير',value:g.desc||''},genBox('game'),{k:'cover',label:g.cover?'📁 ارفع صورة غلاف جديدة':'📁 ارفع صورة الغلاف',type:'file',accept:'image/*'},...(g.cover?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة واستخدام الأيقونة']]}]:[]),{k:'color',label:'لون البطاقة',type:'select',options:CNAMES,value:g.color}],async v=>{
     if(!v.title)return 'اكتب اسم اللعبة';let cover=g.cover||'';if(v.rm==='1')cover='';
-    if(v.cover){try{cover=await readImg(v.cover,640)}catch(e){return 'تعذّرت قراءة الصورة'}}
+    if(v.cover){try{cover=await coverFrom(v.cover,640)}catch(e){return 'تعذّرت قراءة الصورة'}}
     Object.assign(g,{title:v.title,cat:v.cat,icon:v.icon||'🎮',desc:v.desc,cover,color:v.color||g.color});save();toast('تم حفظ اللعبة ✅')})}
 function manageCats(){const cats=gcats();
   modal(`<div class="modal-h"><h3>🗂️ أقسام الألعاب</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
@@ -809,9 +848,9 @@ function vLetters(){
   </section>`}).join('')}`;
 }
 function unitCover(name){const key='_ucover_'+name,cv=D.custom&&D.custom[key];
-  form('🖼️ غلاف وحدة '+name,[{k:'img',label:'ارفع صورة الغلاف (واقعية أو أنمي)',type:'file',accept:'image/*'},...(cv?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الغلاف'],['1','حذف الغلاف']]}]:[])],async v=>{
+  window._genUnit=name;form('🖼️ غلاف وحدة '+name,[genBox('unit'),{k:'img',label:'📁 ارفع صورة الغلاف',type:'file',accept:'image/*'},...(cv?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الغلاف'],['1','حذف الغلاف']]}]:[])],async v=>{
     if(v.rm==='1'){const c=Object.assign({},D.custom);delete c[key];D.custom=c;save();toast('حُذف الغلاف');return}
-    if(!v.img)return 'اختر صورة';let img='';try{img=await readImg(v.img,900)}catch(e){return 'تعذّرت قراءة الصورة'}
+    if(!v.img)return 'اختر صورة الغلاف من جهازك';let img='';if(v.img){try{img=await coverFrom(v.img,1000)}catch(e){return 'تعذّرت قراءة الصورة'}}
     D.custom=Object.assign({},D.custom||{},{[key]:img});save();toast('✅ أُضيف غلاف الوحدة')})}
 function letterPage(l){
   const idx=ALL_L.findIndex(x=>x.l===l),u=ALL_L[idx].u,prev=ALL_L[idx-1],next=ALL_L[idx+1],f=lForms(l),vids=lVideos(l),w=LWORD[l];
@@ -847,15 +886,15 @@ function vEnrich(){
     <div class="row"><button class="btn sm" style="background:var(--teal)" onclick="readStory('${st.id}',0)">اقرأ القصة</button>${isAdmin()?`<button class="btn sm ghost" onclick="editStory('${st.id}')">✏️ تعديل</button>`:''}${delBtn(`confirmBox('حذف القصة؟',()=>{D.stories=D.stories.filter(s=>s.id!=='${st.id}');save();render()})`)}</div></div></div>`).join('')}</div>`;
 }
 function editStory(id){const st=D.stories.find(x=>x.id===id);if(!st)return;
-  form('✏️ تعديل القصة',[{k:'title',label:'عنوان القصة (بالتشكيل)',value:st.title},{k:'cover',label:'رمز الغلاف',value:st.cover||'📕'},{k:'img',label:st.img?'🖼️ تغيير صورة الغلاف':'🖼️ صورة الغلاف',type:'file',accept:'image/*'},...(st.img?[{k:'rm',label:'الصورة الحالية',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة']]}]:[]),{k:'pages',label:'الصفحات بالتشكيل الكامل: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:8,value:st.pages.map(p=>p[0]+' | '+p[1]).join('\n')}],async v=>{
+  form('✏️ تعديل القصة',[{k:'title',label:'عنوان القصة (بالتشكيل)',value:st.title},genBox('story'),{k:'cover',label:'رمز الغلاف',value:st.cover||'📕'},{k:'img',label:st.img?'🖼️ تغيير صورة الغلاف':'🖼️ صورة الغلاف',type:'file',accept:'image/*'},...(st.img?[{k:'rm',label:'الصورة الحالية',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة']]}]:[]),{k:'pages',label:'الصفحات بالتشكيل الكامل: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:8,value:st.pages.map(p=>p[0]+' | '+p[1]).join('\n')}],async v=>{
     const pages=v.pages.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(x=>x[1]);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';
-    let img=st.img||'';if(v.rm==='1')img='';if(v.img){try{img=await readImg(v.img,800)}catch(e){return 'تعذّرت قراءة الصورة'}}
+    let img=st.img||'';if(v.rm==='1')img='';if(v.img){try{img=await coverFrom(v.img,800)}catch(e){return 'تعذّرت قراءة الصورة'}}
     Object.assign(st,{title:v.title,cover:v.cover||'📕',img,pages});save();toast('حُفظت القصة ✅')})}
 function readStory(id,p){const st=D.stories.find(x=>x.id===id);const pg=st.pages[p];
   modal(`<div class="modal-h"><h3>${esc(st.title)}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
   <div class="story"><div class="scene">${esc(pg[0])}</div><p>${esc(pg[1])}</p><div class="dots">${st.pages.map((_,i)=>`<i class="${i===p?'on':''}"></i>`).join('')}</div>
   <div class="row">${p>0?`<button class="btn ghost" onclick="readStory('${id}',${p-1})">→ السابق</button>`:''}${p<st.pages.length-1?`<button class="btn" onclick="readStory('${id}',${p+1})">التالي ←</button>`:`<button class="btn green" onclick="closeLayer()">انتهت القصة 🎉</button>`}</div></div>`)}
-function addStory(){form('إضافة قصة مصوّرة',[{k:'title',label:'عنوان القصة'},{k:'cover',label:'رمز الغلاف',value:'📕'},{k:'img',label:'صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'pages',label:'الصفحات بالتشكيل الكامل حتى آخر حرف: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:6,ph:'🐢🌳 | خرجت السلحفاة إلى الغابة\n🐢🐇 | قابلت الأرنب'}],async v=>{const pages=v.pages.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(x=>x[1]);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';D.stories.unshift({id:uid(),title:v.title,cover:v.cover||'📕',img:await readImg(v.img,500),pages});save();toast('أُضيفت القصة')})}
+function addStory(){form('إضافة قصة مصوّرة',[{k:'title',label:'عنوان القصة (بالتشكيل)'},genBox('story'),{k:'cover',label:'رمز الغلاف',value:'📕'},{k:'img',label:'صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'pages',label:'الصفحات بالتشكيل الكامل حتى آخر حرف: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:6,ph:'🐢🌳 | خرجت السلحفاة إلى الغابة\n🐢🐇 | قابلت الأرنب'}],async v=>{const pages=v.pages.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(x=>x[1]);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';D.stories.unshift({id:uid(),title:v.title,cover:v.cover||'📕',img:v.img?await coverFrom(v.img,800):'',pages});save();toast('أُضيفت القصة')})}
 
 /* Heroes */
 function vHeroes(){
