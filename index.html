@@ -224,6 +224,11 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .st-card .gc-cover{aspect-ratio:4/3}
 .gen-box{display:grid;gap:8px;padding:12px;border-radius:16px;background:color-mix(in srgb,var(--grape) 10%,var(--surface));border:2px dashed color-mix(in srgb,var(--grape) 40%,transparent)}
 .gen-prev img{width:100%;border-radius:12px;display:block;margin-bottom:6px}
+.paste-zone{min-height:64px;border:2px dashed var(--line);border-radius:14px;background:var(--surface);padding:10px;color:transparent;caret-color:transparent;position:relative;cursor:text}
+.paste-zone:empty::before{content:attr(data-ph);color:var(--muted);font-size:14px;font-weight:700}
+.paste-zone:focus{border-color:var(--grape)}
+.pz-img{width:100%;border-radius:12px;display:block;margin-bottom:6px}
+.story-img{width:100%;max-height:42vh;object-fit:cover;border-radius:18px}
 .tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
 .sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .sec-head h3{font-size:22px}
@@ -402,12 +407,19 @@ function genWords(...texts){const out=[];const add=w=>{if(w&&!out.includes(w))ou
   for(const ch of Array.from(texts.join(' ')))if(EMO_EN[ch])add(EMO_EN[ch]);
   for(const e in EMO_EN)if(e.length>1&&texts.join(' ').includes(e))add(EMO_EN[e]);
   return out.slice(0,8)}
-function genBox(kind){window._genImg=null;window._genKind=kind;return {type:'html',html:`<div class="gen-box"><b>🎨 صمّم الغلاف بالذكاء الاصطناعي</b>
+function genBox(kind){window._genImg=null;window._pasteImg=null;window._genKind=kind;return {type:'html',html:`<div class="gen-box"><b>🎨 صمّم الغلاف بالذكاء الاصطناعي</b>
   <div class="row"><select class="input" id="gen_style" style="flex:1;min-width:120px"><option value="anime">✨ أنمي</option><option value="real">📷 واقعية</option><option value="toon">🧸 كرتون ثلاثي الأبعاد</option></select></div>
   <input class="input" id="gen_desc" placeholder="وصف إضافي (اختياري)، مثال: أرنب وثعلب في الغابة">
   <div class="row"><a class="btn grape" href="https://chatgpt.com/" target="_blank" rel="noopener" onclick="this.href='https://chatgpt.com/?q='+encodeURIComponent(aiPrompt())">🎨 افتح ChatGPT بالوصف الجاهز</a><button type="button" class="btn ghost sm" onclick="copyPrompt()">📋 نسخ الوصف</button></div>
-  <small class="muted">بعد ما يرسم الصورة: احفظها في جوالك، ثم ارفعها من الخانة تحت 👇</small>
+  <div class="paste-zone" id="pz" contenteditable="true" onpaste="onPasteImg(event)" oninput="this.innerHTML=''" data-ph="📋 بعد ما يرسمها: انسخ الصورة، ثم اضغط هنا مطوّلاً واختر «لصق»"></div>
+  <button type="button" class="btn ghost" onclick="readClipImg()">📋 لصق الصورة المنسوخة</button>
+  <div id="pz_prev"></div>
   <label class="f" style="font-weight:700">المكتوب أسفل الغلاف<select class="input" id="gen_brand"><option value="both">⭐ فصل الأبطال · أ. مصطفى الهتلان</option><option value="class">⭐ فصل الأبطال</option><option value="teacher">⭐ أ. مصطفى الهتلان</option><option value="none">بدون كتابة</option></select></label></div>`}}
+function setPaste(blob){window._pasteImg=blob;const pv=$('#pz_prev');if(pv){const u=URL.createObjectURL(blob);pv.innerHTML=`<img src="${u}" alt="" class="pz-img"><span class="pill ok">✅ سيُستخدم هذا الغلاف عند الحفظ</span>`}const z=$('#pz');if(z)z.innerHTML='';sfx('good')}
+function onPasteImg(e){e.preventDefault();const items=(e.clipboardData&&e.clipboardData.items)||[];for(const it of items){if(it.type&&it.type.startsWith('image/')){const f=it.getAsFile();if(f)return setPaste(f)}}
+  const fs=(e.clipboardData&&e.clipboardData.files)||[];for(const f of fs)if(f.type.startsWith('image/'))return setPaste(f);toast('ما لقيت صورة منسوخة. انسخ الصورة أولاً ثم الصقها')}
+async function readClipImg(){try{if(!navigator.clipboard||!navigator.clipboard.read)throw 0;const items=await navigator.clipboard.read();for(const it of items){const t=it.types.find(x=>x.startsWith('image/'));if(t)return setPaste(await it.getType(t))}toast('ما لقيت صورة منسوخة. انسخ الصورة أولاً')}
+  catch(e){toast('اضغط مطوّلاً على المربع واختر «لصق»');const z=$('#pz');if(z)z.focus()}}
 function aiPrompt(){const val=id=>{const e=$('#'+id);return e?e.value:''};const kind=window._genKind;
   const words=genWords(val('fm_title'),val('fm_pages'),val('fm_desc'),val('fm_icon'),val('fm_cover'),val('gen_desc'),kind==='unit'?(window._genUnit||''):'');
   const st=GSTYLE[val('gen_style')]||GSTYLE.anime;
@@ -426,7 +438,7 @@ async function brandStamp(src,txt){if(!txt)return src;const im=new Image();im.sr
   const t='⭐ '+txt+' ⭐';g.direction='rtl';g.textAlign='center';g.textBaseline='middle';
   do{g.font=`800 ${fs}px "Baloo Bhaijaan 2","Tajawal",sans-serif`;if(g.measureText(t).width<c.width*.92)break;fs-=2}while(fs>10);
   g.lineWidth=Math.max(2,fs*.12);g.strokeStyle='rgba(0,0,0,.55)';g.strokeText(t,c.width/2,H-bh*.55);g.fillStyle='#FFD45E';g.fillText(t,c.width/2,H-bh*.55);
-  return c.toDataURL('image/jpeg',.86)}
+  return smallURL(c)}
 async function coverFrom(file,max){const d=await readImg(file,max);return brandStamp(d,brandText())}
 const STORY_TXT={
   rabbit:[['🐰🥕','كَانَ أَرْنَبٌ صَغِيرٌ يُحِبُّ الْجَزَرَ.'],['🐰🧺🦊','وَجَدَ الْأَرْنَبُ سَلَّةً فِيهَا جَزَرٌ لِلثَّعْلَبِ.'],['🐰🤝🦊','أَعَادَ الْأَرْنَبُ السَّلَّةَ إِلَى الثَّعْلَبِ.'],['🦊💛🐰','فَرِحَ الثَّعْلَبُ وَقَالَ: شُكْرًا يَا صَادِقُ!']],
@@ -516,12 +528,13 @@ function form(title,fields,onSubmit){
   }).join('');
   modal(`<div class="modal-h"><h3>${title}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
   <form id="fm" style="display:grid;gap:12px">${f}<div class="err" id="fm_err"></div><button class="btn green" type="submit">حفظ</button></form>`);
-  $('#fm').onsubmit=async e=>{e.preventDefault();const v={};for(const x of fields){if(x.type==='html')continue;const el=$('#fm_'+x.k);v[x.k]=x.type==='file'?el.files[0]:el.value.trim()}
+  $('#fm').onsubmit=async e=>{e.preventDefault();const v={};for(const x of fields){if(x.type==='html')continue;const el=$('#fm_'+x.k);v[x.k]=x.type==='file'?(el.files[0]||(x.paste&&window._pasteImg)||undefined):el.value.trim()}
     const r=await window._fs(v);if(typeof r==='string'){$('#fm_err').textContent=r;return}closeLayer();render()};
 }
 function safeUrl(u){try{const x=new URL(u,location.href);return ['http:','https:'].includes(x.protocol)?x.href:'#'}catch(e){return '#'}}
 function platform(u){return /youtu/.test(u)?['yt','يوتيوب']:/tiktok/.test(u)?['tt','تيك توك']:['ot','رابط']}
-function readImg(file,max=420){return new Promise((res,rej)=>{if(!file)return res('');const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',.8))};im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(file)})}
+function smallURL(c){const j=c.toDataURL('image/jpeg',.72);let w='';try{w=c.toDataURL('image/webp',.7)}catch(e){}return w.startsWith('data:image/webp')&&w.length<j.length?w:j}
+function readImg(file,max=420){return new Promise((res,rej)=>{if(!file)return res('');const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height));const c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);res(smallURL(c))};im.onerror=rej;im.src=fr.result};fr.onerror=rej;fr.readAsDataURL(file)})}
 function notify(text,go){D.notifs.unshift({id:uid(),t:Date.now(),read:false,text,go})}
 
 /* ---------- Login ---------- */
@@ -685,10 +698,10 @@ function sortGames(cat,focus){if(!gcatById(cat)){const g=D.games.find(x=>x.id===
 function moveGame(id,d){const g=D.games.find(x=>x.id===id);if(!g)return;const c=gcatOf(g);const same=D.games.map((x,i)=>[x,i]).filter(([x])=>gcatOf(x)===c);const k=same.findIndex(([x])=>x===g),t=same[k+d];if(!t)return;
   const i=same[k][1],j=t[1];[D.games[i],D.games[j]]=[D.games[j],D.games[i]];save();render()}
 const catOpts=()=>[...gcats().map(c=>[c.id,`${c.icon} ${c.name}`]),['','🎲 بدون قسم']];
-function addGame(){form('🎮 إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:S.ui.gc||gcats()[0]?.id||''},{k:'icon',label:'أيقونة اللعبة (رمز تعبيري)',value:'🎮'},{k:'desc',label:'وصف قصير يشوّق الطفل'},genBox('game'),{k:'cover',label:'📁 ارفع صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'file',label:'📁 ملف اللعبة (HTML) — الطريقة المستحسنة',type:'file',accept:'.html,.htm,text/html'},{k:'ww',label:'🟣 أو لعبة من Wordwall: الصق كود التضمين أو الرابط',type:'textarea',rows:3,ph:'<iframe src="https://wordwall.net/embed/..."'},{k:'url',label:'أو رابط لعبة أخرى (لا تُسجَّل نتائجه)',type:'url',ph:'https://...'}],async v=>{
+function addGame(){form('🎮 إضافة لعبة جديدة',[{k:'title',label:'اسم اللعبة'},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:S.ui.gc||gcats()[0]?.id||''},{k:'icon',label:'أيقونة اللعبة (رمز تعبيري)',value:'🎮'},{k:'desc',label:'وصف قصير يشوّق الطفل'},genBox('game'),{k:'cover',label:'📁 ارفع صورة الغلاف (اختياري)',type:'file',accept:'image/*',paste:true},{k:'file',label:'📁 ملف اللعبة (HTML) — الطريقة المستحسنة',type:'file',accept:'.html,.htm,text/html'},{k:'ww',label:'🟣 أو لعبة من Wordwall: الصق كود التضمين أو الرابط',type:'textarea',rows:3,ph:'<iframe src="https://wordwall.net/embed/..."'},{k:'url',label:'أو رابط لعبة أخرى (لا تُسجَّل نتائجه)',type:'url',ph:'https://...'}],async v=>{
   if(!v.title)return 'اكتب اسم اللعبة';if(!v.file&&!v.url&&!v.ww)return 'اختر ملف اللعبة أو الصق رابطها';
   const id=uid(),c=gcatById(v.cat),color=c?c.color:COLORS[rnd(COLORS.length)];let cover='';
-  if(v.cover){try{cover=await coverFrom(v.cover,640)}catch(e){return 'تعذّرت قراءة صورة الغلاف'}}
+  if(v.cover){try{cover=await coverFrom(v.cover,560)}catch(e){return 'تعذّرت قراءة صورة الغلاف'}}
   const base={id,title:v.title,icon:v.icon||'🎮',desc:v.desc,cat:v.cat,cover,color,t:Date.now()};
   if(v.file){if(v.file.size>20e6)return 'الملف كبير جداً (الحد 20MB)';let txt='';try{txt=await v.file.text()}catch(e){return 'تعذّرت قراءة الملف'}
     if(!/<html|<!doctype|<script|<body/i.test(txt))return 'هذا ليس ملف لعبة HTML';
@@ -698,9 +711,9 @@ function addGame(){form('🎮 إضافة لعبة جديدة',[{k:'title',label:
   if(v.ww){const w=wwEmbed(v.ww);if(!w)return 'هذا ليس رابط Wordwall صحيحاً';if(base.icon==='🎮')base.icon='🟣';D.games.push(Object.assign(base,w));save();toast(w.kind==='embed'?'✅ أُضيفت لعبة Wordwall وتفتح داخل المنصة':'أُضيفت. للعب داخل المنصة استخدم «كود التضمين» من Wordwall');return}
   if(!/^https:\/\//.test(v.url))return 'الرابط يجب أن يبدأ بـ https://';const w2=wwEmbed(v.url);D.games.push(Object.assign(base,w2||{kind:'link',url:v.url}));save();toast('تمت إضافة اللعبة')})}
 function editGame(id){const g=D.games.find(x=>x.id===id);if(!g)return;
-  form('✏️ تعديل اللعبة',[{k:'title',label:'اسم اللعبة',value:g.title},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:gcatOf(g)},{k:'icon',label:'أيقونة اللعبة',value:g.icon},{k:'desc',label:'وصف قصير',value:g.desc||''},genBox('game'),{k:'cover',label:g.cover?'📁 ارفع صورة غلاف جديدة':'📁 ارفع صورة الغلاف',type:'file',accept:'image/*'},...(g.cover?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة واستخدام الأيقونة']]}]:[]),{k:'color',label:'لون البطاقة',type:'select',options:CNAMES,value:g.color}],async v=>{
+  form('✏️ تعديل اللعبة',[{k:'title',label:'اسم اللعبة',value:g.title},{k:'cat',label:'القسم',type:'select',options:catOpts(),value:gcatOf(g)},{k:'icon',label:'أيقونة اللعبة',value:g.icon},{k:'desc',label:'وصف قصير',value:g.desc||''},genBox('game'),{k:'cover',label:g.cover?'📁 ارفع صورة غلاف جديدة':'📁 ارفع صورة الغلاف',type:'file',accept:'image/*',paste:true},...(g.cover?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة واستخدام الأيقونة']]}]:[]),{k:'color',label:'لون البطاقة',type:'select',options:CNAMES,value:g.color}],async v=>{
     if(!v.title)return 'اكتب اسم اللعبة';let cover=g.cover||'';if(v.rm==='1')cover='';
-    if(v.cover){try{cover=await coverFrom(v.cover,640)}catch(e){return 'تعذّرت قراءة الصورة'}}
+    if(v.cover){try{cover=await coverFrom(v.cover,560)}catch(e){return 'تعذّرت قراءة الصورة'}}
     Object.assign(g,{title:v.title,cat:v.cat,icon:v.icon||'🎮',desc:v.desc,cover,color:v.color||g.color});save();toast('تم حفظ اللعبة ✅')})}
 function manageCats(){const cats=gcats();
   modal(`<div class="modal-h"><h3>🗂️ أقسام الألعاب</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
@@ -848,9 +861,9 @@ function vLetters(){
   </section>`}).join('')}`;
 }
 function unitCover(name){const key='_ucover_'+name,cv=D.custom&&D.custom[key];
-  window._genUnit=name;form('🖼️ غلاف وحدة '+name,[genBox('unit'),{k:'img',label:'📁 ارفع صورة الغلاف',type:'file',accept:'image/*'},...(cv?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الغلاف'],['1','حذف الغلاف']]}]:[])],async v=>{
+  window._genUnit=name;form('🖼️ غلاف وحدة '+name,[genBox('unit'),{k:'img',label:'📁 ارفع صورة الغلاف',type:'file',accept:'image/*',paste:true},...(cv?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الغلاف'],['1','حذف الغلاف']]}]:[])],async v=>{
     if(v.rm==='1'){const c=Object.assign({},D.custom);delete c[key];D.custom=c;save();toast('حُذف الغلاف');return}
-    if(!v.img)return 'اختر صورة الغلاف من جهازك';let img='';if(v.img){try{img=await coverFrom(v.img,1000)}catch(e){return 'تعذّرت قراءة الصورة'}}
+    if(!v.img)return 'ارفع صورة الغلاف أو الصقها';let img='';if(v.img){try{img=await coverFrom(v.img,800)}catch(e){return 'تعذّرت قراءة الصورة'}}
     D.custom=Object.assign({},D.custom||{},{[key]:img});save();toast('✅ أُضيف غلاف الوحدة')})}
 function letterPage(l){
   const idx=ALL_L.findIndex(x=>x.l===l),u=ALL_L[idx].u,prev=ALL_L[idx-1],next=ALL_L[idx+1],f=lForms(l),vids=lVideos(l),w=LWORD[l];
@@ -886,15 +899,16 @@ function vEnrich(){
     <div class="row"><button class="btn sm" style="background:var(--teal)" onclick="readStory('${st.id}',0)">اقرأ القصة</button>${isAdmin()?`<button class="btn sm ghost" onclick="editStory('${st.id}')">✏️ تعديل</button>`:''}${delBtn(`confirmBox('حذف القصة؟',()=>{D.stories=D.stories.filter(s=>s.id!=='${st.id}');save();render()})`)}</div></div></div>`).join('')}</div>`;
 }
 function editStory(id){const st=D.stories.find(x=>x.id===id);if(!st)return;
-  form('✏️ تعديل القصة',[{k:'title',label:'عنوان القصة (بالتشكيل)',value:st.title},genBox('story'),{k:'cover',label:'رمز الغلاف',value:st.cover||'📕'},{k:'img',label:st.img?'🖼️ تغيير صورة الغلاف':'🖼️ صورة الغلاف',type:'file',accept:'image/*'},...(st.img?[{k:'rm',label:'الصورة الحالية',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة']]}]:[]),{k:'pages',label:'الصفحات بالتشكيل الكامل: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:8,value:st.pages.map(p=>p[0]+' | '+p[1]).join('\n')}],async v=>{
-    const pages=v.pages.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(x=>x[1]);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';
-    let img=st.img||'';if(v.rm==='1')img='';if(v.img){try{img=await coverFrom(v.img,800)}catch(e){return 'تعذّرت قراءة الصورة'}}
+  form('✏️ تعديل القصة',[{k:'title',label:'عنوان القصة (بالتشكيل)',value:st.title},genBox('story'),{k:'cover',label:'رمز الغلاف',value:st.cover||'📕'},{k:'img',label:st.img?'🖼️ تغيير صورة الغلاف':'🖼️ صورة الغلاف',type:'file',accept:'image/*',paste:true},...(st.img?[{k:'rm',label:'الصورة الحالية',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة']]}]:[]),{k:'pages',label:'الصفحات بالتشكيل الكامل: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:8,value:st.pages.map(p=>p[0]+' | '+p[1]).join('\n')}],async v=>{
+    const pages=parsePages(v.pages);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';
+    let img=st.img||'';if(v.rm==='1')img='';if(v.img){try{img=await coverFrom(v.img,640)}catch(e){return 'تعذّرت قراءة الصورة'}}
     Object.assign(st,{title:v.title,cover:v.cover||'📕',img,pages});save();toast('حُفظت القصة ✅')})}
+function parsePages(t){return String(t||'').split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{const i=l.indexOf('|');return i>=0?[l.slice(0,i).trim(),l.slice(i+1).trim()]:['',l]}).filter(x=>x[1])}
 function readStory(id,p){const st=D.stories.find(x=>x.id===id);const pg=st.pages[p];
   modal(`<div class="modal-h"><h3>${esc(st.title)}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
-  <div class="story"><div class="scene">${esc(pg[0])}</div><p>${esc(pg[1])}</p><div class="dots">${st.pages.map((_,i)=>`<i class="${i===p?'on':''}"></i>`).join('')}</div>
+  <div class="story">${pg[0]?`<div class="scene">${esc(pg[0])}</div>`:st.img?`<img class="story-img" src="${st.img}" alt="">`:`<div class="scene">${esc(st.cover||'📖')}</div>`}<p>${esc(pg[1])}</p><div class="dots">${st.pages.map((_,i)=>`<i class="${i===p?'on':''}"></i>`).join('')}</div>
   <div class="row">${p>0?`<button class="btn ghost" onclick="readStory('${id}',${p-1})">→ السابق</button>`:''}${p<st.pages.length-1?`<button class="btn" onclick="readStory('${id}',${p+1})">التالي ←</button>`:`<button class="btn green" onclick="closeLayer()">انتهت القصة 🎉</button>`}</div></div>`)}
-function addStory(){form('إضافة قصة مصوّرة',[{k:'title',label:'عنوان القصة (بالتشكيل)'},genBox('story'),{k:'cover',label:'رمز الغلاف',value:'📕'},{k:'img',label:'صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'pages',label:'الصفحات بالتشكيل الكامل حتى آخر حرف: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:6,ph:'🐢🌳 | خرجت السلحفاة إلى الغابة\n🐢🐇 | قابلت الأرنب'}],async v=>{const pages=v.pages.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(x=>x[1]);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';D.stories.unshift({id:uid(),title:v.title,cover:v.cover||'📕',img:v.img?await coverFrom(v.img,800):'',pages});save();toast('أُضيفت القصة')})}
+function addStory(){form('إضافة قصة مصوّرة',[{k:'title',label:'عنوان القصة (بالتشكيل)'},genBox('story'),{k:'cover',label:'رمز الغلاف',value:'📕'},{k:'img',label:'صورة الغلاف (اختياري)',type:'file',accept:'image/*',paste:true},{k:'pages',label:'الصفحات بالتشكيل الكامل حتى آخر حرف: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:6,ph:'🐢🌳 | خرجت السلحفاة إلى الغابة\n🐢🐇 | قابلت الأرنب'}],async v=>{const pages=parsePages(v.pages);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';D.stories.unshift({id:uid(),title:v.title,cover:v.cover||'📕',img:v.img?await coverFrom(v.img,640):'',pages});save();toast('أُضيفت القصة')})}
 
 /* Heroes */
 function vHeroes(){
