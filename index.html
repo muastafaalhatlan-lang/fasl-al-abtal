@@ -219,6 +219,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .sh-hero{border-radius:26px;padding:20px;color:#fff;background:linear-gradient(135deg,var(--orange),var(--sun));display:flex;gap:14px;align-items:center;box-shadow:var(--shadow)}
 .sh-hero h1{font-size:clamp(24px,5vw,32px)}.sh-hero p{margin:2px 0 0;opacity:.95}.sh-i{font-size:54px;line-height:1;animation:bob 3s ease-in-out infinite}
 .sh-card{border-top:6px solid var(--sc)}
+.lt-cover{margin:-14px -14px 0;aspect-ratio:16/7;max-width:none;overflow:hidden;border-radius:16px 16px 0 0}
+.lt-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.st-card .gc-cover{aspect-ratio:4/3}
 .tile .nav-ic{width:64px;height:64px;font-size:34px;border-radius:20px}
 .sec-head{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .sec-head h3{font-size:22px}
@@ -258,7 +261,8 @@ td.c,th.c{text-align:center}
 .lock .emoji{font-size:64px}
 .story{display:grid;gap:14px;justify-items:center;text-align:center}
 .story .scene{font-size:96px;line-height:1.1;min-height:120px}
-.story p{font-size:24px;font-family:var(--f-display);max-width:32ch;margin:0}
+.story p{font-size:27px;font-family:var(--f-display);max-width:30ch;margin:0;line-height:2.1}
+.st-t{line-height:1.9!important}
 .dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--sky)}
 .notif-panel{position:fixed;top:calc(74px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));width:min(360px,calc(100vw - 32px));max-height:70vh;overflow:auto;z-index:60;padding:12px;display:grid;gap:8px}
 .notif{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:14px;background:var(--surface-2);border:0;text-align:start;width:100%}
@@ -386,6 +390,13 @@ function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r)}
 function saveSess(){try{sessionStorage.setItem(KEY+'_s',JSON.stringify(S.session))}catch(e){}}
 function loadSess(){try{return JSON.parse(sessionStorage.getItem(KEY+'_s'))}catch(e){return null}}
 
+const STORY_TXT={
+  rabbit:[['🐰🥕','كَانَ أَرْنَبٌ صَغِيرٌ يُحِبُّ الْجَزَرَ.'],['🐰🧺🦊','وَجَدَ الْأَرْنَبُ سَلَّةً فِيهَا جَزَرٌ لِلثَّعْلَبِ.'],['🐰🤝🦊','أَعَادَ الْأَرْنَبُ السَّلَّةَ إِلَى الثَّعْلَبِ.'],['🦊💛🐰','فَرِحَ الثَّعْلَبُ وَقَالَ: شُكْرًا يَا صَادِقُ!']],
+  star:[['⭐🌙','فِي السَّمَاءِ نَجْمَةٌ وَحِيدَةٌ.'],['⭐☁️','سَأَلَتِ النَّجْمَةُ الْغَيْمَةَ: هَلْ تَلْعَبِينَ مَعِي؟'],['⭐🌙✨','فَجَاءَ الْقَمَرُ، وَصَارَا صَدِيقَيْنِ.']]};
+function fixStories(){if((SYNC.role!=='admin'&&!isAdmin())||(D.custom&&D.custom._stories_v2))return;
+  (D.stories||[]).forEach(st=>{if(st.title==='الأرنب الصادق'){st.title='الْأَرْنَبُ الصَّادِقُ';st.pages=JSON.parse(JSON.stringify(STORY_TXT.rabbit))}
+    if(st.title==='نجمة تبحث عن صديق'){st.title='نَجْمَةٌ تَبْحَثُ عَنْ صَدِيقٍ';st.pages=JSON.parse(JSON.stringify(STORY_TXT.star))}});
+  D.custom=Object.assign({},D.custom||{},{_stories_v2:true});save()}
 async function seed(){
   const names=['محمد','عبدالله','فيصل','سلطان','يوسف','خالد','عمر','ريان','سلمان','بدر'];
   const users=['mohammed','abdullah','faisal','sultan','yousef','khaled','omar','rayan','salman','badr'];
@@ -421,8 +432,8 @@ async function seed(){
       {id:uid(),letter:'ج',title:'نكتب الجيم معاً',url:'https://www.youtube.com/'}
     ],
     stories:[
-      {id:uid(),title:'الأرنب الصادق',cover:'🐰',pages:[['🐰🥕','كان أرنبٌ صغيرٌ يحبُّ الجزر.'],['🐰🧺🦊','وجدَ سلةً فيها جزرٌ للثعلب.'],['🐰🤝🦊','أعادَ السلةَ إلى الثعلب.'],['🦊💛🐰','فرحَ الثعلبُ وقالَ: شكراً يا صادق!']]},
-      {id:uid(),title:'نجمة تبحث عن صديق',cover:'⭐',pages:[['⭐🌙','في السماءِ نجمةٌ وحيدة.'],['⭐☁️','سألتِ الغيمةَ: هل تلعبين معي؟'],['⭐🌙✨','فجاءَ القمرُ وصارا صديقين.']]}
+      {id:uid(),title:'الْأَرْنَبُ الصَّادِقُ',cover:'🐰',pages:STORY_TXT.rabbit},
+      {id:uid(),title:'نَجْمَةٌ تَبْحَثُ عَنْ صَدِيقٍ',cover:'⭐',pages:STORY_TXT.star}
     ],
     heroes:[],
     custom:{}
@@ -782,12 +793,18 @@ function vLetters(){
   const si=S.ui.sem||0;
   return `<div class="lt-hero pop"><span class="lt-pencil">✏️</span><div><h1>نتعلم كتابة الحروف</h1><p>حسب منهج لغتي، حرفاً بعد حرف</p></div></div>
   <div class="tabs lt-tabs">${CURR.map((s,i)=>`<button class="${si===i?'on':''}" onclick="S.ui.sem=${i};render()">${i?'🌷':'🌱'} ${s.sem}</button>`).join('')}</div>
-  ${CURR[si].units.map((u,ui)=>`<section class="lt-unit pop" style="--uc:${u.color}">
-    <div class="lt-uh"><span class="lt-ui">${u.icon}</span><div><small>الوحدة ${['الأولى','الثانية','الثالثة'][ui]||''}</small><h3>${u.name}</h3></div><span class="lt-cnt">${u.letters.length} حروف</span></div>
+  ${CURR[si].units.map((u,ui)=>{const cv=D.custom&&D.custom['_ucover_'+u.name];return `<section class="lt-unit pop" style="--uc:${u.color}">
+    ${cv?`<div class="lt-cover"><img src="${cv}" alt="${u.name}"></div>`:''}
+    <div class="lt-uh"><span class="lt-ui">${u.icon}</span><div><small>الوحدة ${['الأولى','الثانية','الثالثة'][ui]||''}</small><h3>${u.name}</h3></div><span class="lt-cnt">${u.letters.length} حروف</span>${isAdmin()?`<button class="btn sm ghost" onclick="unitCover('${u.name}')">🖼️ الغلاف</button>`:''}</div>
     <div class="lt-grid">${u.letters.map((l,i)=>{const n=lVideos(l).length;return `<button class="lt-tile" onclick="S.ui.lt='${l}';render();scrollTo(0,0)" aria-label="حرف ${LNAME[l]}">
       <span class="lt-n">${i+1}</span><span class="lt-big">${l}</span><span class="lt-w">${LWORD[l][1]}</span>${n?`<span class="lt-v">▶ ${n}</span>`:''}</button>`}).join('')}</div>
-  </section>`).join('')}`;
+  </section>`}).join('')}`;
 }
+function unitCover(name){const key='_ucover_'+name,cv=D.custom&&D.custom[key];
+  form('🖼️ غلاف وحدة '+name,[{k:'img',label:'ارفع صورة الغلاف (واقعية أو أنمي)',type:'file',accept:'image/*'},...(cv?[{k:'rm',label:'الغلاف الحالي',type:'select',options:[['','إبقاء الغلاف'],['1','حذف الغلاف']]}]:[])],async v=>{
+    if(v.rm==='1'){const c=Object.assign({},D.custom);delete c[key];D.custom=c;save();toast('حُذف الغلاف');return}
+    if(!v.img)return 'اختر صورة';let img='';try{img=await readImg(v.img,900)}catch(e){return 'تعذّرت قراءة الصورة'}
+    D.custom=Object.assign({},D.custom||{},{[key]:img});save();toast('✅ أُضيف غلاف الوحدة')})}
 function letterPage(l){
   const idx=ALL_L.findIndex(x=>x.l===l),u=ALL_L[idx].u,prev=ALL_L[idx-1],next=ALL_L[idx+1],f=lForms(l),vids=lVideos(l),w=LWORD[l];
   return `<div class="row" style="justify-content:space-between"><button class="btn ghost sm" onclick="S.ui.lt='';render()">→ كل الحروف</button><span class="pill" style="background:color-mix(in srgb,${u.color} 18%,var(--surface));color:var(--ink)">${u.icon} وحدة ${u.name}</span></div>
@@ -812,18 +829,25 @@ function addVideo(pre){const opts=ALL_L.map(x=>[x.l,`${x.l} — ${x.u.name}`]);
 
 /* Enrichment */
 function vEnrich(){
-  const s=me();
+  const s=me();fixStories();
   if(s&&!s.star)return `<div class="card lock"><div class="emoji">🔒📚</div><h2>هذه القائمة للأبطال المتميزين</h2><p class="muted">استمر في اللعب والتسميع، وسيفتحها لك المعلم قريباً ⭐</p></div>`;
   return `<div class="sec-head"><p class="muted" style="margin:0">قصص قصيرة مصوّرة للمتقدمين والمتميزين 📖</p>${adminBar('إضافة قصة','addStory()')}</div>
   ${isAdmin()?`<div class="hint">يظهر هذا القسم فقط للطلاب المُعلَّمين بـ «متميز» من صفحة الطلاب (${D.students.filter(x=>x.star).length} طالب حالياً).</div>`:''}
-  <div class="grid">${D.stories.map(st=>`<div class="card item" style="text-align:center;justify-items:center"><div style="font-size:70px;line-height:1.1">${st.img?`<img src="${st.img}" alt="" style="border-radius:14px;max-height:140px">`:esc(st.cover)}</div><h4>${esc(st.title)}</h4><small class="muted">${st.pages.length} صفحات</small>
-  <div class="row"><button class="btn" style="background:var(--teal)" onclick="readStory('${st.id}',0)">اقرأ القصة</button>${delBtn(`confirmBox('حذف القصة؟',()=>{D.stories=D.stories.filter(s=>s.id!=='${st.id}');save();render()})`)}</div></div>`).join('')}</div>`;
+  <div class="grid">${D.stories.map(st=>`<div class="gcard st-card" style="--gc:var(--teal)">
+    <button class="gc-cover ${st.img?'has-img':''}" onclick="readStory('${st.id}',0)" aria-label="اقرأ ${esc(st.title)}">${st.img?`<img src="${st.img}" alt="">`:`<span class="gc-rays"></span><span class="gc-spark s1">✨</span><span class="gc-scene"><span class="gc-floor"></span><span class="gc-emoji">${esc(st.cover||'📕')}</span></span>`}<span class="gc-play">📖</span></button>
+    <div class="gc-body"><h4 class="st-t">${esc(st.title)}</h4><small class="muted">${st.pages.length} صفحات</small>
+    <div class="row"><button class="btn sm" style="background:var(--teal)" onclick="readStory('${st.id}',0)">اقرأ القصة</button>${isAdmin()?`<button class="btn sm ghost" onclick="editStory('${st.id}')">✏️ تعديل</button>`:''}${delBtn(`confirmBox('حذف القصة؟',()=>{D.stories=D.stories.filter(s=>s.id!=='${st.id}');save();render()})`)}</div></div></div>`).join('')}</div>`;
 }
+function editStory(id){const st=D.stories.find(x=>x.id===id);if(!st)return;
+  form('✏️ تعديل القصة',[{k:'title',label:'عنوان القصة (بالتشكيل)',value:st.title},{k:'cover',label:'رمز الغلاف',value:st.cover||'📕'},{k:'img',label:st.img?'🖼️ تغيير صورة الغلاف':'🖼️ صورة الغلاف',type:'file',accept:'image/*'},...(st.img?[{k:'rm',label:'الصورة الحالية',type:'select',options:[['','إبقاء الصورة'],['1','حذف الصورة']]}]:[]),{k:'pages',label:'الصفحات بالتشكيل الكامل: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:8,value:st.pages.map(p=>p[0]+' | '+p[1]).join('\n')}],async v=>{
+    const pages=v.pages.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(x=>x[1]);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';
+    let img=st.img||'';if(v.rm==='1')img='';if(v.img){try{img=await readImg(v.img,800)}catch(e){return 'تعذّرت قراءة الصورة'}}
+    Object.assign(st,{title:v.title,cover:v.cover||'📕',img,pages});save();toast('حُفظت القصة ✅')})}
 function readStory(id,p){const st=D.stories.find(x=>x.id===id);const pg=st.pages[p];
   modal(`<div class="modal-h"><h3>${esc(st.title)}</h3><button class="icon-btn" onclick="closeLayer()" aria-label="إغلاق">✖️</button></div>
   <div class="story"><div class="scene">${esc(pg[0])}</div><p>${esc(pg[1])}</p><div class="dots">${st.pages.map((_,i)=>`<i class="${i===p?'on':''}"></i>`).join('')}</div>
   <div class="row">${p>0?`<button class="btn ghost" onclick="readStory('${id}',${p-1})">→ السابق</button>`:''}${p<st.pages.length-1?`<button class="btn" onclick="readStory('${id}',${p+1})">التالي ←</button>`:`<button class="btn green" onclick="closeLayer()">انتهت القصة 🎉</button>`}</div></div>`)}
-function addStory(){form('إضافة قصة مصوّرة',[{k:'title',label:'عنوان القصة'},{k:'cover',label:'رمز الغلاف',value:'📕'},{k:'img',label:'صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'pages',label:'الصفحات: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:6,ph:'🐢🌳 | خرجت السلحفاة إلى الغابة\n🐢🐇 | قابلت الأرنب'}],async v=>{const pages=v.pages.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(x=>x[1]);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';D.stories.unshift({id:uid(),title:v.title,cover:v.cover||'📕',img:await readImg(v.img,500),pages});save();toast('أُضيفت القصة')})}
+function addStory(){form('إضافة قصة مصوّرة',[{k:'title',label:'عنوان القصة'},{k:'cover',label:'رمز الغلاف',value:'📕'},{k:'img',label:'صورة الغلاف (اختياري)',type:'file',accept:'image/*'},{k:'pages',label:'الصفحات بالتشكيل الكامل حتى آخر حرف: كل سطر صفحة، بصيغة: الرسمة | النص',type:'textarea',rows:6,ph:'🐢🌳 | خرجت السلحفاة إلى الغابة\n🐢🐇 | قابلت الأرنب'}],async v=>{const pages=v.pages.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(x=>x[1]);if(!v.title||!pages.length)return 'أضف العنوان وصفحة واحدة على الأقل';D.stories.unshift({id:uid(),title:v.title,cover:v.cover||'📕',img:await readImg(v.img,500),pages});save();toast('أُضيفت القصة')})}
 
 /* Heroes */
 function vHeroes(){
@@ -1292,7 +1316,7 @@ async function startData(role){
   SYNC.role=role;SYNC.ready=false;SYNC.synced={};SYNC.rosterJ=null;D=emptyD();
   await fetchAll();
   if(role==='admin'&&!D.menus.length){const s=await prodSeed();D.menus=s.menus;D.games=s.games;D.stories=s.stories}
-  D=migrate(D);SYNC.ready=true;if(role==='admin')await flush();
+  D=migrate(D);SYNC.ready=true;if(role==='admin'){fixStories();await flush()}
 }
 /* الملفات: التسجيلات والألعاب في Supabase Storage */
 function pathFor(k){if(String(k).startsWith('game_'))return ['games',k];if(String(k).startsWith('sheet_'))return ['games','sheets/'+k];const s=(D.subs||[]).find(x=>x.id===k);const sid=s?s.sid:(me()?me().id:'x');return ['audio',sid+'/'+k]}
