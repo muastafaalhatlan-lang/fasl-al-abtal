@@ -889,10 +889,10 @@ function addVideo(pre){const opts=ALL_L.map(x=>[x.l,`${x.l} — ${x.u.name}`]);
 
 /* Enrichment */
 function vEnrich(){
-  const s=me();fixStories();
-  if(s&&!s.star)return `<div class="card lock"><div class="emoji">🔒📚</div><h2>هذه القائمة للأبطال المتميزين</h2><p class="muted">استمر في اللعب والتسميع، وسيفتحها لك المعلم قريباً ⭐</p></div>`;
+  const s=me();fixStories();const starOnly=!!(D.custom&&D.custom._enrich_star);
+  if(s&&starOnly&&!s.star)return `<div class="card lock"><div class="emoji">🔒📚</div><h2>هذه القائمة للأبطال المتميزين</h2><p class="muted">استمر في اللعب والتسميع، وسيفتحها لك المعلم قريباً ⭐</p></div>`;
   return `<div class="sec-head"><p class="muted" style="margin:0">قصص قصيرة مصوّرة للمتقدمين والمتميزين 📖</p>${adminBar('إضافة قصة','addStory()')}</div>
-  ${isAdmin()?`<div class="hint">يظهر هذا القسم فقط للطلاب المُعلَّمين بـ «متميز» من صفحة الطلاب (${D.students.filter(x=>x.star).length} طالب حالياً).</div>`:''}
+  ${isAdmin()?`<div class="hint row" style="justify-content:space-between">${starOnly?`🔒 القسم للطلاب المتميزين فقط (${D.students.filter(x=>x.star).length} طالب)`:'🌍 القسم مفتوح لجميع الطلاب'}<button class="btn sm ghost" onclick="D.custom=Object.assign({},D.custom||{},{_enrich_star:${starOnly?'false':'true'}});save();render()">${starOnly?'🌍 افتحه للجميع':'🔒 اجعله للمتميزين فقط'}</button></div>`:''}
   <div class="grid">${D.stories.map(st=>`<div class="gcard st-card" style="--gc:var(--teal)">
     <button class="gc-cover ${st.img?'has-img':''}" onclick="readStory('${st.id}',0)" aria-label="اقرأ ${esc(st.title)}">${st.img?`<img src="${st.img}" alt="">`:`<span class="gc-rays"></span><span class="gc-spark s1">✨</span><span class="gc-scene"><span class="gc-floor"></span><span class="gc-emoji">${esc(st.cover||'📕')}</span></span>`}<span class="gc-play">📖</span></button>
     <div class="gc-body"><h4 class="st-t">${esc(st.title)}</h4><small class="muted">${st.pages.length} صفحات</small>
