@@ -8,7 +8,7 @@
 <title>اللوحة الصباحية</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Tajawal:wght@400;500;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Lalezar&family=Tajawal:wght@400;500;700;800&display=swap">
 <style>
 /* اللوحة الصباحية التفاعلية — إعداد وتصميم أ. مصطفى الهتلان */
 :root{
@@ -213,6 +213,101 @@ body:not(.teacher) .teach{display:none!important}
 
 .foot{text-align:center;margin-top:26px;color:var(--muted);font-weight:700;font-size:14px}
 .foot b{color:var(--ink)}
+
+/* ================= النمط الفخم: نيون ليلي ================= */
+:root[data-style="neon"]{
+  --bg:#080A22; --dot:rgba(255,255,255,.05); --surface:rgba(18,20,58,.72); --surface-2:rgba(255,255,255,.05); --ink:#F2F3FF; --muted:#A4A9D6; --line:rgba(160,170,255,.22);
+  --sky:#3FB8FF; --sun:#FFC83D; --grass:#2EE6A6; --coral:#FF5C8A; --grape:#A66BFF; --pink:#FF4FD8; --teal:#22E5E0;
+  --red:#FF4D5E; --amber:#FFB020; --green:#2EE07A;
+  --f-display:"Lalezar","Baloo Bhaijaan 2","Tajawal",sans-serif;
+  --shadow:none; color-scheme:dark}
+:root[data-style="neon"] body{
+  background:
+    radial-gradient(900px 600px at 85% -10%,rgba(122,76,255,.35),transparent 60%),
+    radial-gradient(800px 600px at 0% 30%,rgba(0,190,255,.18),transparent 60%),
+    radial-gradient(700px 500px at 60% 110%,rgba(255,60,170,.18),transparent 60%),
+    radial-gradient(rgba(255,255,255,.06) 1px,transparent 1.4px) 0 0/22px 22px,
+    #080A22;
+  background-attachment:fixed}
+:root[data-style="neon"] h1,:root[data-style="neon"] h2,:root[data-style="neon"] h3{font-weight:400;letter-spacing:0}
+/* البطاقات الزجاجية المضيئة */
+:root[data-style="neon"] .card{
+  --c2:color-mix(in srgb,var(--c) 70%,#fff);
+  background:linear-gradient(160deg,rgba(30,32,90,.78),rgba(12,14,44,.82));
+  border:2px solid color-mix(in srgb,var(--c) 75%,transparent);border-radius:28px;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 25%,transparent),0 0 26px -2px color-mix(in srgb,var(--c) 45%,transparent),inset 0 0 30px -8px color-mix(in srgb,var(--c) 30%,transparent);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+:root[data-style="neon"] .card-h h2{font-size:30px;color:var(--c2);text-shadow:0 0 14px color-mix(in srgb,var(--c) 70%,transparent)}
+:root[data-style="neon"] .card-h .ic{background:transparent;font-size:26px;filter:drop-shadow(0 0 8px color-mix(in srgb,var(--c) 80%,transparent))}
+/* الترويسة واللافتة */
+:root[data-style="neon"] .logo{background:linear-gradient(135deg,var(--grape),var(--pink));color:#fff;box-shadow:0 0 22px rgba(166,107,255,.7)}
+:root[data-style="neon"] .brand b{font-family:var(--f-display);font-weight:400;font-size:24px}
+:root[data-style="neon"] .clock .t{font-weight:400;color:var(--teal);text-shadow:0 0 16px rgba(34,229,224,.7);font-size:36px}
+:root[data-style="neon"] .hero{background:linear-gradient(120deg,rgba(80,50,200,.55),rgba(20,24,80,.7) 55%,rgba(200,40,160,.35));border:2px solid rgba(166,107,255,.6);border-radius:30px;box-shadow:0 0 34px -4px rgba(166,107,255,.55),inset 0 0 40px -10px rgba(255,255,255,.15)}
+:root[data-style="neon"] .hero::after{background:radial-gradient(circle,rgba(255,200,61,.45),transparent 70%);width:240px;height:240px}
+:root[data-style="neon"] .hero h1{font-weight:400;font-size:clamp(34px,5vw,60px);background:linear-gradient(90deg,#fff,#CFC4FF);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 12px rgba(166,107,255,.6))}
+:root[data-style="neon"] .hero h1 span{background:linear-gradient(90deg,var(--sun),#FF8A3D);-webkit-background-clip:text;background-clip:text;color:transparent}
+:root[data-style="neon"] .hero .sunny{filter:drop-shadow(0 0 18px rgba(255,200,61,.8))}
+:root[data-style="neon"] .chip{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1.5px rgba(160,170,255,.35);color:#fff}
+/* التبويبات */
+:root[data-style="neon"] .tab{background:rgba(255,255,255,.05);color:var(--muted);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:999px;padding:10px 20px}
+:root[data-style="neon"] .tab.on{background:linear-gradient(90deg,var(--grape),var(--pink));color:#fff;box-shadow:0 0 20px rgba(255,79,216,.5)}
+:root[data-style="neon"] .mode{background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:999px}
+:root[data-style="neon"] .mode button{border-radius:999px}
+:root[data-style="neon"] .mode button.on{background:linear-gradient(90deg,var(--sky),var(--grape));color:#fff}
+:root[data-style="neon"] .icon-btn{background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:999px}
+/* الأزرار المضيئة */
+:root[data-style="neon"] .btn{border-radius:999px;box-shadow:0 0 18px -2px color-mix(in srgb,var(--bc,var(--sky)) 70%,transparent),inset 0 -3px 0 rgba(0,0,0,.2);background:linear-gradient(135deg,color-mix(in srgb,var(--bc,var(--sky)) 85%,#fff),var(--bc,var(--sky)));color:#fff;--bc:var(--sky)}
+:root[data-style="neon"] .btn.coral{--bc:var(--coral)}:root[data-style="neon"] .btn.green{--bc:var(--grass);color:#03261a}:root[data-style="neon"] .btn.sun{--bc:var(--sun);color:#3a2600}
+:root[data-style="neon"] .btn.grape{--bc:var(--grape)}:root[data-style="neon"] .btn.pink{--bc:var(--pink)}:root[data-style="neon"] .btn.teal{--bc:var(--teal);color:#03282a}
+:root[data-style="neon"] .btn.ghost{background:rgba(255,255,255,.05);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+:root[data-style="neon"] .btn:active{transform:translateY(2px) scale(.98)}
+:root[data-style="neon"] .input{background:rgba(0,0,0,.25);border-color:var(--line)}
+:root[data-style="neon"] .seg button{background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:999px}
+:root[data-style="neon"] .seg button.on{background:var(--grass);color:#03261a;box-shadow:0 0 16px rgba(46,230,166,.55)}
+/* إشارة المرور: حلقات مضيئة */
+:root[data-style="neon"] .lights{background:linear-gradient(180deg,#05061A,#11132F);border-radius:40px;padding:16px 14px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.08),0 10px 30px rgba(0,0,0,.5)}
+:root[data-style="neon"] .light{opacity:1;background:radial-gradient(circle at 50% 45%,color-mix(in srgb,var(--lc) 35%,#000),#0b0c22 75%);border:5px solid color-mix(in srgb,var(--lc) 45%,transparent);width:86px;height:86px}
+:root[data-style="neon"] .light.on{background:radial-gradient(circle at 40% 35%,#fff 0,var(--lc) 30%,color-mix(in srgb,var(--lc) 70%,#000) 100%);border-color:var(--lc);box-shadow:0 0 0 6px color-mix(in srgb,var(--lc) 25%,transparent),0 0 40px 8px color-mix(in srgb,var(--lc) 70%,transparent)}
+:root[data-style="neon"] .tmean{background:rgba(255,255,255,.04);border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--line)}
+:root[data-style="neon"] .tmean i{box-shadow:0 0 10px var(--lc)}
+:root[data-style="neon"] .tmean.on{background:color-mix(in srgb,var(--lc) 18%,transparent);box-shadow:inset 0 0 0 2px var(--lc),0 0 18px -4px var(--lc)}
+:root[data-style="neon"] .mic{background:rgba(0,0,0,.25);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:20px}
+:root[data-style="neon"] .meter{box-shadow:0 0 14px rgba(255,77,94,.25)}
+:root[data-style="neon"] .meter .cover{background:#0b0c22}
+:root[data-style="neon"] .meter .th{background:#fff;box-shadow:0 0 8px #fff}
+:root[data-style="neon"] .strike{background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:999px}
+:root[data-style="neon"] .strike.on{background:var(--red);box-shadow:0 0 16px var(--red)}
+:root[data-style="neon"] .banned{background:rgba(255,77,94,.15);box-shadow:inset 0 0 0 2px var(--red),0 0 24px -4px var(--red)}
+/* مستوى الصوت */
+:root[data-style="neon"] .voice-now{background:rgba(0,0,0,.28);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:22px}
+:root[data-style="neon"] .voice-now .e{font-size:76px;filter:drop-shadow(0 0 16px rgba(166,107,255,.7))}
+:root[data-style="neon"] .voice-now b{font-weight:400;color:var(--sun);text-shadow:0 0 12px rgba(255,200,61,.6);font-size:32px}
+:root[data-style="neon"] .lvl{background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:18px}
+:root[data-style="neon"] .lvl.on{background:linear-gradient(160deg,var(--grape),#6A3BFF);box-shadow:0 0 20px rgba(166,107,255,.7)}
+/* المهام والأسماء والمجموعات */
+:root[data-style="neon"] .task{background:rgba(255,255,255,.045);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:999px;padding:8px 10px 8px 14px}
+:root[data-style="neon"] .task .tick{border-radius:50%;border-color:var(--grass)}
+:root[data-style="neon"] .task.done .tick{box-shadow:0 0 14px var(--grass)}
+:root[data-style="neon"] .pick-show{background:radial-gradient(circle at 50% 40%,rgba(255,92,138,.18),rgba(0,0,0,.25));box-shadow:inset 0 0 0 1.5px var(--line);border-radius:22px}
+:root[data-style="neon"] .pick-name{font-weight:400;color:#fff;text-shadow:0 0 18px rgba(255,92,138,.8)}
+:root[data-style="neon"] .nchip{background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px var(--line)}
+:root[data-style="neon"] .grp{background:color-mix(in srgb,var(--gc) 10%,rgba(0,0,0,.25));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--gc) 60%,transparent),0 0 16px -6px var(--gc);border-radius:20px}
+:root[data-style="neon"] .grp b{font-weight:400;text-shadow:0 0 10px var(--gc)}
+/* النجوم والمؤقت والسؤال */
+:root[data-style="neon"] .stars-big{font-weight:400;color:var(--sun);text-shadow:0 0 22px rgba(255,200,61,.7);font-size:76px}
+:root[data-style="neon"] .stars-row span.on{filter:drop-shadow(0 0 6px rgba(255,200,61,.9))}
+:root[data-style="neon"] .bar{background:rgba(0,0,0,.35);box-shadow:inset 0 0 0 1.5px var(--line)}
+:root[data-style="neon"] .bar i{background:linear-gradient(90deg,var(--sun),var(--pink));box-shadow:0 0 14px rgba(255,79,216,.6)}
+:root[data-style="neon"] .timer-d{font-weight:400;color:var(--teal);text-shadow:0 0 22px rgba(34,229,224,.75)}
+:root[data-style="neon"] .q-text{font-weight:400;font-size:30px}
+:root[data-style="neon"] .q-ans{background:rgba(46,230,166,.1);box-shadow:inset 0 0 0 1.5px var(--grass)}
+:root[data-style="neon"] .feel button{background:rgba(255,255,255,.04);box-shadow:inset 0 0 0 1.5px var(--line);border-radius:18px}
+:root[data-style="neon"] .bcircle{box-shadow:0 0 40px rgba(34,229,224,.6)}
+:root[data-style="neon"] .empty{border-color:var(--line)}
+:root[data-style="neon"] .sheet .box{background:#12143A;box-shadow:0 0 0 2px rgba(166,107,255,.5),0 0 50px rgba(166,107,255,.35)}
+:root[data-style="neon"] .toast{background:linear-gradient(90deg,var(--grape),var(--pink));color:#fff}
+:root[data-style="neon"] .foot b{color:var(--sun)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -258,7 +353,7 @@ const DEF={
   className:'الصف الأول — فصل الأبطال',
   welcome:'صباح الخير يا أبطال!',
   sub:'يوم جديد، فرصة جديدة لنتعلم ونتميز 🌟',
-  style:'fun', theme:'',
+  style:'neon', theme:'',
   names:['أحمد','محمد','عبدالله','فيصل','خالد','سلمان','يوسف','عمر','سعود','ناصر','تركي','حمد'],
   noRepeat:true, used:[], lastPick:'',
   groupMode:'pairs', groups:[],
@@ -299,6 +394,7 @@ function applyLook(){
   if(S.theme)r.dataset.theme=S.theme;else delete r.dataset.theme;
   const dark=S.theme?S.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;
   $('#themeBtn').textContent=dark?'☀️':'🌙';
+  $('#themeBtn').hidden=['neon','chalk','space'].includes(S.style);
 }
 function toggleTheme(){const dark=S.theme?S.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;S.theme=dark?'light':'dark';save();applyLook()}
 function toggleFull(){try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){toast('ملء الشاشة غير مدعوم هنا')}}
@@ -529,7 +625,7 @@ function celebrate(e){const box=document.createElement('div');box.className='con
 
 /* ---------- الإعدادات (وضع المعلم) ---------- */
 function openSettings(focus){
-  const styles=[['fun','🎨 كرتوني مرح'],['calm','🍃 بسيط وهادئ'],['chalk','🟩 سبورة مدرسية'],['space','🚀 فضاء']];
+  const styles=[['neon','✨ فخم (نيون ليلي)'],['fun','🎨 كرتوني مرح'],['calm','🍃 بسيط وهادئ'],['chalk','🟩 سبورة مدرسية'],['space','🚀 فضاء']];
   const el=document.createElement('div');el.className='sheet';el.onclick=e=>{if(e.target===el)el.remove()};
   el.innerHTML=`<div class="box" role="dialog" aria-label="الإعدادات">
     <div class="row" style="justify-content:space-between"><h2>⚙️ إعدادات اللوحة</h2><button class="icon-btn" aria-label="إغلاق" onclick="this.closest('.sheet').remove()">✕</button></div>
