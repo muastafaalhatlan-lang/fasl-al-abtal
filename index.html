@@ -623,7 +623,7 @@ function shell(){
     <div class="side-brand"><span class="logo">🦸</span><div><b>فصل الأبطال</b><small>مدرسة طارق بن زياد بالدمام</small></div></div>
     <div class="side-user">${who}</div>
     <nav class="side-nav"><div class="nav-cat">القائمة الرئيسية</div>${visibleMenus().map(link).join('')}
-    ${isAdmin()?`<div class="nav-cat">إدارة المعلم</div>${adminLinks.map(link).join('')}`:`<div class="nav-cat">لولي الأمر</div>${link(REP)}`}</nav>
+    ${isAdmin()?`<div class="nav-cat">إدارة المعلم</div>${adminLinks.map(link).join('')}<a class="nav-link" style="--c:var(--sun);text-decoration:none;color:inherit" href="morning.html" target="_blank" rel="noopener"><span class="nav-ic">☀️</span><span>اللوحة الصباحية</span></a>`:`<div class="nav-cat">لولي الأمر</div>${link(REP)}`}</nav>
     <div class="side-foot"><button class="btn ghost" style="width:100%" onclick="logout()">🚪 تسجيل الخروج</button><p class="credit" style="margin-top:10px">© إعداد <b>أ. مصطفى الهتلان</b></p></div>
   </aside>
   <div class="main"><div class="demo-band" style="border-radius:0 0 14px 14px">${bandText()}</div>
