@@ -453,7 +453,7 @@ const DEF={
   names:['أحمد','محمد','عبدالله','فيصل','خالد','سلمان','يوسف','عمر','سعود','ناصر','تركي','حمد'],
   noRepeat:true, used:[], lastPick:'',
   groupMode:'pairs', groups:[],
-  tasks:[], pickVoice:true, starMode:'kids', weekStars:{}, weekKey:'', lastWeek:null, featured:null, photos:{},
+  tasks:[], pickVoice:true, starVoice:true, starMode:'kids', weekStars:{}, weekKey:'', lastWeek:null, featured:null, photos:{},
   stars:0, goal:10, starLog:[],
   light:'green', tidyMin:1, att:{}, attDate:'', gender:{}, attOnly:true, attSound:true, attNight:false, micSens:5, strikes:0, strikeMax:3,
   voice:0,
@@ -553,7 +553,7 @@ stars(){
     const rank=S.names.map(n=>[n,S.weekStars[n]||0]).sort((a,b)=>b[1]-a[1]);
     const top=rank[0]&&rank[0][1]?rank[0][1]:0;
     return card('stars','⭐','نجوم الأبطال','var(--sun)',`${seg}
-      <p class="note" style="margin:0">اضغط على اسم الطالب ليأخذ نجمة ⭐ — نجوم الأسبوع تُجمع حتى نهاية الأسبوع.</p>
+      <div class="row" style="justify-content:space-between"><p class="note" style="margin:0">اضغط على اسم الطالب ليأخذ نجمة ⭐ — تُجمع حتى نهاية الأسبوع.</p><label class="chk" style="font-size:14px"><input type="checkbox" ${S.starVoice?'checked':''} onchange="S.starVoice=this.checked;save()"> 🔊 قراءة الاسم</label></div>
       <div class="kstars">${S.names.map((n,i)=>{const c=S.weekStars[n]||0;return `<button class="kstar ${c&&c===top?'lead':''}" onclick="giveStar(${i},this)"><span class="kn">${esc(n)}</span><b>${c?'⭐ '+c.toLocaleString('ar-SA'):'☆'}</b>${c&&c===top?'<i>👑</i>':''}</button>`}).join('')||'<span class="empty">أضف أسماء الطلاب من ⚙️ الإعدادات</span>'}</div>
       <div class="row" style="justify-content:space-between"><span class="note">الأسبوع: ${weekLabel(S.weekKey)}</span>
         <span class="row" style="gap:6px"><button class="btn sun sm" onclick="openChamps()">🏆 اختر أبطال الأسبوع</button>${teacher?`<button class="btn ghost sm" onclick="if(confirm('تصفير نجوم الطلاب لهذا الأسبوع؟')){S.weekStars={};save();render()}">↺ تصفير</button>`:''}</span></div>`)
@@ -785,7 +785,13 @@ function weekCheck(){const k=weekKeyOf();if(S.weekKey===k)return;
     if(!S.featured||S.featured.key!==S.weekKey){const top=Object.entries(S.weekStars).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,3);S.featured={key:S.weekKey,label:weekLabel(S.weekKey),names:top.map(e=>e[0]),stars:Object.fromEntries(top)}}}
   S.weekKey=k;S.weekStars={};save()}
 let starUndo=null;
-function giveStar(i,btn){const n=S.names[i];if(!n)return;weekCheck();S.weekStars[n]=(S.weekStars[n]||0)+1;save();ding(880);
+// صوت النجوم (ماتيلدا): «أحسنت يا» + اسم الطالب — التسجيلات في voice/names-m
+const SV={list:null,audio:null};
+fetch('voice/names-m/list.json').then(r=>r.ok?r.json():[]).then(a=>{SV.list=new Set(a)}).catch(()=>{SV.list=new Set()});
+function starSay(n){if(!S.starVoice)return;try{if(!SV.audio)SV.audio=new Audio();const a=SV.audio,h=nameHash(n);a.onended=null;a.pause();
+  if(SV.list&&SV.list.has(h)){a.src='voice/names-m/_bravo.mp3';a.onended=()=>{a.onended=null;a.src='voice/names-m/'+h+'.mp3';a.play().catch(()=>{})};a.play().catch(()=>deviceSay('أحسنت يا '+n))}
+  else deviceSay('أحسنت يا '+n)}catch(e){}}
+function giveStar(i,btn){const n=S.names[i];if(!n)return;weekCheck();S.weekStars[n]=(S.weekStars[n]||0)+1;save();ding(880);starSay(n);
   if(btn){const b=document.createElement('span');b.className='star-pop';b.textContent='⭐';btn.appendChild(b)}
   setTimeout(render,350);
   document.querySelector('.att-toast')?.remove();const t=document.createElement('div');t.className='att-toast';t.innerHTML=`<span>⭐ نجمة لـ ${esc(n)}!</span><button>تراجع ↶</button>`;

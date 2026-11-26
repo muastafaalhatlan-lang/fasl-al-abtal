@@ -1,9 +1,10 @@
 // Records student names for the morning board's «اختيار طالب» into voice/names/<hash>.mp3 (+ list.json, _intro.mp3).
 //   node tools/voice-names.js --voice <id>         (only missing names)
 //   node tools/voice-names.js --voice <id> --all   (re-record everything, e.g. after changing voice)
+//   node tools/voice-names.js --voice <id> --dir names-m --lead "_bravo:أَحْسَنْتَ يَا"   (another voice/set, e.g. stars)
 // The hash must match nameHash() in morning.html. Needs curl and ffmpeg; the ElevenLabs key is injected by the proxy.
 const fs=require('fs'),path=require('path'),os=require('os'),{execFileSync}=require('child_process');
-const ROOT=path.join(__dirname,'..'),OUT=path.join(ROOT,'voice','names');fs.mkdirSync(OUT,{recursive:true});
+const ROOT=path.join(__dirname,'..'),OUT=path.join(ROOT,'voice',(process.argv.includes('--dir')?process.argv[process.argv.indexOf('--dir')+1]:'names'));fs.mkdirSync(OUT,{recursive:true});
 const arg=(n,d)=>{const i=process.argv.indexOf('--'+n);return i>0?process.argv[i+1]:d};
 const voice=arg('voice');if(!voice)throw new Error('pass --voice <id>');
 const TMP=fs.mkdtempSync(path.join(os.tmpdir(),'names-'));
@@ -18,8 +19,8 @@ function speak(text,out){
   execFileSync('ffmpeg',['-hide_banner','-loglevel','error','-y','-i',raw,'-af','silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,loudnorm=I=-14:TP=-1.0','-ac','1','-ar','24000','-b:a','48k',out]);
 }
 const all=process.argv.includes('--all');
-const intro=path.join(OUT,'_intro.mp3');if(all||!fs.existsSync(intro)){speak('البَطَلُ المُخْتَارُ هُوَ...',intro);console.log('intro')}
-const hello=path.join(OUT,'_hello.mp3');if(all||!fs.existsSync(hello)){speak('أَهْلاً يَا',hello);console.log('hello')}
+const leads=arg('lead')?[arg('lead').split(':')]:[['_intro','البَطَلُ المُخْتَارُ هُوَ...'],['_hello','أَهْلاً يَا']];
+for(const [f,txt] of leads){const o=path.join(OUT,f+'.mp3');if(all||!fs.existsSync(o)){speak(txt,o);console.log(f)}}
 const lines=fs.readFileSync(path.join(__dirname,'student-names.txt'),'utf8').split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('#'));
 const seen=new Map();for(const l of lines){const [n,say]=l.split('|');seen.set(hash(n),say||n)}
 let made=0;for(const [h,say] of seen){const f=path.join(OUT,h+'.mp3');if(!all&&fs.existsSync(f))continue;speak(say+'!',f);if(++made%25===0)console.log(made)}
