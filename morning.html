@@ -182,6 +182,35 @@ body:not(.teacher) .teach{display:none!important}
 @keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 
 
+
+/* نجوم الطلاب وأبطال الأسبوع */
+.kstars{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:330px;overflow:auto;padding:2px}
+.kstar{position:relative;border:0;border-radius:16px;padding:10px 6px;background:var(--surface-2);box-shadow:inset 0 0 0 2px var(--line);display:grid;gap:2px;justify-items:center;color:var(--ink);font-weight:800}
+.kstar .kn{font-size:17px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kstar b{font-size:15px;color:var(--sun)}
+.kstar.lead{box-shadow:inset 0 0 0 2px var(--sun),0 0 14px -4px var(--sun)}
+.kstar i{position:absolute;top:-10px;inset-inline-end:-4px;font-style:normal;font-size:20px}
+.kstar:active{transform:scale(.95)}
+.star-pop{position:absolute;inset:0;display:grid;place-items:center;font-size:34px;animation:starpop .7s ease-out forwards;pointer-events:none}
+@keyframes starpop{0%{transform:scale(.4);opacity:1}100%{transform:translateY(-40px) scale(1.5);opacity:0}}
+.champs{background:linear-gradient(135deg,color-mix(in srgb,var(--sun) 16%,var(--surface)),var(--surface))!important}
+.champ-row{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:18px 28px;padding:30px 0 6px}
+.champ{display:grid;justify-items:center;gap:4px;text-align:center}
+.champ-pic{position:relative;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle at 50% 35%,color-mix(in srgb,var(--sun) 40%,#fff),color-mix(in srgb,var(--sun) 25%,var(--surface)));box-shadow:0 0 0 5px var(--sun),0 0 26px -2px var(--sun);display:grid;place-items:center;overflow:visible}
+.champ-pic img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.champ-pic svg{width:92%;height:auto;margin-top:6%}
+.champ.first .champ-pic{width:150px;height:150px}
+.champ .crown{position:absolute;top:-30px;font-size:38px;filter:drop-shadow(0 0 8px rgba(255,200,61,.8));z-index:1}
+.champ b{font-family:var(--f-display);font-size:24px;font-weight:800;margin-top:6px}
+.champ-st{font-weight:800;color:var(--sun)}
+.champ-list{display:grid;gap:6px;max-height:48vh;overflow:auto;margin-bottom:10px}
+.champ-li{display:flex;align-items:center;gap:10px;border-radius:14px;padding:6px 10px;background:#F8FAFC;box-shadow:inset 0 0 0 1.5px #E2E8F0;cursor:pointer}
+.champ-li input{width:22px;height:22px;accent-color:#F59E0B}
+.champ-li b{font-size:18px}
+.champ-li .champ-st{color:#B45309}
+.champ-mini{width:44px;height:44px;border-radius:50%;background:#FEF3C7;display:grid;place-items:center;overflow:hidden;flex:none}
+.champ-mini img{width:100%;height:100%;object-fit:cover}.champ-mini svg{width:90%;margin-top:10%}
+.att-panel .icon-btn{color:#0F172A;background:#F1F5F9;box-shadow:inset 0 0 0 1.5px #CBD5E1}
 /* حضور الأبطال */
 .hero-card{flex-direction:row!important;flex-wrap:wrap;align-items:center}
 .hero-card .hc-side{flex:1 1 260px;display:grid;gap:12px}
@@ -218,7 +247,7 @@ body:not(.teacher) .teach{display:none!important}
 .att-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:58;display:flex;align-items:center;gap:14px;background:#111733;color:#fff;border-radius:999px;padding:10px 12px 10px 22px;font-weight:800;font-size:19px;box-shadow:0 6px 0 rgba(0,0,0,.4)}
 .att-toast button{border:0;border-radius:999px;background:#F43F5E;color:#fff;font-weight:800;padding:8px 16px}
 .att-panel{position:fixed;inset:0;z-index:59;background:rgba(10,15,30,.55);display:grid;place-items:center;padding:16px}
-.att-panel .box{background:#fff;color:#0F172A;border-radius:28px;max-width:640px;width:100%;max-height:90vh;overflow:auto;padding:20px;box-shadow:0 0 0 4px #0F172A,0 10px 0 4px #0F172A}
+.att-panel .box{color-scheme:light;background:#fff;color:#0F172A;border-radius:28px;max-width:640px;width:100%;max-height:90vh;overflow:auto;padding:20px;box-shadow:0 0 0 4px #0F172A,0 10px 0 4px #0F172A}
 .att-panel h3{font-size:17px;margin:14px 0 6px;letter-spacing:.2px}
 .att-panel .sum{border-radius:18px;background:#F0F9FF;box-shadow:inset 0 0 0 2px #BAE6FD;padding:12px;display:grid;gap:10px}
 .gchips{display:flex;flex-wrap:wrap;gap:8px}
@@ -424,7 +453,7 @@ const DEF={
   names:['أحمد','محمد','عبدالله','فيصل','خالد','سلمان','يوسف','عمر','سعود','ناصر','تركي','حمد'],
   noRepeat:true, used:[], lastPick:'',
   groupMode:'pairs', groups:[],
-  tasks:[{t:'تحية الصباح والدعاء',d:false},{t:'مراجعة حرف اليوم',d:false},{t:'قراءة قصة قصيرة',d:false},{t:'تمرين رياضيات',d:false}],
+  tasks:[], starMode:'kids', weekStars:{}, weekKey:'', lastWeek:null, featured:null, photos:{},
   stars:0, goal:10, starLog:[],
   light:'green', tidyMin:1, att:{}, attDate:'', gender:{}, attOnly:true, attSound:true, attNight:false, micSens:5, strikes:0, strikeMax:3,
   voice:0,
@@ -436,7 +465,11 @@ const DEF={
 };
 let S=load();
 let teacher=false;
-function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v)return Object.assign(structuredClone(DEF),v)}catch(e){}return structuredClone(DEF)}
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v){
+  // المهام صارت حرّة: أزل المهام النموذجية القديمة إن لم تُعدَّل
+  if(Array.isArray(v.tasks)&&v.tasks.map(t=>t.t).join('|')==='تحية الصباح والدعاء|مراجعة حرف اليوم|قراءة قصة قصيرة|تمرين رياضيات')v.tasks=[];
+  return Object.assign(structuredClone(DEF),v)}}catch(e){}return structuredClone(DEF)}
+const UI={taskEdit:false};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -468,11 +501,11 @@ function toggleFull(){try{document.fullscreenElement?document.exitFullscreen():d
 
 /* ---------- التبويبات ---------- */
 const TABS=[
-  {id:'home',t:'اللوحة',i:'🏠',cards:['heroes','pick','tasks','stars','traffic','voice','groups','tidy']},
+  {id:'home',t:'اللوحة',i:'🏠',cards:['champs','heroes','pick','tasks','stars','traffic','voice','groups','tidy']},
   {id:'class',t:'الصف',i:'👥',cards:['heroes','pick','groups']},
   {id:'calm',t:'الهدوء',i:'🚦',cards:['traffic','voice','timer']},
   {id:'act',t:'أنشطة',i:'🧠',cards:['tidy','question','feel','breath','timer']},
-  {id:'all',t:'كل الأدوات',i:'🧰',cards:['heroes','pick','groups','tasks','stars','traffic','voice','tidy','timer','question','feel','breath']}
+  {id:'all',t:'كل الأدوات',i:'🧰',cards:['champs','heroes','pick','groups','tasks','stars','traffic','voice','tidy','timer','question','feel','breath']}
 ];
 function renderTabs(){$('#tabs').innerHTML=TABS.map(t=>`<button class="tab ${S.tab===t.id?'on':''}" role="tab" aria-selected="${S.tab===t.id}" onclick="S.tab='${t.id}';save();render()"><span>${t.i}</span>${t.t}</button>`).join('')}
 
@@ -499,26 +532,50 @@ groups(){
     <button class="btn green big" onclick="makeGroups()" ${roster().length<2?'disabled':''}>🔀 ${S.groups.length?'أعد الخلط':'وزّع'}</button>`)
 },
 tasks(){
-  const done=S.tasks.filter(t=>t.d).length;
+  const done=S.tasks.filter(t=>t.d).length,ed=teacher||UI.taskEdit;
   return card('tasks','✅','مهام اليوم','var(--sky)',`
     <ul class="tasks">${S.tasks.map((t,i)=>`<li class="task ${t.d?'done':''}">
       <button class="tick" aria-label="تم" onclick="S.tasks[${i}].d=!S.tasks[${i}].d;save();render();${t.d?'':'if(S.tasks.every(x=>x.d))celebrate(\'🎉\')'}">${t.d?'✓':''}</button>
-      <div class="txt">${teacher?`<input class="input" value="${esc(t.t)}" onchange="S.tasks[${i}].t=this.value;save()">`:esc(t.t)}</div>
-      <div class="ops teach flex"><button class="icon-btn" aria-label="أعلى" onclick="mvTask(${i},-1)">▲</button><button class="icon-btn" aria-label="أسفل" onclick="mvTask(${i},1)">▼</button><button class="icon-btn" aria-label="حذف" onclick="S.tasks.splice(${i},1);save();render()">🗑️</button></div>
-    </li>`).join('')||'<li class="empty">لا توجد مهام بعد</li>'}</ul>
-    <form class="row teach flex" onsubmit="event.preventDefault();const v=this.t.value.trim();if(v){S.tasks.push({t:v,d:false});save();render()}"><input name="t" class="input" style="flex:1" placeholder="مهمة جديدة…"><button class="btn sm">＋ إضافة</button></form>
-    <div class="row" style="justify-content:space-between"><span class="note">أُنجز ${done.toLocaleString('ar-SA')} من ${S.tasks.length.toLocaleString('ar-SA')}</span><button class="btn ghost sm" onclick="S.tasks.forEach(t=>t.d=false);save();render()">🌅 ابدأ يوماً جديداً</button></div>`)
+      <div class="txt">${ed?`<input class="input" value="${esc(t.t)}" aria-label="نص المهمة" onchange="S.tasks[${i}].t=this.value.trim()||S.tasks[${i}].t;save()">`:esc(t.t)}</div>
+      ${ed?`<div class="ops"><button class="icon-btn" aria-label="أعلى" onclick="mvTask(${i},-1)">▲</button><button class="icon-btn" aria-label="أسفل" onclick="mvTask(${i},1)">▼</button><button class="icon-btn" aria-label="حذف" onclick="S.tasks.splice(${i},1);save();render()">🗑️</button></div>`:''}
+    </li>`).join('')||`<li class="empty">لا توجد مهام بعد — اضغط «✏️ تعديل» واكتب مهامك</li>`}</ul>
+    ${ed?`<form class="row" onsubmit="event.preventDefault();const v=this.t.value.trim();if(v){S.tasks.push({t:v,d:false});save();UI.focusTask=1;render()}"><input name="t" id="newTask" class="input" style="flex:1" placeholder="اكتب مهمة جديدة…" autocomplete="off"><button class="btn sm">＋ إضافة</button></form>`:''}
+    <div class="row" style="justify-content:space-between"><span class="note">${S.tasks.length?`أُنجز ${done.toLocaleString('ar-SA')} من ${S.tasks.length.toLocaleString('ar-SA')}`:''}</span>
+      <span class="row" style="gap:6px">${S.tasks.length?`<button class="btn ghost sm" onclick="S.tasks.forEach(t=>t.d=false);save();render()">🌅 يوم جديد</button>`:''}${ed&&S.tasks.length?`<button class="btn ghost sm" onclick="if(confirm('حذف كل المهام؟')){S.tasks=[];save();render()}">🗑️ مسح الكل</button>`:''}</span></div>`,
+    teacher?'':`<button class="btn ${UI.taskEdit?'green':'ghost'} sm" onclick="UI.taskEdit=!UI.taskEdit;render()">${UI.taskEdit?'✓ تم':'✏️ تعديل'}</button>`)
 },
 stars(){
+  const mode=S.starMode||'kids';
+  const seg=`<div class="seg"><button class="${mode==='kids'?'on':''}" onclick="S.starMode='kids';save();render()">🧒 نجوم الطلاب</button><button class="${mode==='class'?'on':''}" onclick="S.starMode='class';save();render()">🏫 نجوم الصف</button></div>`;
+  if(mode==='kids'){
+    weekCheck();
+    const rank=S.names.map(n=>[n,S.weekStars[n]||0]).sort((a,b)=>b[1]-a[1]);
+    const top=rank[0]&&rank[0][1]?rank[0][1]:0;
+    return card('stars','⭐','نجوم الأبطال','var(--sun)',`${seg}
+      <p class="note" style="margin:0">اضغط على اسم الطالب ليأخذ نجمة ⭐ — نجوم الأسبوع تُجمع حتى نهاية الأسبوع.</p>
+      <div class="kstars">${S.names.map((n,i)=>{const c=S.weekStars[n]||0;return `<button class="kstar ${c&&c===top?'lead':''}" onclick="giveStar(${i},this)"><span class="kn">${esc(n)}</span><b>${c?'⭐ '+c.toLocaleString('ar-SA'):'☆'}</b>${c&&c===top?'<i>👑</i>':''}</button>`}).join('')||'<span class="empty">أضف أسماء الطلاب من ⚙️ الإعدادات</span>'}</div>
+      <div class="row" style="justify-content:space-between"><span class="note">الأسبوع: ${weekLabel(S.weekKey)}</span>
+        <span class="row" style="gap:6px"><button class="btn sun sm" onclick="openChamps()">🏆 اختر أبطال الأسبوع</button>${teacher?`<button class="btn ghost sm" onclick="if(confirm('تصفير نجوم الطلاب لهذا الأسبوع؟')){S.weekStars={};save();render()}">↺ تصفير</button>`:''}</span></div>`)
+  }
   const p=Math.min(100,Math.round(S.stars/S.goal*100));const reached=S.stars>=S.goal;
   const show=Math.max(S.goal,S.stars);
-  return card('stars','⭐','نجوم الصف','var(--sun)',`
+  return card('stars','⭐','نجوم الصف','var(--sun)',`${seg}
     <div class="stars-big">${S.stars.toLocaleString('ar-SA')} <small>/ ${S.goal.toLocaleString('ar-SA')}</small></div>
     <div class="stars-row" aria-hidden="true">${Array.from({length:Math.min(show,30)},(_,i)=>`<span class="${i<S.stars?'on':''}">⭐</span>`).join('')}</div>
     <div class="bar" role="progressbar" aria-valuenow="${p}" aria-valuemin="0" aria-valuemax="100"><i style="width:${p}%"></i></div>
     <div class="cheer">${reached?'🏆 رائع! حقق الصف الهدف — أنتم أبطال!':S.stars?`باقٍ ${(S.goal-S.stars).toLocaleString('ar-SA')} للوصول إلى الهدف 💪`:'لنجمع النجوم معاً!'}</div>
     <div class="row"><button class="btn sun big" style="flex:1" onclick="addStar()">＋ نجمة</button><button class="btn ghost" onclick="undoStar()" ${S.stars?'':'disabled'}>↶ تراجع</button></div>
     <div class="row teach flex"><label class="chk">الهدف <input type="number" class="input" style="width:90px" min="1" max="100" value="${S.goal}" onchange="S.goal=Math.max(1,Math.min(100,+this.value||10));save();render()"></label><button class="btn ghost sm" onclick="if(confirm('تصفير نجوم الحصة؟')){S.stars=0;S.starLog=[];save();render()}">↺ إعادة الضبط</button></div>`)
+},
+champs(){
+  const f=(S.featured&&S.featured.names||[]).filter(n=>S.names.includes(n));
+  if(!f.length)return teacher?`<section class="card wide" style="--c:var(--sun)" data-card="champs"><div class="card-h"><span class="ic">🏆</span><h2>أبطال الأسبوع</h2></div><p class="note" style="margin:0">لم تختر أبطال الأسبوع بعد. امنح الطلاب نجوماً خلال الأسبوع، ثم اضغط «اختر أبطال الأسبوع».</p><button class="btn sun" onclick="openChamps()">🏆 اختر أبطال الأسبوع</button></section>`:'';
+  return `<section class="card wide champs" style="--c:var(--sun)" data-card="champs">
+    <div class="card-h"><span class="ic">🏆</span><h2>أبطال الأسبوع</h2><span class="note" style="margin-inline-start:8px">${esc(S.featured.label||'')}</span><div class="act">${teacher?`<button class="btn ghost sm" onclick="openChamps()">✏️ تغيير</button>`:''}</div></div>
+    <div class="champ-row">${(f.length>1?[f[1],f[0],...f.slice(2)]:f).map(n=>{const i=f.indexOf(n);return `<div class="champ ${i===0?'first':''}">
+      <div class="champ-pic">${i===0?'<span class="crown">👑</span>':''}${S.photos[n]?`<img src="${S.photos[n]}" alt="${esc(n)}">`:heroSVG(n,true)}</div>
+      <b>${esc(n)}</b><span class="champ-st">⭐ ${((S.featured.stars||{})[n]||0).toLocaleString('ar-SA')}</span></div>`}).join('')}</div>
+  </section>`
 },
 traffic(){
   const L=[['green','var(--green)','أخضر','ابدأ أو استمر'],['yellow','var(--amber)','أصفر','انتبه وخفّض الصوت'],['red','var(--red)','أحمر','توقف واستمع']];
@@ -612,6 +669,7 @@ function render(){
   const tab=TABS.find(t=>t.id===S.tab)||TABS[0];
   $('#board').innerHTML=tab.cards.map(k=>CARDS[k]()).join('');
   mountScenes($('#board'));
+  if(UI.focusTask){UI.focusTask=0;const t=document.getElementById('newTask');if(t)t.focus()}
   if(B.on)paintBreath();
 }
 
@@ -696,6 +754,59 @@ function warnSpeak(last){
 }
 
 
+
+/* ---------- نجوم الطلاب وأبطال الأسبوع ---------- */
+function weekStart(d){d=new Date(d||Date.now());d.setHours(0,0,0,0);d.setDate(d.getDate()-d.getDay());return d} // الأسبوع يبدأ الأحد
+function weekKeyOf(d){const w=weekStart(d);return w.getFullYear()+'-'+(w.getMonth()+1)+'-'+w.getDate()}
+function weekLabel(k){if(!k)return '';const [y,m,d]=k.split('-').map(Number);const a=new Date(y,m-1,d),b=new Date(y,m-1,d+4);const f=x=>x.toLocaleDateString('ar-SA-u-ca-gregory-nu-arab',{day:'numeric',month:'long'});return f(a)+' – '+f(b)}
+function weekCheck(){const k=weekKeyOf();if(S.weekKey===k)return;
+  if(S.weekKey&&Object.values(S.weekStars).some(v=>v>0)){S.lastWeek={key:S.weekKey,stars:S.weekStars};
+    // أسبوع جديد ولم يختر المعلم أبطال الأسبوع الماضي: نختار أعلى ثلاثة تلقائياً
+    if(!S.featured||S.featured.key!==S.weekKey){const top=Object.entries(S.weekStars).filter(e=>e[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,3);S.featured={key:S.weekKey,label:weekLabel(S.weekKey),names:top.map(e=>e[0]),stars:Object.fromEntries(top)}}}
+  S.weekKey=k;S.weekStars={};save()}
+let starUndo=null;
+function giveStar(i,btn){const n=S.names[i];if(!n)return;weekCheck();S.weekStars[n]=(S.weekStars[n]||0)+1;save();ding(880);
+  if(btn){const b=document.createElement('span');b.className='star-pop';b.textContent='⭐';btn.appendChild(b)}
+  setTimeout(render,350);
+  document.querySelector('.att-toast')?.remove();const t=document.createElement('div');t.className='att-toast';t.innerHTML=`<span>⭐ نجمة لـ ${esc(n)}!</span><button>تراجع ↶</button>`;
+  t.querySelector('button').onclick=()=>{if(S.weekStars[n]>0)S.weekStars[n]--;save();t.remove();render()};document.body.appendChild(t);clearTimeout(starUndo);starUndo=setTimeout(()=>t.remove(),3000)}
+function champsSource(){const cur=Object.values(S.weekStars).some(v=>v>0);return cur||!S.lastWeek?{key:S.weekKey,stars:S.weekStars}:S.lastWeek}
+function openChamps(){
+  weekCheck();const src=champsSource();
+  const rank=S.names.map(n=>[n,src.stars[n]||0]).sort((a,b)=>b[1]-a[1]);
+  const pre=new Set(S.featured&&S.featured.key===src.key?S.featured.names:rank.filter(r=>r[1]>0).slice(0,3).map(r=>r[0]));
+  document.querySelector('.att-panel')?.remove();
+  const el=document.createElement('div');el.className='att-panel';el.onclick=e=>{if(e.target===el)el.remove()};
+  el.innerHTML=`<div class="box" role="dialog" aria-label="اختيار أبطال الأسبوع">
+    <div class="row" style="justify-content:space-between"><h2 style="font-size:26px">🏆 أبطال الأسبوع</h2><button class="icon-btn" onclick="this.closest('.att-panel').remove()" aria-label="إغلاق">✕</button></div>
+    <p class="note" style="color:#475569">نجوم أسبوع ${weekLabel(src.key)}. اختر المجموعة التي ستظهر صورها على الصفحة الرئيسية (مقترح: الأعلى نجوماً).</p>
+    <div class="row" style="gap:6px;margin-bottom:8px">${[1,3,5].map(k=>`<button class="btn ghost sm" style="color:#0F172A" data-top="${k}">أعلى ${k.toLocaleString('ar-SA')}</button>`).join('')}<button class="btn ghost sm" style="color:#0F172A" data-top="0">إلغاء الكل</button></div>
+    <div class="champ-list">${rank.map(([n,c],i)=>`<label class="champ-li"><input type="checkbox" value="${esc(n)}" ${pre.has(n)?'checked':''}>
+      <span class="champ-mini">${S.photos[n]?`<img src="${S.photos[n]}" alt="">`:heroSVG(n,true)}</span><b>${esc(n)}</b><span class="champ-st">⭐ ${c.toLocaleString('ar-SA')}</span>
+      <span class="row" style="gap:4px;margin-inline-start:auto"><button type="button" class="icon-btn" title="صورة الطالب" aria-label="صورة ${esc(n)}" data-photo="${i}">📷</button>${S.photos[n]?`<button type="button" class="icon-btn" title="حذف الصورة" aria-label="حذف صورة ${esc(n)}" data-nophoto="${i}">✕</button>`:''}</span></label>`).join('')||'<p class="empty">أضف أسماء الطلاب أولاً</p>'}</div>
+    <p class="note" style="color:#64748B">📷 الصورة اختيارية — بدونها يظهر بطل الطالب الكرتوني. الصور تُحفظ على هذا الجهاز فقط؛ تأكد من موافقة المدرسة وولي الأمر.</p>
+    <button class="btn sun big" style="width:100%" id="champGo">🏆 اعرضهم على الصفحة الرئيسية</button>
+    <input type="file" accept="image/*" id="champFile" hidden>
+  </div>`;
+  document.body.appendChild(el);
+  const boxes=()=>[...el.querySelectorAll('.champ-li input')];
+  el.querySelectorAll('[data-top]').forEach(b=>b.onclick=()=>{const k=+b.dataset.top;boxes().forEach((c,i)=>c.checked=i<k&&rank[i][1]>0)});
+  let who=null;const file=el.querySelector('#champFile');
+  el.querySelectorAll('[data-photo]').forEach(b=>b.onclick=e=>{e.preventDefault();who=rank[+b.dataset.photo][0];file.click()});
+  el.querySelectorAll('[data-nophoto]').forEach(b=>b.onclick=e=>{e.preventDefault();delete S.photos[rank[+b.dataset.nophoto][0]];save();openChamps()});
+  file.onchange=()=>{const f=file.files[0];if(!f||!who)return;const sel=new Set(boxes().filter(c=>c.checked).map(c=>c.value));shrinkPhoto(f).then(url=>{S.photos[who]=url;try{save()}catch(e){}
+    openChamps();document.querySelectorAll('.champ-li input').forEach(c=>c.checked=sel.has(c.value))}).catch(()=>toast('تعذر قراءة الصورة'))};
+  el.querySelector('#champGo').onclick=()=>{const names=boxes().filter(c=>c.checked).map(c=>c.value);
+    if(!names.length){S.featured=null;save();el.remove();render();return}
+    const ordered=rank.filter(r=>names.includes(r[0]));
+    S.featured={key:src.key,label:weekLabel(src.key),names:ordered.map(r=>r[0]),stars:Object.fromEntries(ordered)};save();el.remove();
+    S.tab='home';render();window.scrollTo({top:0,behavior:'smooth'});celebrate('🏆');
+    try{if(!window.champAudio)window.champAudio=new Audio();champAudio.src='voice/mb-champs.mp3';champAudio.play().catch(()=>{})}catch(e){}};
+}
+function shrinkPhoto(f){return new Promise((res,rej)=>{const r=new FileReader();r.onerror=rej;r.onload=()=>{const im=new Image();im.onerror=rej;im.onload=()=>{
+  const S2=220,c=document.createElement('canvas');c.width=c.height=S2;const x=c.getContext('2d');const k=Math.max(S2/im.width,S2/im.height);const w=im.width*k,h=im.height*k;
+  x.drawImage(im,(S2-w)/2,(S2-h)/2,w,h);res(c.toDataURL('image/jpeg',.82))};im.src=r.result};r.readAsDataURL(f)})}
+
 /* ---------- حضور الأبطال ---------- */
 function todayKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
 function attDaily(){if(S.attDate!==todayKey()){S.att={};S.attDate=todayKey();save()}}
@@ -703,8 +814,8 @@ function hsh(s){let h=7;for(const c of s)h=(h*31+c.codePointAt(0))>>>0;return h}
 const HP={cape:['#EF4444','#8B5CF6','#F59E0B','#10B981','#3B82F6','#EC4899','#14B8A6','#F97316'],
   suit:['#2563EB','#16A34A','#7C3AED','#DC2626','#0EA5E9','#DB2777','#CA8A04','#4F46E5'],
   skin:['#FFD8B5','#F2C29B','#D9A066','#B97A4C','#FFE3C8'],hair:['#1F1A33','#5A2E1A','#3B2416','#8B4513','#111']};
-function heroSVG(name){
-  const h=hsh(name),g=S.gender[name]==='g',up=!!S.att[name];
+function heroSVG(name,forceUp){
+  const h=hsh(name),g=S.gender[name]==='g',up=forceUp||!!S.att[name];
   const cape=HP.cape[h%8],suit=HP.suit[(h>>3)%8],skin=HP.skin[(h>>6)%5],hair=HP.hair[(h>>9)%5],em=(h>>12)%5;
   const emb=[`<path d="M60 92 l3.5 7 l7.5 1 l-5.5 5 l1.5 7.5 l-7 -3.7 l-7 3.7 l1.5 -7.5 l-5.5 -5 l7.5 -1z" fill="#FDE047"/>`,
     `<path d="M64 90 a9 9 0 1 0 0 16 a7 7 0 1 1 0 -16z" fill="#FDE047"/>`,
@@ -1032,7 +1143,7 @@ function wipe(){if(!confirm('سيتم مسح الأسماء والمهام وا�
 
 addEventListener('keydown',e=>{if(e.key==='Escape'){const x=document.querySelector('.att-panel')||document.querySelector('.sheet');if(x)x.remove();else if(document.getElementById('attOv'))attClose()}});
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',applyLook);
-attDaily();
+attDaily();weekCheck();
 render();
 </script>
 </body>
