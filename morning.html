@@ -887,6 +887,13 @@ function attPaint(){
 }
 function attCount(){const p=S.names.filter(n=>S.att[n]).length;const c=document.getElementById('attCnt');if(c)c.textContent=`${p.toLocaleString('ar-SA')} / ${S.names.length.toLocaleString('ar-SA')} حاضر`}
 let attAudio=null;
+// «أهلاً يا» + اسم الطالب بنفس صوت «اختيار طالب»، ثم (عند اكتمال الحضور) «اكتمل فريق الأبطال»
+function attGreet(n,all){if(!S.attSound)return;try{if(!attAudio)attAudio=new Audio();const a=attAudio,h=nameHash(n),has=NV.list&&NV.list.has(h);
+  const end=()=>{a.onended=null;if(all){a.src='voice/mb-hero-all.mp3';a.play().catch(()=>{})}};
+  a.onended=null;a.pause();
+  if(has){a.src='voice/names/_hello.mp3';a.onended=()=>{a.onended=end;a.src='voice/names/'+h+'.mp3';a.play().catch(end)};a.play().catch(()=>{deviceSay('أهلاً يا '+n);end()})}
+  else{deviceSay('أهلاً يا '+n);if(all){a.src='voice/mb-hero-all.mp3';setTimeout(()=>a.play().catch(()=>{}),1600)}else{a.src='voice/names/_hello.mp3';a.muted=true;a.play().then(()=>{a.pause();a.muted=false}).catch(()=>{a.muted=false})}}
+}catch(e){}}
 function attVoice(f){if(!S.attSound)return;try{if(!attAudio)attAudio=new Audio();attAudio.pause();attAudio.src='voice/'+f+'.mp3';const pr=attAudio.play();if(pr)pr.catch(()=>{})}catch(e){}}
 function whoosh(){if(!S.attSound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.setValueAtTime(300,AC.currentTime);o.frequency.exponentialRampToValueAtTime(1400,AC.currentTime+.35);g.gain.setValueAtTime(.12,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.4);o.connect(g).connect(AC.destination);o.start();o.stop(AC.currentTime+.42)}catch(e){}}
 function attTap(i,btn){
@@ -899,7 +906,7 @@ function attTap(i,btn){
   whoosh();attCount();
   M.mute=Math.max(M.mute,performance.now()+2500);
   const all=S.names.every(x=>S.att[x]);
-  if(all){attVoice('mb-hero-all');celebrate('🦸')}else attVoice(['mb-hero1','mb-hero2','mb-hero3'][hsh(n)%3]);
+  attGreet(n,all);if(all)celebrate('🦸');
   attToast(`${n} حاضر! 🦸`,i,true);
 }
 let attT=0;

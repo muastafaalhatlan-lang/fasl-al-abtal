@@ -19,6 +19,7 @@ function speak(text,out){
 }
 const all=process.argv.includes('--all');
 const intro=path.join(OUT,'_intro.mp3');if(all||!fs.existsSync(intro)){speak('البَطَلُ المُخْتَارُ هُوَ...',intro);console.log('intro')}
+const hello=path.join(OUT,'_hello.mp3');if(all||!fs.existsSync(hello)){speak('أَهْلاً يَا',hello);console.log('hello')}
 const lines=fs.readFileSync(path.join(__dirname,'student-names.txt'),'utf8').split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('#'));
 const seen=new Map();for(const l of lines){const [n,say]=l.split('|');seen.set(hash(n),say||n)}
 let made=0;for(const [h,say] of seen){const f=path.join(OUT,h+'.mp3');if(!all&&fs.existsSync(f))continue;speak(say+'!',f);if(++made%25===0)console.log(made)}
