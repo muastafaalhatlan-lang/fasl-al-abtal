@@ -853,7 +853,7 @@ class TidyScene{
     this.kids.forEach((k,i)=>{k.q=[];plan[i].forEach(([a,o])=>{if(a==='pick')k.q.push({a:'goto',o,side:16},{a:'pick',o,t:0},{a:'gotoX',x:BIN.x-30},{a:'throw',o,t:0});else k.q.push({a:'gotoX',x:o.tx-34},{a:'face',dir:1},{a:'push',o,t:0})});k.act=null;k.pose='idle'});
     this.done=false;this.cheerT=0;this.L.board.textContent='هيّا نرتّب فصلنا!';this.L.spark.setAttribute('opacity','0');
   }
-  finish(){this.finished=true;this.items.forEach(o=>o.st='gone');this.desks.forEach(d=>{d.x=d.tx;d.r=0;d.ok=true});this.kids.forEach((k,i)=>{k.q=[];k.act=null;k.x=[150,250,345][i];k.dir=i?-1:1});this.done=true;this.cheerT=0;this.L.board.textContent='فصلنا مرتّب وجميل';this.L.spark.setAttribute('opacity','1')}
+  finish(){this.finished=true;this.items.forEach(o=>o.st='gone');this.desks.forEach(d=>{d.x=d.tx;d.r=0;d.ok=true});this.kids.forEach((k,i)=>{k.q=[];k.act=null;k.x=[150,250,345][i];k.dir=i?-1:1});this.done=true;this.cheerT=0;this.L.board.textContent='فصلنا جميل ومرتّب';this.L.spark.setAttribute('opacity','1')}
   hand(k){const s=.75,c=k.crouch;let hx=16,hy=-26;
     if(k.pose==='pick'){hx=22;hy=-4}else if(k.pose==='carry'){hx=18;hy=-40}else if(k.pose==='throw'){hx=16;hy=-72}else if(k.pose==='push'){hx=27;hy=-36}
     return {x:k.x+k.dir*hx*s,y:186+(hy)*s-k.jump}}
@@ -878,7 +878,7 @@ class TidyScene{
       if(k.pose!=='walk'&&k.pose!=='carry')k.phase*=.9;
     }
     for(const o of this.items)if(o.st==='held'){const h=this.hand(o.by);o.x=h.x;o.y=h.y}
-    if(!this.done&&this.items.every(o=>o.st==='gone')&&this.desks.every(d=>d.ok)&&this.kids.every(k=>!k.act&&!k.q.length)){this.done=true;this.cheerT=0;this.L.board.textContent='فصلنا مرتّب وجميل';this.L.spark.setAttribute('opacity','1')}
+    if(!this.done&&this.items.every(o=>o.st==='gone')&&this.desks.every(d=>d.ok)&&this.kids.every(k=>!k.act&&!k.q.length)){this.done=true;this.cheerT=0;this.L.board.textContent='فصلنا جميل ومرتّب';this.L.spark.setAttribute('opacity','1')}
     if(this.done){this.cheerT+=dt;if(!this.finished&&this.cheerT>3.2)this.reset()}
   }
   itemSVG(o){const tr=`translate(${o.x.toFixed(1)} ${o.y.toFixed(1)}) rotate(${(o.st==='held'?0:o.rot).toFixed(0)})`;
@@ -921,7 +921,7 @@ class TidyScene{
 }
 const TD={iv:null,end:0,total:60,audio:null};
 function tidyPlay(f){try{if(TD.audio)TD.audio.pause();TD.audio=new Audio('voice/'+f+'.mp3');TD.audio.play().catch(()=>tidySay(f))}catch(e){tidySay(f)}}
-function tidySay(f){try{const u=new SpeechSynthesisUtterance(f==='mb-tidy'?'هيا يا أبطال، رتبوا فصلكم!':'انتهى الوقت! أحسنتم يا أبطال، فصلكم مرتب وجميل.');u.lang='ar-SA';speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function tidySay(f){try{const u=new SpeechSynthesisUtterance(f==='mb-tidy'?'هيا يا أبطال، رتبوا فصلكم!':'ممتاز يا أصدقائي! فصلنا جميل ومرتب.');u.lang='ar-SA';speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
 function tidyStart(){
   tidyStop(true);
   TD.total=S.tidyMin*60;TD.end=Date.now()+TD.total*1000;
@@ -945,7 +945,7 @@ function tidyStart(){
 }
 function tidyDone(){
   tidyPlay('mb-tidy-done');celebrate('🌟');ov_finish();M.mute=performance.now()+7000;
-  const h=document.querySelector('#tidyOv h2');if(h)h.textContent='أحسنتم يا أبطال! فصلكم مرتّب وجميل 🌟';
+  const h=document.querySelector('#tidyOv h2');if(h)h.textContent='ممتاز يا أصدقائي! فصلنا جميل ومرتّب 🌟';
   const b=document.getElementById('tidyBtns');if(b)b.innerHTML=`<button class="btn sun big" onclick="addStar();tidyStop()">⭐ نجمة للصف</button><button class="btn ghost" style="color:#fff" onclick="tidyStop()">إغلاق</button>`;
 }
 function ov_finish(){const sv=document.querySelector('#tidyOv svg[data-scene]');if(sv&&sv.__scene)sv.__scene.finish()}
