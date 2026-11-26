@@ -181,6 +181,52 @@ body:not(.teacher) .teach{display:none!important}
 .shout{animation:shake .5s}
 @keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 
+
+/* حضور الأبطال */
+.hero-card{flex-direction:row!important;flex-wrap:wrap;align-items:center}
+.hero-card .hc-side{flex:1 1 260px;display:grid;gap:12px}
+.hero-card .hc-row{flex:2 1 380px;display:flex;gap:4px;flex-wrap:wrap;justify-content:center;min-width:0}
+.hero-card .hc-row svg{width:76px;height:auto}
+.hero-card .hc-row .ab{filter:grayscale(.8);opacity:.6}
+.att-count{font-family:var(--f-display);font-size:44px;line-height:1}
+.att-count small{font-size:20px;color:var(--muted)}
+.att-ov{position:fixed;inset:0;z-index:56;overflow:auto;background:linear-gradient(#38BDF8,#7DD3FC 60%,#BAE6FD);color:#0F172A;--tag:#fff}
+.att-ov.night{background:radial-gradient(1200px 600px at 70% -10%,#4C1D95,transparent 60%),radial-gradient(rgba(255,255,255,.7) 1px,transparent 1.5px) 0 0/60px 60px,#0B1030;color:#fff;--tag:#1E2457}
+.att-top{position:sticky;top:0;z-index:3;display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 16px}
+.att-pill{display:inline-flex;align-items:center;gap:10px;background:var(--tag);color:inherit;border-radius:999px;padding:10px 20px;font-weight:800;font-size:20px;box-shadow:0 5px 0 rgba(15,23,42,.85),inset 0 0 0 3px rgba(15,23,42,.9)}
+.att-pill i{width:14px;height:14px;border-radius:50%;background:#22C55E;box-shadow:0 0 8px #22C55E}
+.att-top h2{font-size:clamp(24px,3.5vw,38px);color:#FFD34D;-webkit-text-stroke:1.5px #0F172A;paint-order:stroke;text-shadow:0 4px 0 #0F172A}
+.att-tools{margin-inline-start:auto;display:flex;gap:8px}
+.att-tools button{width:52px;height:52px;border-radius:50%;border:0;background:var(--tag);color:inherit;font-size:22px;box-shadow:0 5px 0 rgba(15,23,42,.85),inset 0 0 0 3px rgba(15,23,42,.9)}
+.att-tools button:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(15,23,42,.85),inset 0 0 0 3px rgba(15,23,42,.9)}
+.cloud{position:absolute;background:rgba(255,255,255,.55);border-radius:999px;pointer-events:none}
+.cloud::before,.cloud::after{content:"";position:absolute;background:inherit;border-radius:50%}
+.cloud::before{width:55%;height:160%;top:-70%;left:15%}.cloud::after{width:40%;height:120%;top:-45%;right:12%}
+.att-ov.night .cloud{display:none}
+.att-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:18px 10px;padding:10px 16px 120px;max-width:1500px;margin:0 auto}
+.hb{border:0;background:none;padding:0;display:grid;justify-items:center;gap:4px;color:inherit;position:relative;-webkit-tap-highlight-color:transparent}
+.hb svg{width:100%;max-width:130px;height:auto;transition:filter .3s,opacity .3s,transform .3s;filter:drop-shadow(0 6px 0 rgba(15,23,42,.18))}
+.hb.ab svg{filter:grayscale(.75) brightness(1.08);opacity:.7}
+.hb.pr svg{animation:hover 2.4s ease-in-out infinite}
+@keyframes hover{50%{transform:translateY(-6px)}}
+.hb.zap svg{animation:flyup .9s cubic-bezier(.3,1.4,.5,1)}
+@keyframes flyup{0%{transform:translateY(0) scale(1)}40%{transform:translateY(-34px) scale(1.12) rotate(-6deg)}100%{transform:translateY(0) scale(1)}}
+.hb .tag{background:var(--tag);border-radius:16px;padding:4px 14px;font-weight:800;font-size:19px;box-shadow:0 4px 0 rgba(15,23,42,.85),inset 0 0 0 3px rgba(15,23,42,.9);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hb.pr .tag{background:#22C55E;color:#fff}
+.burst{position:absolute;top:30%;left:50%;transform:translateX(-50%) rotate(-8deg);font-family:"Lalezar",var(--f-display);font-size:34px;color:#FFD34D;-webkit-text-stroke:2px #0F172A;paint-order:stroke;background:#fff;border-radius:14px;padding:0 12px;box-shadow:0 5px 0 #0F172A,inset 0 0 0 3px #0F172A;animation:burst 1.2s ease-out forwards;pointer-events:none;white-space:nowrap;z-index:2}
+@keyframes burst{0%{transform:translateX(-50%) scale(.2) rotate(-20deg);opacity:0}20%{transform:translateX(-50%) scale(1.15) rotate(-8deg);opacity:1}75%{opacity:1}100%{transform:translateX(-50%) translateY(-50px) scale(1) rotate(-8deg);opacity:0}}
+.att-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:58;display:flex;align-items:center;gap:14px;background:#111733;color:#fff;border-radius:999px;padding:10px 12px 10px 22px;font-weight:800;font-size:19px;box-shadow:0 6px 0 rgba(0,0,0,.4)}
+.att-toast button{border:0;border-radius:999px;background:#F43F5E;color:#fff;font-weight:800;padding:8px 16px}
+.att-panel{position:fixed;inset:0;z-index:59;background:rgba(10,15,30,.55);display:grid;place-items:center;padding:16px}
+.att-panel .box{background:#fff;color:#0F172A;border-radius:28px;max-width:640px;width:100%;max-height:90vh;overflow:auto;padding:20px;box-shadow:0 0 0 4px #0F172A,0 10px 0 4px #0F172A}
+.att-panel h3{font-size:17px;margin:14px 0 6px;letter-spacing:.2px}
+.att-panel .sum{border-radius:18px;background:#F0F9FF;box-shadow:inset 0 0 0 2px #BAE6FD;padding:12px;display:grid;gap:10px}
+.gchips{display:flex;flex-wrap:wrap;gap:8px}
+.gchip{border:0;border-radius:999px;padding:6px 14px;font-weight:800;display:inline-flex;gap:6px;align-items:center}
+.gchip.b{background:#DBEAFE;color:#1E3A8A;box-shadow:inset 0 0 0 2px #60A5FA}
+.gchip.g{background:#FCE7F3;color:#831843;box-shadow:inset 0 0 0 2px #F472B6}
+.gchip.ab{opacity:.55}
+.att-panel .btn{min-height:44px}
 /* رتّبوا فصلكم */
 .tidy-card{flex-direction:row!important;align-items:center;flex-wrap:wrap}
 .tidy-card .tidy-scene{flex:1 1 380px;min-width:0;max-width:560px}
@@ -388,7 +434,7 @@ const DEF={
   groupMode:'pairs', groups:[],
   tasks:[{t:'تحية الصباح والدعاء',d:false},{t:'مراجعة حرف اليوم',d:false},{t:'قراءة قصة قصيرة',d:false},{t:'تمرين رياضيات',d:false}],
   stars:0, goal:10, starLog:[],
-  light:'green', tidyMin:1, micSens:5, strikes:0, strikeMax:3,
+  light:'green', tidyMin:1, att:{}, attDate:'', gender:{}, attOnly:true, attSound:true, attNight:false, micSens:5, strikes:0, strikeMax:3,
   voice:0,
   levels:[{e:'🤫',t:'صمت',on:true},{e:'🤐',t:'همس',on:true},{e:'🗣️',t:'حديث مع شريك',on:true},{e:'👥',t:'عمل مجموعات',on:true},{e:'📣',t:'عرض أمام الصف',on:true}],
   timerMin:3,
@@ -430,18 +476,18 @@ function toggleFull(){try{document.fullscreenElement?document.exitFullscreen():d
 
 /* ---------- التبويبات ---------- */
 const TABS=[
-  {id:'home',t:'اللوحة',i:'🏠',cards:['pick','tasks','stars','traffic','voice','groups','tidy']},
-  {id:'class',t:'الصف',i:'👥',cards:['pick','groups']},
+  {id:'home',t:'اللوحة',i:'🏠',cards:['heroes','pick','tasks','stars','traffic','voice','groups','tidy']},
+  {id:'class',t:'الصف',i:'👥',cards:['heroes','pick','groups']},
   {id:'calm',t:'الهدوء',i:'🚦',cards:['traffic','voice','timer']},
   {id:'act',t:'أنشطة',i:'🧠',cards:['tidy','question','feel','breath','timer']},
-  {id:'all',t:'كل الأدوات',i:'🧰',cards:['pick','groups','tasks','stars','traffic','voice','tidy','timer','question','feel','breath']}
+  {id:'all',t:'كل الأدوات',i:'🧰',cards:['heroes','pick','groups','tasks','stars','traffic','voice','tidy','timer','question','feel','breath']}
 ];
 function renderTabs(){$('#tabs').innerHTML=TABS.map(t=>`<button class="tab ${S.tab===t.id?'on':''}" role="tab" aria-selected="${S.tab===t.id}" onclick="S.tab='${t.id}';save();render()"><span>${t.i}</span>${t.t}</button>`).join('')}
 
 /* ---------- البطاقات ---------- */
 const CARDS={
 pick(){
-  const pool=avail();const n=S.names.length;
+  const pool=avail();const n=roster().length;
   return card('pick','🎲','اختيار طالب','var(--coral)',`
     <div class="pick-show"><div class="pick-name" id="pickName">${S.lastPick?esc(S.lastPick):'<span class="muted" style="font-size:24px">من سيكون البطل؟</span>'}</div></div>
     <div class="row"><button class="btn coral big" style="flex:1" onclick="pickStudent()" ${n?'':'disabled'}>🎲 اختر طالباً</button></div>
@@ -458,7 +504,7 @@ groups(){
   return card('groups','🧩','تقسيم المجموعات','var(--grass)',`
     <div class="seg">${modes.map(([k,t])=>`<button class="${S.groupMode===k?'on':''}" onclick="S.groupMode='${k}';makeGroups()">${t}</button>`).join('')}</div>
     ${S.groups.length?`<div class="groups">${S.groups.map((g,i)=>`<div class="grp" style="--gc:${colors[i%colors.length]}"><b>المجموعة ${(i+1).toLocaleString('ar-SA')}</b>${g.map(x=>`<div>${esc(x)}</div>`).join('')}</div>`).join('')}</div>`:`<div class="empty">اختر نوع التقسيم ثم اضغط «وزّع»</div>`}
-    <button class="btn green big" onclick="makeGroups()" ${S.names.length<2?'disabled':''}>🔀 ${S.groups.length?'أعد الخلط':'وزّع'}</button>`)
+    <button class="btn green big" onclick="makeGroups()" ${roster().length<2?'disabled':''}>🔀 ${S.groups.length?'أعد الخلط':'وزّع'}</button>`)
 },
 tasks(){
   const done=S.tasks.filter(t=>t.d).length;
@@ -533,6 +579,18 @@ feel(){
     <p class="note" style="margin:0;text-align:center">${tot?`شارك ${tot.toLocaleString('ar-SA')} طالب — شكراً لكم 💛`:'كل طالب يضغط على الوجه الذي يشبه شعوره'}</p>
     <div class="teach"><button class="btn ghost sm" onclick="S.feel=[0,0,0,0,0];save();render()">↺ تصفير</button> <span class="note">الأعداد تظهر في وضع المعلم فقط</span></div>`)
 },
+heroes(){
+  const pres=S.names.filter(n=>S.att[n]).length,tot=S.names.length;
+  return `<section class="card wide hero-card" style="--c:var(--sky)" data-card="heroes">
+    <div class="hc-side">
+      <div class="card-h"><span class="ic">🦸</span><h2>حضور الأبطال</h2></div>
+      <div class="att-count">${pres.toLocaleString('ar-SA')} <small>/ ${tot.toLocaleString('ar-SA')} حاضر</small></div>
+      <p class="note" style="margin:0;font-size:16px">كل طالب يضغط على بطله ليسجّل حضوره، فيطير البطل ويُرحَّب به.</p>
+      <button class="btn big" onclick="attOpen()">🦸 افتح شاشة الحضور</button>
+    </div>
+    <button class="hc-row tidy-btn" onclick="attOpen()" aria-label="افتح شاشة الحضور">${S.names.slice(0,12).map(n=>`<span class="${S.att[n]?'':'ab'}">${heroSVG(n)}</span>`).join('')}</button>
+  </section>`
+},
 tidy(){
   return `<section class="card wide tidy-card" style="--c:var(--sun)" data-card="tidy">
     <div class="tidy-scene"><button class="tidy-btn" onclick="tidyStart()" aria-label="ابدأ: رتّبوا فصلكم">${tidySVG()}</button></div>
@@ -565,21 +623,22 @@ function render(){
 }
 
 /* ---------- منطق الأدوات ---------- */
-function avail(){return S.noRepeat?S.names.filter(n=>!S.used.includes(n)):S.names.slice()}
+function roster(){const pres=S.names.filter(n=>S.att[n]);return (S.attOnly&&pres.length)?pres:S.names.slice()}
+function avail(){const r=roster();return S.noRepeat?r.filter(n=>!S.used.includes(n)):r}
 let picking=false;
 function pickStudent(forQ){
   if(picking||!S.names.length)return;
   let pool=avail();
-  if(!pool.length){S.used=[];pool=S.names.slice();toast('🔄 اختير الجميع — بدأت جولة جديدة')}
+  if(!pool.length){S.used=[];pool=roster();toast('🔄 اختير الجميع — بدأت جولة جديدة')}
   const pick=pool[Math.floor(Math.random()*pool.length)];
   if(S.noRepeat)S.used.push(pick);
   save();
   if(forQ){Q.who=pick;render();return}
   picking=true;let n=0;const el=()=>$('#pickName');
-  const iv=setInterval(()=>{const e=el();if(e){e.className='pick-name spin';e.textContent=S.names[Math.floor(Math.random()*S.names.length)]}if(++n>14){clearInterval(iv);picking=false;S.lastPick=pick;save();render();const e2=el();if(e2)e2.classList.add('pop')}},70);
+  const iv=setInterval(()=>{const e=el();if(e){e.className='pick-name spin';const r=roster();e.textContent=r[Math.floor(Math.random()*r.length)]}if(++n>14){clearInterval(iv);picking=false;S.lastPick=pick;save();render();const e2=el();if(e2)e2.classList.add('pop')}},70);
 }
 function makeGroups(){
-  const names=shuffle(S.names);const n=names.length;if(n<2){save();render();return}
+  const names=shuffle(roster());const n=names.length;if(n<2){save();render();return}
   let g;
   if(S.groupMode==='g2')g=2;else if(S.groupMode==='g3')g=3;
   else if(S.groupMode==='pairs')g=Math.floor(n/2);
@@ -640,6 +699,112 @@ function warnSpeak(last){
     warnAudio.onended=()=>{M.mute=performance.now()+2500};
     warnAudio.play().catch(fallback)}catch(e){fallback()}
 }
+
+
+/* ---------- حضور الأبطال ---------- */
+function todayKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function attDaily(){if(S.attDate!==todayKey()){S.att={};S.attDate=todayKey();save()}}
+function hsh(s){let h=7;for(const c of s)h=(h*31+c.codePointAt(0))>>>0;return h}
+const HP={cape:['#EF4444','#8B5CF6','#F59E0B','#10B981','#3B82F6','#EC4899','#14B8A6','#F97316'],
+  suit:['#2563EB','#16A34A','#7C3AED','#DC2626','#0EA5E9','#DB2777','#CA8A04','#4F46E5'],
+  skin:['#FFD8B5','#F2C29B','#D9A066','#B97A4C','#FFE3C8'],hair:['#1F1A33','#5A2E1A','#3B2416','#8B4513','#111']};
+function heroSVG(name){
+  const h=hsh(name),g=S.gender[name]==='g',up=!!S.att[name];
+  const cape=HP.cape[h%8],suit=HP.suit[(h>>3)%8],skin=HP.skin[(h>>6)%5],hair=HP.hair[(h>>9)%5],em=(h>>12)%5;
+  const emb=[`<path d="M60 92 l3.5 7 l7.5 1 l-5.5 5 l1.5 7.5 l-7 -3.7 l-7 3.7 l1.5 -7.5 l-5.5 -5 l7.5 -1z" fill="#FDE047"/>`,
+    `<path d="M64 90 a9 9 0 1 0 0 16 a7 7 0 1 1 0 -16z" fill="#FDE047"/>`,
+    `<path d="M62 88 l-8 12 h6 l-3 10 l10 -14 h-6 l4 -8z" fill="#FDE047"/>`,
+    `<path d="M60 108 l-9 -9 a5 5 0 0 1 9 -6 a5 5 0 0 1 9 6z" fill="#FDE047"/>`,
+    `<path d="M60 88 l9 4 v6 c0 6 -4 10 -9 12 c-5 -2 -9 -6 -9 -12 v-6z" fill="#FDE047"/>`][em];
+  const arms=up?`<path d="M44 86 Q32 74 30 60" stroke="${suit}" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M76 86 Q88 74 90 60" stroke="${suit}" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="30" cy="58" r="5.5" fill="${skin}"/><circle cx="90" cy="58" r="5.5" fill="${skin}"/>`
+    :`<path d="M44 88 Q36 100 38 112" stroke="${suit}" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M76 88 Q84 100 82 112" stroke="${suit}" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="38" cy="114" r="5.5" fill="${skin}"/><circle cx="82" cy="114" r="5.5" fill="${skin}"/>`;
+  const hairB=g?`<path d="M33 52 Q30 18 60 18 Q90 18 87 52 Q84 36 72 32 Q60 40 46 32 Q36 38 33 52Z" fill="${hair}"/><path d="M84 40 Q102 42 98 62 Q92 52 84 50Z" fill="${hair}"/><circle cx="86" cy="38" r="5" fill="${cape}"/>`
+    :`<path d="M33 50 Q30 20 54 18 L58 10 L64 18 L72 12 L74 21 Q90 26 87 50 Q80 36 68 34 L62 40 L56 33 Q42 34 33 50Z" fill="${hair}"/>`;
+  return `<svg viewBox="0 0 120 150" aria-hidden="true">
+    <ellipse cx="60" cy="144" rx="26" ry="4" fill="rgba(15,23,42,.18)"/>
+    <path d="M42 80 Q26 112 22 136 Q40 128 60 134 Q80 128 98 136 Q94 112 78 80Z" fill="${cape}" stroke="rgba(0,0,0,.18)" stroke-width="2"/>
+    <rect x="49" y="114" width="9" height="24" rx="3" fill="${suit}"/><rect x="62" y="114" width="9" height="24" rx="3" fill="${suit}"/>
+    <rect x="47" y="132" width="13" height="8" rx="3" fill="${cape}"/><rect x="60" y="132" width="13" height="8" rx="3" fill="${cape}"/>
+    <path d="M44 82 Q60 76 76 82 L74 118 Q60 122 46 118Z" fill="${suit}"/>
+    <rect x="45" y="110" width="30" height="7" rx="3.5" fill="#FBBF24" stroke="#B45309" stroke-width="1.2"/><circle cx="60" cy="113.5" r="4" fill="#F59E0B" stroke="#B45309" stroke-width="1.2"/>
+    ${emb}${arms}
+    <circle cx="60" cy="50" r="27" fill="${skin}"/>
+    ${hairB}
+    <path d="M37 50 Q60 40 83 50 L82 58 Q60 52 38 58Z" fill="${cape}"/>
+    <ellipse cx="50" cy="53" rx="4.2" ry="5.6" fill="#1E1A3A"/><ellipse cx="70" cy="53" rx="4.2" ry="5.6" fill="#1E1A3A"/>
+    <circle cx="51.5" cy="51" r="1.7" fill="#fff"/><circle cx="71.5" cy="51" r="1.7" fill="#fff"/>
+    <ellipse cx="43" cy="63" rx="4.5" ry="2.6" fill="#FB7185" opacity=".45"/><ellipse cx="77" cy="63" rx="4.5" ry="2.6" fill="#FB7185" opacity=".45"/>
+    ${up?`<path d="M52 64 Q60 73 68 64 Z" fill="#9F1239"/>`:`<path d="M54 66 Q60 69 66 66" stroke="#9F1239" stroke-width="2.4" fill="none" stroke-linecap="round"/>`}
+  </svg>`;
+}
+function attOpen(){
+  attDaily();document.getElementById('attOv')?.remove();
+  const ov=document.createElement('div');ov.className='att-ov'+(S.attNight?' night':'');ov.id='attOv';
+  ov.innerHTML=`<div class="cloud" style="width:150px;height:46px;top:150px;left:8%"></div><div class="cloud" style="width:200px;height:60px;top:380px;right:6%"></div><div class="cloud" style="width:130px;height:40px;top:640px;left:40%"></div>
+    <div class="att-top"><span class="att-pill"><i></i><span id="attCnt"></span></span><h2>حضور الأبطال</h2>
+      <div class="att-tools">
+        <button onclick="S.attNight=!S.attNight;save();document.getElementById('attOv').classList.toggle('night',S.attNight);this.textContent=S.attNight?'🌙':'☀️'" aria-label="نهار أو ليل">${S.attNight?'🌙':'☀️'}</button>
+        <button onclick="S.attSound=!S.attSound;save();this.textContent=S.attSound?'🔊':'🔇'" aria-label="الصوت">${S.attSound?'🔊':'🔇'}</button>
+        <button onclick="toggleFull()" aria-label="ملء الشاشة">⛶</button>
+        ${teacher?`<button onclick="attPanel()" aria-label="لوحة المعلم">⚙️</button>`:''}
+        <button onclick="attClose()" aria-label="إغلاق">✕</button>
+      </div></div>
+    <div class="att-grid" id="attGrid"></div>`;
+  document.body.appendChild(ov);attPaint();
+}
+function attClose(){document.getElementById('attOv')?.remove();document.querySelector('.att-toast')?.remove();render()}
+function attPaint(){
+  const g=document.getElementById('attGrid');if(!g)return;
+  g.innerHTML=S.names.length?S.names.map((n,i)=>`<button class="hb ${S.att[n]?'pr':'ab'}" data-i="${i}" onclick="attTap(${i},this)" aria-pressed="${!!S.att[n]}">${heroSVG(n)}<span class="tag">${esc(n)}</span></button>`).join('')
+    :`<p class="empty" style="grid-column:1/-1;background:#fff">أضف أسماء الطلاب من ⚙️ الإعدادات (وضع المعلم)</p>`;
+  attCount();
+}
+function attCount(){const p=S.names.filter(n=>S.att[n]).length;const c=document.getElementById('attCnt');if(c)c.textContent=`${p.toLocaleString('ar-SA')} / ${S.names.length.toLocaleString('ar-SA')} حاضر`}
+let attAudio=null;
+function attVoice(f){if(!S.attSound)return;try{if(attAudio)attAudio.pause();attAudio=new Audio('voice/'+f+'.mp3');attAudio.play().catch(()=>{})}catch(e){}}
+function whoosh(){if(!S.attSound)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.setValueAtTime(300,AC.currentTime);o.frequency.exponentialRampToValueAtTime(1400,AC.currentTime+.35);g.gain.setValueAtTime(.12,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.4);o.connect(g).connect(AC.destination);o.start();o.stop(AC.currentTime+.42)}catch(e){}}
+function attTap(i,btn){
+  const n=S.names[i];if(!n)return;
+  if(S.att[n]){attToast(`${n} حاضر بالفعل ✅`,i);return}
+  S.att[n]=Date.now();S.attDate=todayKey();save();
+  btn.className='hb pr zap';btn.innerHTML=heroSVG(n)+`<span class="tag">${esc(n)}</span>`;btn.setAttribute('aria-pressed','true');
+  const b=document.createElement('span');b.className='burst';b.textContent=['زاااب!','بوووم!','وااو!','بطل!'][hsh(n+Date.now())%4];btn.appendChild(b);setTimeout(()=>b.remove(),1300);
+  setTimeout(()=>btn.classList.remove('zap'),950);
+  whoosh();attCount();
+  M.mute=Math.max(M.mute,performance.now()+2500);
+  const all=S.names.every(x=>S.att[x]);
+  if(all){setTimeout(()=>attVoice('mb-hero-all'),350);celebrate('🦸')}else attVoice(['mb-hero1','mb-hero2','mb-hero3'][hsh(n)%3]);
+  attToast(`${n} حاضر! 🦸`,i,true);
+}
+let attT=0;
+function attToast(msg,i,undo){
+  document.querySelector('.att-toast')?.remove();clearTimeout(attT);
+  const t=document.createElement('div');t.className='att-toast';t.innerHTML=`<span>${esc(msg)}</span>${undo?`<button onclick="attUndo(${i})">تراجع ↶</button>`:''}`;
+  document.body.appendChild(t);attT=setTimeout(()=>t.remove(),3500);
+}
+function attUndo(i){const n=S.names[i];delete S.att[n];save();document.querySelector('.att-toast')?.remove();attPaint()}
+function attPanel(){
+  const pres=S.names.filter(n=>S.att[n]),abs=S.names.filter(n=>!S.att[n]);
+  document.querySelector('.att-panel')?.remove();
+  const el=document.createElement('div');el.className='att-panel';el.onclick=e=>{if(e.target===el)el.remove()};
+  el.innerHTML=`<div class="box" role="dialog" aria-label="لوحة المعلم">
+    <div class="row" style="justify-content:space-between"><h2 style="font-size:26px">⚙️ لوحة المعلم</h2><button class="icon-btn" onclick="this.closest('.att-panel').remove()" aria-label="إغلاق">✕</button></div>
+    <div class="sum" style="margin-top:12px">
+      <div class="row" style="justify-content:space-between"><b style="font-size:18px">ملخص الحضور</b><span class="chip" style="background:#DBEAFE;color:#1E3A8A">${pres.length.toLocaleString('ar-SA')} حاضر / ${abs.length.toLocaleString('ar-SA')} غائب</span></div>
+      ${abs.length?`<div><b>الغائبون:</b> ${abs.map(esc).join('، ')}</div>`:'<div>🎉 الجميع حاضر</div>'}
+      <div class="row"><button class="btn ghost sm" style="color:#0F172A" onclick="attCopy()">📋 نسخ قائمة الغياب</button><button class="btn green sm" onclick="S.names.forEach(n=>S.att[n]=S.att[n]||Date.now());S.attDate=todayKey();save();attPaint();attPanel()">✓ تسجيل الجميع حاضرين</button></div>
+      <label class="chk"><input type="checkbox" ${S.attOnly?'checked':''} onchange="S.attOnly=this.checked;save()"> اختيار الطالب والمجموعات من الحاضرين فقط</label>
+    </div>
+    <h3>شكل البطل (اضغط للتبديل: ولد 👦 / بنت 👧)</h3>
+    <div class="gchips">${S.names.map((n,i)=>{const g=S.gender[n]==='g';return `<button class="gchip ${g?'g':'b'} ${S.att[n]?'':'ab'}" onclick="attGender(${i})">${g?'👧':'👦'} ${esc(n)}</button>`}).join('')}</div>
+    <p class="note">لإضافة الأسماء أو تعديلها: ⚙️ إعدادات اللوحة ← أسماء الطلاب. يبدأ الحضور من جديد تلقائياً كل يوم.</p>
+    <div class="row" style="margin-top:12px"><button class="btn coral" style="flex:1" onclick="if(confirm('إعادة ضبط حضور اليوم؟')){S.att={};save();attPaint();attPanel()}">🔄 إعادة ضبط الحضور</button></div>
+  </div>`;
+  document.body.appendChild(el);
+}
+function attGender(i){const n=S.names[i];S.gender[n]=S.gender[n]==='g'?'b':'g';save();attPaint();attPanel()}
+function attCopy(){const abs=S.names.filter(n=>!S.att[n]);const txt=`الغائبون (${new Date().toLocaleDateString('ar-SA-u-ca-gregory')}): `+(abs.join('، ')||'لا أحد');
+  (navigator.clipboard?navigator.clipboard.writeText(txt):Promise.reject()).then(()=>toast('📋 نُسخت قائمة الغياب')).catch(()=>prompt('انسخ القائمة:',txt))}
 
 /* ---------- رتّبوا فصلكم ---------- */
 function kid(x,hair,shirt,pose,skin){
@@ -790,8 +955,9 @@ function importPlatform(){
 }
 function wipe(){if(!confirm('سيتم مسح الأسماء والمهام والنجوم وكل الإعدادات من هذا الجهاز. متابعة؟'))return;try{localStorage.removeItem(KEY)}catch(e){}S=structuredClone(DEF);T.left=S.timerMin*60;document.querySelector('.sheet')?.remove();render();toast('تم مسح البيانات')}
 
-addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelector('.sheet')?.remove()});
+addEventListener('keydown',e=>{if(e.key==='Escape'){const x=document.querySelector('.att-panel')||document.querySelector('.sheet');if(x)x.remove();else if(document.getElementById('attOv'))attClose()}});
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',applyLook);
+attDaily();
 render();
 </script>
 </body>
