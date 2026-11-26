@@ -170,6 +170,16 @@ body:not(.teacher) .teach{display:none!important}
 .lvl.on{background:var(--grape);color:#fff}
 .lvl.off{opacity:.35}
 
+.mic{display:grid;gap:8px;border-radius:16px;background:var(--surface-2);padding:12px}
+.meter{position:relative;height:22px;border-radius:999px;background:linear-gradient(to left,var(--green),var(--amber) 70%,var(--red));overflow:hidden}
+.meter .cover{position:absolute;inset:0 auto 0 0;background:var(--surface);opacity:.82;transition:width .08s linear}
+.meter .th{position:absolute;top:-2px;bottom:-2px;width:4px;background:var(--ink);border-radius:2px}
+.strikes{display:flex;align-items:center;gap:8px;font-weight:800;flex-wrap:wrap}
+.strike{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:22px;background:var(--surface);box-shadow:inset 0 0 0 2px var(--line)}
+.strike.on{background:var(--red);box-shadow:none;animation:pop .4s}
+.banned{border-radius:14px;padding:10px 12px;text-align:center;font-weight:800;font-size:19px;background:color-mix(in srgb,var(--red) 18%,var(--surface));color:var(--red);box-shadow:inset 0 0 0 2px var(--red)}
+.shout{animation:shake .5s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
 /* مؤقت */
 .timer-d{font-family:var(--f-display);font-size:clamp(56px,8vw,86px);font-weight:800;text-align:center;font-variant-numeric:tabular-nums;line-height:1}
 .timer-d.end{color:var(--coral);animation:blink 1s infinite}
@@ -254,7 +264,7 @@ const DEF={
   groupMode:'pairs', groups:[],
   tasks:[{t:'تحية الصباح والدعاء',d:false},{t:'مراجعة حرف اليوم',d:false},{t:'قراءة قصة قصيرة',d:false},{t:'تمرين رياضيات',d:false}],
   stars:0, goal:10, starLog:[],
-  light:'green',
+  light:'green', micSens:5, strikes:0, strikeMax:3,
   voice:0,
   levels:[{e:'🤫',t:'صمت',on:true},{e:'🤐',t:'همس',on:true},{e:'🗣️',t:'حديث مع شريك',on:true},{e:'👥',t:'عمل مجموعات',on:true},{e:'📣',t:'عرض أمام الصف',on:true}],
   timerMin:3,
@@ -354,6 +364,19 @@ traffic(){
     <div class="traffic">
       <div class="lights">${lights.map(([k,c,n])=>`<button class="light ${S.light===k?'on':''}" style="--lc:${c}" aria-label="${n}" onclick="setLight('${k}')"></button>`).join('')}</div>
       <div class="tmeans">${L.map(([k,c,n,m])=>`<button class="tmean ${S.light===k?'on':''}" style="--lc:${c}" onclick="setLight('${k}')"><i></i><span>${n}: ${m}</span></button>`).join('')}</div>
+    </div>
+    <div class="mic">
+      <div class="row" style="justify-content:space-between">
+        <b>🎤 الإشارة الذكية ${M.on?'<span class="note">تستمع الآن…</span>':''}</b>
+        <button class="btn ${M.on?'ghost':'coral'} sm" onclick="M.on?micStop():micStart()">${M.on?'⏹ إيقاف الاستماع':'🎤 شغّل استشعار الصوت'}</button>
+      </div>
+      ${M.on?`<div class="meter" aria-label="مستوى الضجيج"><div class="cover" id="micCover" style="width:100%"></div><div class="th" style="inset-inline-start:${micTh()}%"></div></div>`:`<p class="note" style="margin:0">تتحول الإشارة تلقائياً إلى الأحمر عند ارتفاع الصوت، وتنطق: «اخفضوا أصواتكم يا أبطال».</p>`}
+      <div class="strikes">المخالفات: ${Array.from({length:S.strikeMax},(_,i)=>`<span class="strike ${i<S.strikes?'on':''}">${i<S.strikes?'✖':''}</span>`).join('')} <span>${S.strikes.toLocaleString('ar-SA')} / ${S.strikeMax.toLocaleString('ar-SA')}</span></div>
+      ${S.strikes>=S.strikeMax?`<div class="banned">🚫 ثلاث مخالفات: حرمان من حصة الرياضة</div>`:''}
+      <div class="teach">
+        <label class="chk" style="width:100%">الحساسية <input type="range" min="1" max="10" value="${S.micSens}" style="flex:1" oninput="S.micSens=+this.value;save();const t=document.querySelector('.meter .th');if(t)t.style.insetInlineStart=micTh()+'%'"> <span class="note">أعلى = يلتقط الأصوات الأخف</span></label>
+        <div class="row" style="margin-top:6px"><button class="btn ghost sm" onclick="if(S.strikes){S.strikes--;save();render()}">↶ إلغاء مخالفة</button><button class="btn ghost sm" onclick="S.strikes=0;save();render()">↺ تصفير المخالفات</button><button class="btn ghost sm" onclick="warnSpeak(false)">🔊 تجربة التنبيه</button></div>
+      </div>
     </div>`)
 },
 voice(){
@@ -434,6 +457,54 @@ function mvTask(i,d){const j=i+d;if(j<0||j>=S.tasks.length)return;[S.tasks[i],S.
 function addStar(){const was=S.stars>=S.goal;S.stars++;S.starLog.push(Date.now());save();render();ding(880);if(!was&&S.stars>=S.goal)celebrate('⭐')}
 function undoStar(){if(!S.stars)return;S.stars--;S.starLog.pop();save();render()}
 function setLight(k){S.light=k;save();render()}
+
+/* ---------- الإشارة الذكية: استشعار الصوت ---------- */
+const M={on:false,stream:null,ctx:null,an:null,buf:null,raf:0,lvl:0,loudSince:0,quietSince:0,mute:0};
+function micTh(){return 92-S.micSens*5} // 1→87 … 10→42 (من 100)
+async function micStart(){
+  try{
+    M.stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+  }catch(e){toast('🎤 لم يُسمح باستخدام الميكروفون. اسمح له من إعدادات المتصفح');return}
+  M.ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const src=M.ctx.createMediaStreamSource(M.stream);M.an=M.ctx.createAnalyser();M.an.fftSize=1024;src.connect(M.an);
+  M.buf=new Float32Array(M.an.fftSize);M.on=true;M.lvl=0;M.loudSince=0;M.quietSince=performance.now();render();micLoop();
+}
+function micStop(){M.on=false;cancelAnimationFrame(M.raf);try{M.stream.getTracks().forEach(t=>t.stop())}catch(e){}try{M.ctx.close()}catch(e){}render()}
+function micLoop(){
+  if(!M.on)return;
+  M.an.getFloatTimeDomainData(M.buf);let sum=0;for(const v of M.buf)sum+=v*v;
+  const db=20*Math.log10(Math.sqrt(sum/M.buf.length)+1e-9);
+  const raw=Math.max(0,Math.min(100,(db+75)/65*100));
+  M.lvl=raw>M.lvl?M.lvl*.6+raw*.4:M.lvl*.93+raw*.07; // صعود سريع، هبوط هادئ
+  const c=document.getElementById('micCover');if(c)c.style.width=(100-M.lvl)+'%';
+  const now=performance.now(),th=micTh();
+  if(now>M.mute){
+    if(M.lvl>=th){M.quietSince=0;if(!M.loudSince)M.loudSince=now;
+      if(now-M.loudSince>900){M.loudSince=0;violation()}
+      else if(S.light==='green')setLight('yellow')}
+    else{M.loudSince=0;
+      if(M.lvl>=th*.8){if(S.light==='green')setLight('yellow');M.quietSince=0}
+      else{if(!M.quietSince)M.quietSince=now;if(now-M.quietSince>4000&&S.light!=='green')setLight('green')}}
+  }
+  M.raf=requestAnimationFrame(micLoop);
+}
+function violation(){
+  if(S.strikes<S.strikeMax)S.strikes++;
+  S.light='red';save();render();
+  const c=document.querySelector('[data-card="traffic"]');if(c){c.classList.remove('shout');void c.offsetWidth;c.classList.add('shout')}
+  warnSpeak(S.strikes>=S.strikeMax);
+}
+let warnAudio=null;
+function warnSpeak(last){
+  // لا نستمع أثناء التنبيه حتى لا يلتقط الميكروفون صوت اللوحة نفسها
+  M.mute=performance.now()+9000;M.quietSince=0;
+  const txt=last?'هذه المخالفة الثالثة يا أبطال. للأسف، لا حصة رياضة اليوم.':'اخفضوا أصواتكم يا أبطال! ثلاث مخالفات تعني الحرمان من حصة الرياضة.';
+  toast('🔇 '+txt);
+  const fallback=()=>{try{const u=new SpeechSynthesisUtterance(txt);u.lang='ar-SA';u.rate=.9;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};
+  try{if(warnAudio)warnAudio.pause();warnAudio=new Audio('voice/'+(last?'mb-last':'mb-quiet')+'.mp3');
+    warnAudio.onended=()=>{M.mute=performance.now()+2500};
+    warnAudio.play().catch(fallback)}catch(e){fallback()}
+}
 
 /* مؤقت */
 const T={left:S.timerMin*60,run:false,iv:null,ended:false,end:0};
