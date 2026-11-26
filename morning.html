@@ -453,7 +453,7 @@ const DEF={
   names:['أحمد','محمد','عبدالله','فيصل','خالد','سلمان','يوسف','عمر','سعود','ناصر','تركي','حمد'],
   noRepeat:true, used:[], lastPick:'',
   groupMode:'pairs', groups:[],
-  tasks:[], starMode:'kids', weekStars:{}, weekKey:'', lastWeek:null, featured:null, photos:{},
+  tasks:[], pickVoice:true, starMode:'kids', weekStars:{}, weekKey:'', lastWeek:null, featured:null, photos:{},
   stars:0, goal:10, starLog:[],
   light:'green', tidyMin:1, att:{}, attDate:'', gender:{}, attOnly:true, attSound:true, attNight:false, micSens:5, strikes:0, strikeMax:3,
   voice:0,
@@ -518,6 +518,7 @@ pick(){
     <div class="row"><button class="btn coral big" style="flex:1" onclick="pickStudent()" ${n?'':'disabled'}>🎲 اختر طالباً</button></div>
     <div class="row" style="justify-content:space-between">
       <label class="chk"><input type="checkbox" ${S.noRepeat?'checked':''} onchange="S.noRepeat=this.checked;save();render()"> لا تكرر الاسم حتى اختيار الجميع</label>
+      <label class="chk"><input type="checkbox" ${S.pickVoice?'checked':''} onchange="S.pickVoice=this.checked;save()"> 🔊 قراءة الاسم</label>
       ${S.noRepeat?`<span class="note">باقٍ ${pool.length.toLocaleString('ar-SA')} من ${n.toLocaleString('ar-SA')} <button class="btn ghost sm" onclick="S.used=[];S.lastPick='';save();render()">↺ جولة جديدة</button></span>`:''}
     </div>
     <div class="teach"><div class="names-list">${S.names.map(x=>`<span class="nchip ${S.noRepeat&&S.used.includes(x)?'used':''}">${esc(x)}</span>`).join('')||'<span class="empty" style="width:100%">أضف أسماء الطلاب من ⚙️ الإعدادات</span>'}</div></div>`,
@@ -677,6 +678,24 @@ function render(){
 function roster(){const pres=S.names.filter(n=>S.att[n]);return (S.attOnly&&pres.length)?pres:S.names.slice()}
 function avail(){const r=roster();return S.noRepeat?r.filter(n=>!S.used.includes(n)):r}
 let picking=false;
+/* ---------- قراءة اسم الطالب المختار ---------- */
+// الأسماء الشائعة مسجّلة مسبقاً في voice/names/ (اسم الملف = بصمة الاسم بعد توحيد كتابته)، وغيرها يُقرأ بصوت الجهاز
+function nameKey(n){return String(n).replace(/[\u064B-\u065F\u0670\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/\s+/g,'')}
+function nameHash(n){let h=0x811c9dc5;const k=nameKey(n);for(let i=0;i<k.length;i++){h^=k.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0}return h.toString(16).padStart(8,'0')}
+const NV={list:null,audio:null,introAt:0};
+fetch('voice/names/list.json').then(r=>r.ok?r.json():[]).then(a=>{NV.list=new Set(a)}).catch(()=>{NV.list=new Set()});
+function nameIntro(){ // داخل ضغطة المستخدم: يفتح الصوت على الجوال ويقول «البطل المختار هو…»
+  if(!S.pickVoice)return;
+  try{if(!NV.audio)NV.audio=new Audio();const a=NV.audio;a.onended=null;a.pause();a.src='voice/names/_intro.mp3';NV.introAt=performance.now();a.play().catch(()=>{})}catch(e){}
+  try{if(window.speechSynthesis){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}}catch(e){}
+}
+function announceName(n){
+  if(!S.pickVoice)return;const a=NV.audio,h=nameHash(n);
+  const go=()=>{if(NV.list&&NV.list.has(h)){try{a.onended=null;a.src='voice/names/'+h+'.mp3';a.play().catch(()=>deviceSay(n))}catch(e){deviceSay(n)}}else deviceSay(n)};
+  if(a&&!a.paused&&!a.ended&&a.src.includes('_intro')){a.onended=go}else go();
+}
+function deviceSay(n){try{const ss=window.speechSynthesis;if(!ss)return;ss.cancel();const u=new SpeechSynthesisUtterance(n);u.lang='ar-SA';u.rate=.85;
+  const v=ss.getVoices().find(v=>/^ar/i.test(v.lang));if(v)u.voice=v;ss.speak(u)}catch(e){}}
 function pickStudent(forQ){
   if(picking||!S.names.length)return;
   let pool=avail();
@@ -684,9 +703,10 @@ function pickStudent(forQ){
   const pick=pool[Math.floor(Math.random()*pool.length)];
   if(S.noRepeat)S.used.push(pick);
   save();
-  if(forQ){Q.who=pick;render();return}
+  nameIntro();
+  if(forQ){Q.who=pick;render();announceName(pick);return}
   picking=true;let n=0;const el=()=>$('#pickName');
-  const iv=setInterval(()=>{const e=el();if(e){e.className='pick-name spin';const r=roster();e.textContent=r[Math.floor(Math.random()*r.length)]}if(++n>14){clearInterval(iv);picking=false;S.lastPick=pick;save();render();const e2=el();if(e2)e2.classList.add('pop')}},70);
+  const iv=setInterval(()=>{const e=el();if(e){e.className='pick-name spin';const r=roster();e.textContent=r[Math.floor(Math.random()*r.length)]}if(++n>14){clearInterval(iv);picking=false;S.lastPick=pick;save();render();const e2=el();if(e2)e2.classList.add('pop');announceName(pick)}},70);
 }
 function makeGroups(){
   const names=shuffle(roster());const n=names.length;if(n<2){save();render();return}
